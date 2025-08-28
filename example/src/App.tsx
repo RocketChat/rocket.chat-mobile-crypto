@@ -6,6 +6,10 @@ import {
   shaUtf8,
   pbkdf2Hash,
   hmac256,
+  aesEncrypt,
+  aesDecrypt,
+  randomUuid,
+  randomKey,
 } from '@rocket.chat/mobile-crypto';
 
 export default function App() {
@@ -68,13 +72,78 @@ export default function App() {
         expected:
           '02afb56304902c656fcb737cdd03de6205bb6d401da2812efd9b2d36a08af159',
       },
+      {
+        key: 'aes-encrypt-test',
+        label: 'AES Encrypt ("SGVsbG8gV29ybGQ=", key, iv)', // "Hello World" in base64
+        fn: async () => {
+          const encrypted = await aesEncrypt(
+            'SGVsbG8gV29ybGQ=', // "Hello World" base64
+            '0123456789abcdef0123456789abcdef', // 128-bit key in hex
+            'fedcba9876543210fedcba9876543210' // 128-bit IV in hex
+          );
+          return encrypted || 'null';
+        },
+        expected: 'encrypted', // We'll verify it's not null and not the original
+      },
+      {
+        key: 'aes-roundtrip-test',
+        label: 'AES Encrypt->Decrypt Roundtrip',
+        fn: async () => {
+          const original = 'SGVsbG8gV29ybGQ='; // "Hello World" base64
+          const key = '0123456789abcdef0123456789abcdef';
+          const iv = 'fedcba9876543210fedcba9876543210';
+
+          const encrypted = await aesEncrypt(original, key, iv);
+          if (!encrypted) return 'encrypt failed';
+
+          const decrypted = await aesDecrypt(encrypted, key, iv);
+          return decrypted === original ? 'PASS' : `FAIL: got ${decrypted}`;
+        },
+        expected: 'PASS',
+      },
+      {
+        key: 'random-uuid-test',
+        label: 'Random UUID Generation',
+        fn: async () => {
+          const uuid = await randomUuid();
+          // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+          const uuidRegex =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+          return uuidRegex.test(uuid) ? 'VALID UUID' : `INVALID: ${uuid}`;
+        },
+        expected: 'VALID UUID',
+      },
+      {
+        key: 'random-key-test',
+        label: 'Random Key Generation (16 bytes)',
+        fn: async () => {
+          const key = await randomKey(16);
+          // Should be 32 hex characters for 16 bytes
+          const hexRegex = /^[0-9a-f]{32}$/i;
+          return hexRegex.test(key)
+            ? `VALID KEY (${key.length} chars)`
+            : `INVALID: ${key}`;
+        },
+        expected: 'VALID KEY (32 chars)',
+      },
     ];
 
     for (const test of tests) {
       try {
         setLoading((prev) => ({ ...prev, [test.key]: true }));
         const result = await test.fn();
-        const isCorrect = result.toLowerCase() === test.expected.toLowerCase();
+        let isCorrect = false;
+
+        if (test.key === 'aes-encrypt-test') {
+          // For AES encrypt, just verify it's not null and not the original base64
+          isCorrect =
+            result !== 'null' &&
+            result !== 'SGVsbG8gV29ybGQ=' &&
+            result.length > 0;
+        } else {
+          isCorrect = result.toLowerCase() === test.expected.toLowerCase();
+        }
+
         setResults((prev) => ({
           ...prev,
           [test.key]: `${result} ${isCorrect ? '✓' : '✗'}`,
@@ -176,6 +245,38 @@ export default function App() {
           {loading['hmac256-test2']
             ? 'Loading...'
             : results['hmac256-test2'] || 'Not run'}
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>AES & Crypto Utils Tests:</Text>
+
+        <Text style={styles.testLabel}>AES Encrypt (Hello World):</Text>
+        <Text style={styles.result}>
+          {loading['aes-encrypt-test']
+            ? 'Loading...'
+            : results['aes-encrypt-test'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>AES Encrypt to Decrypt Roundtrip:</Text>
+        <Text style={styles.result}>
+          {loading['aes-roundtrip-test']
+            ? 'Loading...'
+            : results['aes-roundtrip-test'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>Random UUID Generation:</Text>
+        <Text style={styles.result}>
+          {loading['random-uuid-test']
+            ? 'Loading...'
+            : results['random-uuid-test'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>Random Key Generation (16 bytes):</Text>
+        <Text style={styles.result}>
+          {loading['random-key-test']
+            ? 'Loading...'
+            : results['random-key-test'] || 'Not run'}
         </Text>
       </View>
 

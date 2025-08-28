@@ -7,9 +7,17 @@ import com.facebook.react.module.annotations.ReactModule
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.security.InvalidKeyException
+import java.security.SecureRandom
 import java.nio.charset.StandardCharsets
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.util.UUID
 import javax.crypto.Mac
+import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
+import javax.crypto.spec.IvParameterSpec
 
 import org.spongycastle.crypto.ExtendedDigest
 import org.spongycastle.crypto.PBEParametersGenerator
@@ -123,6 +131,158 @@ class MobileCryptoModule(reactContext: ReactApplicationContext) :
     try {
       val result = hmac256Internal(data, key)
       promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  // AES Constants
+  private val cipherAlgorithm = "AES/CBC/PKCS7Padding"
+  private val keyAlgorithm = "AES"
+  private val fileCipherAlgorithm = "AES/CTR/NoPadding"
+  private val bufferSize = 4096
+  private val emptyIvSpec = IvParameterSpec(ByteArray(16) { 0 })
+
+  private fun getInputStream(context: ReactApplicationContext, filePath: String): InputStream {
+    val path = if (filePath.startsWith("file://")) filePath.substring(7) else filePath
+    return FileInputStream(File(path))
+  }
+
+  private fun aesEncryptInternal(textBase64: String?, hexKey: String, hexIv: String?): String? {
+    if (textBase64.isNullOrEmpty()) return null
+
+    val key = hexToBytes(hexKey)
+    val secretKey = SecretKeySpec(key, keyAlgorithm)
+
+    val cipher = Cipher.getInstance(cipherAlgorithm)
+    val ivSpec = if (hexIv == null) emptyIvSpec else IvParameterSpec(hexToBytes(hexIv))
+    cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec)
+    
+    val encrypted = cipher.doFinal(Base64.decode(textBase64, Base64.DEFAULT))
+    return Base64.encodeToString(encrypted, Base64.NO_WRAP)
+  }
+
+  private fun aesDecryptInternal(ciphertext: String?, hexKey: String, hexIv: String?): String? {
+    if (ciphertext.isNullOrEmpty()) return null
+
+    val key = hexToBytes(hexKey)
+    val secretKey = SecretKeySpec(key, keyAlgorithm)
+
+    val cipher = Cipher.getInstance(cipherAlgorithm)
+    val ivSpec = if (hexIv == null) emptyIvSpec else IvParameterSpec(hexToBytes(hexIv))
+    cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
+    
+    val decrypted = cipher.doFinal(Base64.decode(ciphertext, Base64.DEFAULT))
+    return Base64.encodeToString(decrypted, Base64.NO_WRAP)
+  }
+
+  private fun processFile(inputFile: String, base64UrlKey: String, base64Iv: String, mode: String): String {
+    // Decode the key and IV
+    val key = Base64.decode(base64UrlKey, Base64.URL_SAFE or Base64.NO_WRAP)
+    val iv = Base64.decode(base64Iv, Base64.NO_WRAP)
+    val secretKey = SecretKeySpec(key, "AES")
+
+    // Initialize the cipher
+    val cipher = Cipher.getInstance(fileCipherAlgorithm)
+    val ivParameterSpec = IvParameterSpec(iv)
+    val cipherMode = if (mode == "encrypt") Cipher.ENCRYPT_MODE else Cipher.DECRYPT_MODE
+    cipher.init(cipherMode, secretKey, ivParameterSpec)
+
+    // Create a temporary output file in the cache directory
+    val outputFileObj = File(reactApplicationContext.cacheDir, "processed_${UUID.randomUUID()}")
+
+    try {
+      getInputStream(reactApplicationContext, inputFile).use { inputStream ->
+        FileOutputStream(outputFileObj).use { fos ->
+          val buffer = ByteArray(bufferSize)
+          var numBytesRead: Int
+          
+          while (inputStream.read(buffer).also { numBytesRead = it } != -1) {
+            val output = cipher.update(buffer, 0, numBytesRead)
+            output?.let { fos.write(it) }
+          }
+          
+          val finalBytes = cipher.doFinal()
+          finalBytes?.let { fos.write(it) }
+        }
+      }
+    } catch (ex: Exception) {
+      outputFileObj.delete()
+      throw ex
+    }
+
+    return if (mode == "decrypt") {
+      // Overwrite the input file with the decrypted file
+      val targetPath = if (inputFile.startsWith("file://")) inputFile.substring(7) else inputFile
+      FileInputStream(outputFileObj).use { inputStream ->
+        FileOutputStream(targetPath).use { fos ->
+          val buffer = ByteArray(bufferSize)
+          var numBytesRead: Int
+          
+          while (inputStream.read(buffer).also { numBytesRead = it } != -1) {
+            fos.write(buffer, 0, numBytesRead)
+          }
+        }
+      }
+      outputFileObj.delete()
+      inputFile
+    } else {
+      "file://${outputFileObj.absolutePath}"
+    }
+  }
+
+  override fun aesEncrypt(dataBase64: String, keyHex: String, ivHex: String, promise: Promise) {
+    try {
+      val result = aesEncryptInternal(dataBase64, keyHex, ivHex)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun aesDecrypt(dataBase64: String, keyHex: String, ivHex: String, promise: Promise) {
+    try {
+      val result = aesDecryptInternal(dataBase64, keyHex, ivHex)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun aesEncryptFile(filePath: String, base64UrlKey: String, base64Iv: String, promise: Promise) {
+    try {
+      val result = processFile(filePath, base64UrlKey, base64Iv, "encrypt")
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun aesDecryptFile(filePath: String, base64UrlKey: String, base64Iv: String, promise: Promise) {
+    try {
+      val result = processFile(filePath, base64UrlKey, base64Iv, "decrypt")
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun randomUuid(promise: Promise) {
+    try {
+      val result = UUID.randomUUID().toString()
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun randomKey(length: Double, promise: Promise) {
+    try {
+      val key = ByteArray(length.toInt())
+      val rand = SecureRandom()
+      rand.nextBytes(key)
+      val keyHex = bytesToHex(key)
+      promise.resolve(keyHex)
     } catch (e: Exception) {
       promise.reject("-1", e.message)
     }

@@ -31,3 +31,43 @@ export function pbkdf2Hash(
 export function hmac256(data: string, key: string): Promise<string> {
   return MobileCrypto.hmac256(data, key);
 }
+
+export function aesEncrypt(
+  dataBase64: string,
+  keyHex: string,
+  ivHex: string
+): Promise<string> {
+  return MobileCrypto.aesEncrypt(dataBase64, keyHex, ivHex);
+}
+
+export function aesDecrypt(
+  dataBase64: string,
+  keyHex: string,
+  ivHex: string
+): Promise<string> {
+  return MobileCrypto.aesDecrypt(dataBase64, keyHex, ivHex);
+}
+
+export function aesEncryptFile(
+  filePath: string,
+  base64UrlKey: string,
+  base64Iv: string
+): Promise<string> {
+  return MobileCrypto.aesEncryptFile(filePath, base64UrlKey, base64Iv);
+}
+
+export function aesDecryptFile(
+  filePath: string,
+  base64UrlKey: string,
+  base64Iv: string
+): Promise<string> {
+  return MobileCrypto.aesDecryptFile(filePath, base64UrlKey, base64Iv);
+}
+
+export function randomUuid(): Promise<string> {
+  return MobileCrypto.randomUuid();
+}
+
+export function randomKey(length: number): Promise<string> {
+  return MobileCrypto.randomKey(length);
+}
