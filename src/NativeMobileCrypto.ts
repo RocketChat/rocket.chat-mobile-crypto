@@ -34,6 +34,7 @@ export interface Spec extends TurboModule {
   ): Promise<string>;
   randomUuid(): Promise<string>;
   randomKey(length: number): Promise<string>;
+  randomBytes(size: number): Promise<string>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MobileCrypto');

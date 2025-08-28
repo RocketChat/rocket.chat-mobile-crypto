@@ -10,6 +10,7 @@ import {
   aesDecrypt,
   randomUuid,
   randomKey,
+  randomBytes,
 } from '@rocket.chat/mobile-crypto';
 
 export default function App() {
@@ -126,6 +127,42 @@ export default function App() {
         },
         expected: 'VALID KEY (32 chars)',
       },
+      {
+        key: 'random-bytes-test',
+        label: 'Random Bytes Generation (32 bytes)',
+        fn: async () => {
+          const bytes = await randomBytes(32);
+          // Should be base64 encoded - roughly 4/3 the size, so ~43 chars for 32 bytes
+          const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+          const expectedLength = Math.ceil((32 * 4) / 3);
+          const isValidBase64 = base64Regex.test(bytes);
+          const isCorrectLength =
+            bytes.length >= expectedLength - 2 &&
+            bytes.length <= expectedLength + 2;
+
+          if (isValidBase64 && isCorrectLength) {
+            return `VALID BYTES (${bytes.length} chars)`;
+          } else {
+            return `INVALID: ${bytes} (length: ${bytes.length}, expected: ~${expectedLength})`;
+          }
+        },
+        expected: 'VALID BYTES',
+      },
+      {
+        key: 'random-bytes-small-test',
+        label: 'Random Bytes Generation (8 bytes)',
+        fn: async () => {
+          const bytes = await randomBytes(8);
+          // 8 bytes -> 12 base64 chars (with padding)
+          const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+          return base64Regex.test(bytes) &&
+            bytes.length >= 10 &&
+            bytes.length <= 12
+            ? `VALID (${bytes.length} chars)`
+            : `INVALID: ${bytes}`;
+        },
+        expected: 'VALID',
+      },
     ];
 
     for (const test of tests) {
@@ -140,6 +177,12 @@ export default function App() {
             result !== 'null' &&
             result !== 'SGVsbG8gV29ybGQ=' &&
             result.length > 0;
+        } else if (test.key === 'random-bytes-test') {
+          // For random bytes, check if result starts with "VALID BYTES"
+          isCorrect = result.startsWith('VALID BYTES');
+        } else if (test.key === 'random-bytes-small-test') {
+          // For small random bytes, check if result starts with "VALID"
+          isCorrect = result.startsWith('VALID');
         } else {
           isCorrect = result.toLowerCase() === test.expected.toLowerCase();
         }
@@ -277,6 +320,22 @@ export default function App() {
           {loading['random-key-test']
             ? 'Loading...'
             : results['random-key-test'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>
+          Random Bytes Generation (32 bytes):
+        </Text>
+        <Text style={styles.result}>
+          {loading['random-bytes-test']
+            ? 'Loading...'
+            : results['random-bytes-test'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>Random Bytes Generation (8 bytes):</Text>
+        <Text style={styles.result}>
+          {loading['random-bytes-small-test']
+            ? 'Loading...'
+            : results['random-bytes-small-test'] || 'Not run'}
         </Text>
       </View>
 

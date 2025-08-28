@@ -71,3 +71,7 @@ export function randomUuid(): Promise<string> {
 export function randomKey(length: number): Promise<string> {
   return MobileCrypto.randomKey(length);
 }
+
+export function randomBytes(size: number): Promise<string> {
+  return MobileCrypto.randomBytes(size);
+}

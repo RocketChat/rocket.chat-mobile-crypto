@@ -288,6 +288,18 @@ class MobileCryptoModule(reactContext: ReactApplicationContext) :
     }
   }
 
+  override fun randomBytes(size: Double, promise: Promise) {
+    try {
+      val bytes = ByteArray(size.toInt())
+      val sr = SecureRandom()
+      sr.nextBytes(bytes)
+      val result = Base64.encodeToString(bytes, Base64.NO_WRAP)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
   companion object {
     const val NAME = "MobileCrypto"
   }
