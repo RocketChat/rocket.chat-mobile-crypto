@@ -21,7 +21,7 @@ export default function App() {
         label: 'SHA-256 UTF-8 ("hello")',
         fn: () => shaUtf8('hello', 'SHA-256'),
         expected:
-          '2cf24dba4f21d4288094c973db33b0b3d0b2f44dacd3b11b894c62b7e57b33d2',
+          '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824',
       },
       {
         key: 'utf8-sha1',
@@ -33,40 +33,40 @@ export default function App() {
         key: 'base64-sha256',
         label: 'SHA-256 Base64 ("aGVsbG8=")',
         fn: () => shaBase64('aGVsbG8=', 'SHA-256'), // "hello" in base64
-        expected: 'LPJNuk8h1CiAlMlz2zOwvdCy9E2s07EbiUxityXls9I=',
+        expected: 'LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=',
       },
       {
         key: 'utf8-sha512',
         label: 'SHA-512 UTF-8 ("test")',
         fn: () => shaUtf8('test', 'SHA-512'),
         expected:
-          '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+          'ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff',
       },
       {
         key: 'pbkdf2-sha256',
         label: 'PBKDF2-SHA256 ("cGFzc3dvcmQ=", "c2FsdA==", 1000, 32)',
         fn: () => pbkdf2Hash('cGFzc3dvcmQ=', 'c2FsdA==', 1000, 32, 'SHA256'), // "password", "salt"
-        expected: '2HcCJEoMrH/QIpEhLOpjvYgXBtfcF6yQCIL/UrvQDJQ=',
+        expected: 'YywoEuRtRgQQK6dhjp1tfS+BKPYma0oDJk0qBGC33LM=',
       },
       {
         key: 'pbkdf2-sha1',
         label: 'PBKDF2-SHA1 ("cGFzc3dvcmQ=", "c2FsdA==", 1000, 20)',
         fn: () => pbkdf2Hash('cGFzc3dvcmQ=', 'c2FsdA==', 1000, 20, 'SHA1'), // "password", "salt"
-        expected: 'YQtFiSbzuQGJBOOD4tW7wA5UhCc=',
+        expected: 'boi+i61+rp2eEKoGEiQDT+1I0D8=',
       },
       {
         key: 'hmac256-test1',
         label: 'HMAC-SHA256 (data="48656c6c6f", key="6b6579")', // "Hello", "key"
         fn: () => hmac256('48656c6c6f', '6b6579'),
         expected:
-          '9307b3b915efb5171ff14d8cb55fbcc798c6c0ef1456d66ded1b831a2b9bfa28',
+          'c70b9f4d665bd62974afc83582de810e72a41a58db82c538a9d734c9266d321e',
       },
       {
         key: 'hmac256-test2',
         label: 'HMAC-SHA256 (data="74657374", key="6b6579")', // "test", "key"
         fn: () => hmac256('74657374', '6b6579'),
         expected:
-          '02afda7827a5df5b8e516b7a5116c8b16e5bc4cadd9c8b62da64bc7316ceb2fc',
+          '02afb56304902c656fcb737cdd03de6205bb6d401da2812efd9b2d36a08af159',
       },
     ];
 
