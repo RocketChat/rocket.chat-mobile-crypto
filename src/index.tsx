@@ -11,3 +11,19 @@ export function shaBase64(data: string, algorithm: string): Promise<string> {
 export function shaUtf8(data: string, algorithm: string): Promise<string> {
   return MobileCrypto.shaUtf8(data, algorithm);
 }
+
+export function pbkdf2Hash(
+  pwdBase64: string,
+  saltBase64: string,
+  iterations: number,
+  keyLen: number,
+  hash: string
+): Promise<string> {
+  return MobileCrypto.pbkdf2Hash(
+    pwdBase64,
+    saltBase64,
+    iterations,
+    keyLen,
+    hash
+  );
+}

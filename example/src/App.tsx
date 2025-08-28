@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, ScrollView, Button } from 'react-native';
-import { multiply, shaBase64, shaUtf8 } from '@rocket.chat/mobile-crypto';
+import {
+  multiply,
+  shaBase64,
+  shaUtf8,
+  pbkdf2Hash,
+} from '@rocket.chat/mobile-crypto';
 
 export default function App() {
   const [results, setResults] = useState<{ [key: string]: string }>({});
@@ -8,7 +13,7 @@ export default function App() {
 
   const multiplyResult = multiply(3, 7);
 
-  const runShaTests = async () => {
+  const runCryptoTests = async () => {
     const tests = [
       {
         key: 'utf8-sha256',
@@ -36,6 +41,18 @@ export default function App() {
         expected:
           '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
       },
+      {
+        key: 'pbkdf2-sha256',
+        label: 'PBKDF2-SHA256 ("cGFzc3dvcmQ=", "c2FsdA==", 1000, 32)',
+        fn: () => pbkdf2Hash('cGFzc3dvcmQ=', 'c2FsdA==', 1000, 32, 'SHA256'), // "password", "salt"
+        expected: '2HcCJEoMrH/QIpEhLOpjvYgXBtfcF6yQCIL/UrvQDJQ=',
+      },
+      {
+        key: 'pbkdf2-sha1',
+        label: 'PBKDF2-SHA1 ("cGFzc3dvcmQ=", "c2FsdA==", 1000, 20)',
+        fn: () => pbkdf2Hash('cGFzc3dvcmQ=', 'c2FsdA==', 1000, 20, 'SHA1'), // "password", "salt"
+        expected: 'YQtFiSbzuQGJBOOD4tW7wA5UhCc=',
+      },
     ];
 
     for (const test of tests) {
@@ -59,7 +76,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    runShaTests();
+    runCryptoTests();
   }, []);
 
   return (
@@ -103,7 +120,29 @@ export default function App() {
         </Text>
       </View>
 
-      <Button title="Run Tests Again" onPress={runShaTests} />
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>PBKDF2 Tests:</Text>
+
+        <Text style={styles.testLabel}>
+          PBKDF2-SHA256 (pwd="password", salt="salt", iter=1000, len=32):
+        </Text>
+        <Text style={styles.result}>
+          {loading['pbkdf2-sha256']
+            ? 'Loading...'
+            : results['pbkdf2-sha256'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>
+          PBKDF2-SHA1 (pwd="password", salt="salt", iter=1000, len=20):
+        </Text>
+        <Text style={styles.result}>
+          {loading['pbkdf2-sha1']
+            ? 'Loading...'
+            : results['pbkdf2-sha1'] || 'Not run'}
+        </Text>
+      </View>
+
+      <Button title="Run Tests Again" onPress={runCryptoTests} />
     </ScrollView>
   );
 }
