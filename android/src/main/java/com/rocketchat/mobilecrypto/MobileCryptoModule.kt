@@ -6,7 +6,10 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
+import java.security.InvalidKeyException
 import java.nio.charset.StandardCharsets
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 import org.spongycastle.crypto.ExtendedDigest
 import org.spongycastle.crypto.PBEParametersGenerator
@@ -46,6 +49,10 @@ class MobileCryptoModule(reactContext: ReactApplicationContext) :
 
   private fun bytesToHex(bytes: ByteArray): String {
     return bytes.joinToString("") { "%02x".format(it) }
+  }
+
+  private fun hexToBytes(hex: String): ByteArray {
+    return hex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
   }
 
   override fun shaBase64(data: String, algorithm: String, promise: Promise) {
@@ -98,6 +105,24 @@ class MobileCryptoModule(reactContext: ReactApplicationContext) :
       val saltBytes = Base64.decode(saltBase64, Base64.DEFAULT)
       val digest = pbkdf2(pwdBytes, saltBytes, iterations.toInt(), keyLen.toInt(), hash)
       promise.resolve(Base64.encodeToString(digest, Base64.NO_WRAP))
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  private fun hmac256Internal(text: String, key: String): String {
+    val contentData = hexToBytes(text)
+    val keyData = hexToBytes(key)
+    val mac = Mac.getInstance("HmacSHA256")
+    val secretKey = SecretKeySpec(keyData, "HmacSHA256")
+    mac.init(secretKey)
+    return bytesToHex(mac.doFinal(contentData))
+  }
+
+  override fun hmac256(data: String, key: String, promise: Promise) {
+    try {
+      val result = hmac256Internal(data, key)
+      promise.resolve(result)
     } catch (e: Exception) {
       promise.reject("-1", e.message)
     }

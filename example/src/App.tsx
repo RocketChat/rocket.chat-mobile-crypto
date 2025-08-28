@@ -5,6 +5,7 @@ import {
   shaBase64,
   shaUtf8,
   pbkdf2Hash,
+  hmac256,
 } from '@rocket.chat/mobile-crypto';
 
 export default function App() {
@@ -52,6 +53,20 @@ export default function App() {
         label: 'PBKDF2-SHA1 ("cGFzc3dvcmQ=", "c2FsdA==", 1000, 20)',
         fn: () => pbkdf2Hash('cGFzc3dvcmQ=', 'c2FsdA==', 1000, 20, 'SHA1'), // "password", "salt"
         expected: 'YQtFiSbzuQGJBOOD4tW7wA5UhCc=',
+      },
+      {
+        key: 'hmac256-test1',
+        label: 'HMAC-SHA256 (data="48656c6c6f", key="6b6579")', // "Hello", "key"
+        fn: () => hmac256('48656c6c6f', '6b6579'),
+        expected:
+          '9307b3b915efb5171ff14d8cb55fbcc798c6c0ef1456d66ded1b831a2b9bfa28',
+      },
+      {
+        key: 'hmac256-test2',
+        label: 'HMAC-SHA256 (data="74657374", key="6b6579")', // "test", "key"
+        fn: () => hmac256('74657374', '6b6579'),
+        expected:
+          '02afda7827a5df5b8e516b7a5116c8b16e5bc4cadd9c8b62da64bc7316ceb2fc',
       },
     ];
 
@@ -142,6 +157,28 @@ export default function App() {
         </Text>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>HMAC Tests:</Text>
+
+        <Text style={styles.testLabel}>
+          HMAC-SHA256 (data="Hello", key="key"):
+        </Text>
+        <Text style={styles.result}>
+          {loading['hmac256-test1']
+            ? 'Loading...'
+            : results['hmac256-test1'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>
+          HMAC-SHA256 (data="test", key="key"):
+        </Text>
+        <Text style={styles.result}>
+          {loading['hmac256-test2']
+            ? 'Loading...'
+            : results['hmac256-test2'] || 'Not run'}
+        </Text>
+      </View>
+
       <Button title="Run Tests Again" onPress={runCryptoTests} />
     </ScrollView>
   );
@@ -154,6 +191,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    paddingBottom: 80,
   },
   title: {
     fontSize: 24,

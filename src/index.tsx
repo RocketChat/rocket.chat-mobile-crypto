@@ -27,3 +27,7 @@ export function pbkdf2Hash(
     hash
   );
 }
+
+export function hmac256(data: string, key: string): Promise<string> {
+  return MobileCrypto.hmac256(data, key);
+}

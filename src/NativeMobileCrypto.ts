@@ -11,6 +11,7 @@ export interface Spec extends TurboModule {
     keyLen: number,
     hash: string
   ): Promise<string>;
+  hmac256(data: string, key: string): Promise<string>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MobileCrypto');
