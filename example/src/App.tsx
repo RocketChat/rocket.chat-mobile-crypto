@@ -11,6 +11,12 @@ import {
   randomUuid,
   randomKey,
   randomBytes,
+  rsaGenerateKeys,
+  rsaEncrypt,
+  rsaDecrypt,
+  rsaSign,
+  rsaVerify,
+  getRandomValues,
 } from '@rocket.chat/mobile-crypto';
 
 export default function App() {
@@ -163,6 +169,70 @@ export default function App() {
         },
         expected: 'VALID',
       },
+      {
+        key: 'rsa-keygen-test',
+        label: 'RSA Key Generation (2048-bit)',
+        fn: async () => {
+          const keyPair = await rsaGenerateKeys(2048);
+          const hasPublic = keyPair.public.includes('BEGIN PUBLIC KEY');
+          const hasPrivate = keyPair.private.includes('BEGIN PRIVATE KEY');
+          return hasPublic && hasPrivate ? 'VALID KEYPAIR' : 'INVALID';
+        },
+        expected: 'VALID KEYPAIR',
+      },
+      {
+        key: 'rsa-roundtrip-test',
+        label: 'RSA Encrypt to Decrypt Roundtrip',
+        fn: async () => {
+          try {
+            const keyPair = await rsaGenerateKeys(2048);
+            const message = 'Hello RSA World!';
+
+            const encrypted = await rsaEncrypt(message, keyPair.public);
+            const decrypted = await rsaDecrypt(encrypted, keyPair.private);
+
+            return decrypted === message ? 'PASS' : `FAIL: got "${decrypted}"`;
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'PASS',
+      },
+      {
+        key: 'rsa-sign-verify-test',
+        label: 'RSA Sign to Verify Roundtrip',
+        fn: async () => {
+          try {
+            const keyPair = await rsaGenerateKeys(2048);
+            const message = 'Hello RSA Signature!';
+
+            const signature = await rsaSign(message, keyPair.private, 'SHA256');
+            const verified = await rsaVerify(
+              signature,
+              message,
+              keyPair.public,
+              'SHA256'
+            );
+
+            return verified ? 'PASS' : 'FAIL: signature not verified';
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'PASS',
+      },
+      {
+        key: 'random-values-test',
+        label: 'Random Alphanumeric Values (10 chars)',
+        fn: async () => {
+          const values = await getRandomValues(10);
+          const alphanumericRegex = /^[A-Za-z0-9]{10}$/;
+          return alphanumericRegex.test(values)
+            ? `VALID: ${values}`
+            : `INVALID: ${values}`;
+        },
+        expected: 'VALID:',
+      },
     ];
 
     for (const test of tests) {
@@ -183,6 +253,9 @@ export default function App() {
         } else if (test.key === 'random-bytes-small-test') {
           // For small random bytes, check if result starts with "VALID"
           isCorrect = result.startsWith('VALID');
+        } else if (test.key === 'random-values-test') {
+          // For random values, check if result starts with "VALID:"
+          isCorrect = result.startsWith('VALID:');
         } else {
           isCorrect = result.toLowerCase() === test.expected.toLowerCase();
         }
@@ -336,6 +409,40 @@ export default function App() {
           {loading['random-bytes-small-test']
             ? 'Loading...'
             : results['random-bytes-small-test'] || 'Not run'}
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>RSA & Advanced Crypto Tests:</Text>
+
+        <Text style={styles.testLabel}>RSA Key Generation (2048-bit):</Text>
+        <Text style={styles.result}>
+          {loading['rsa-keygen-test']
+            ? 'Loading...'
+            : results['rsa-keygen-test'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>RSA Encrypt to Decrypt Roundtrip:</Text>
+        <Text style={styles.result}>
+          {loading['rsa-roundtrip-test']
+            ? 'Loading...'
+            : results['rsa-roundtrip-test'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>RSA Sign to Verify Roundtrip:</Text>
+        <Text style={styles.result}>
+          {loading['rsa-sign-verify-test']
+            ? 'Loading...'
+            : results['rsa-sign-verify-test'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>
+          Random Alphanumeric Values (10 chars):
+        </Text>
+        <Text style={styles.result}>
+          {loading['random-values-test']
+            ? 'Loading...'
+            : results['random-values-test'] || 'Not run'}
         </Text>
       </View>
 

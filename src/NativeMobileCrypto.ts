@@ -35,6 +35,33 @@ export interface Spec extends TurboModule {
   randomUuid(): Promise<string>;
   randomKey(length: number): Promise<string>;
   randomBytes(size: number): Promise<string>;
+  rsaGenerateKeys(
+    keySize?: number
+  ): Promise<{ public: string; private: string }>;
+  rsaEncrypt(message: string, publicKey: string): Promise<string>;
+  rsaEncrypt64(message: string, publicKey: string): Promise<string>;
+  rsaDecrypt(encodedMessage: string, privateKey: string): Promise<string>;
+  rsaDecrypt64(encodedMessage: string, privateKey: string): Promise<string>;
+  rsaSign(message: string, privateKey: string, hash?: string): Promise<string>;
+  rsaSign64(
+    message: string,
+    privateKey: string,
+    hash?: string
+  ): Promise<string>;
+  rsaVerify(
+    signature: string,
+    message: string,
+    publicKey: string,
+    hash?: string
+  ): Promise<boolean>;
+  rsaVerify64(
+    signature: string,
+    message: string,
+    publicKey: string,
+    hash?: string
+  ): Promise<boolean>;
+  calculateFileChecksum(filePath: string): Promise<string>;
+  getRandomValues(length: number): Promise<string>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MobileCrypto');

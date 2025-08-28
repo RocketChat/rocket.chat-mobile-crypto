@@ -8,16 +8,33 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.security.InvalidKeyException
 import java.security.SecureRandom
+import java.security.KeyPair
+import java.security.KeyPairGenerator
+import java.security.KeyFactory
+import java.security.PublicKey
+import java.security.PrivateKey
+import java.security.Signature
+import java.security.SignatureException
+import java.security.spec.X509EncodedKeySpec
+import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.InvalidKeySpecException
 import java.nio.charset.StandardCharsets
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.io.StringWriter
+import java.io.StringReader
+import java.io.Reader
 import java.util.UUID
 import javax.crypto.Mac
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.spec.IvParameterSpec
+import javax.crypto.IllegalBlockSizeException
+import javax.crypto.BadPaddingException
+import javax.crypto.NoSuchPaddingException
+import com.facebook.react.bridge.WritableNativeMap
 
 import org.spongycastle.crypto.ExtendedDigest
 import org.spongycastle.crypto.PBEParametersGenerator
@@ -294,6 +311,242 @@ class MobileCryptoModule(reactContext: ReactApplicationContext) :
       val sr = SecureRandom()
       sr.nextBytes(bytes)
       val result = Base64.encodeToString(bytes, Base64.NO_WRAP)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  // RSA Helper Functions
+  private fun getAlgorithmFromHash(hash: String?): String {
+    return when (hash ?: "SHA1") {
+      "Raw" -> "NONEwithRSA"
+      "SHA1" -> "SHA1withRSA"
+      "SHA224" -> "SHA224withRSA"
+      "SHA256" -> "SHA256withRSA"
+      "SHA384" -> "SHA384withRSA"
+      else -> "SHA1withRSA"
+    }
+  }
+
+  private fun keyToPem(key: ByteArray, header: String): String {
+    val base64Key = Base64.encodeToString(key, Base64.DEFAULT)
+    val lines = base64Key.chunked(64)
+    return buildString {
+      appendLine("-----BEGIN $header-----")
+      lines.forEach { appendLine(it) }
+      appendLine("-----END $header-----")
+    }
+  }
+
+  private fun pemToKey(pem: String): ByteArray {
+    val lines = pem.lines().filter { 
+      !it.startsWith("-----") && it.isNotBlank() 
+    }
+    val base64Content = lines.joinToString("")
+    return Base64.decode(base64Content, Base64.DEFAULT)
+  }
+
+  override fun rsaGenerateKeys(keySize: Double?, promise: Promise) {
+    try {
+      val actualKeySize = keySize?.toInt() ?: 2048
+      val keyPairGenerator = KeyPairGenerator.getInstance("RSA")
+      keyPairGenerator.initialize(actualKeySize)
+      val keyPair = keyPairGenerator.generateKeyPair()
+      
+      val publicKeyBytes = keyPair.public.encoded
+      val privateKeyBytes = keyPair.private.encoded
+      
+      val publicPem = keyToPem(publicKeyBytes, "PUBLIC KEY")
+      val privatePem = keyToPem(privateKeyBytes, "PRIVATE KEY")
+      
+      val result = WritableNativeMap()
+      result.putString("public", publicPem)
+      result.putString("private", privatePem)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun rsaEncrypt(message: String, publicKeyString: String, promise: Promise) {
+    try {
+      val publicKeyBytes = pemToKey(publicKeyString)
+      val keySpec = X509EncodedKeySpec(publicKeyBytes)
+      val keyFactory = KeyFactory.getInstance("RSA")
+      val publicKey = keyFactory.generatePublic(keySpec)
+      
+      val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
+      cipher.init(Cipher.ENCRYPT_MODE, publicKey)
+      val encryptedBytes = cipher.doFinal(message.toByteArray(StandardCharsets.UTF_8))
+      val result = Base64.encodeToString(encryptedBytes, Base64.NO_WRAP)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun rsaEncrypt64(message: String, publicKeyString: String, promise: Promise) {
+    try {
+      val publicKeyBytes = pemToKey(publicKeyString)
+      val keySpec = X509EncodedKeySpec(publicKeyBytes)
+      val keyFactory = KeyFactory.getInstance("RSA")
+      val publicKey = keyFactory.generatePublic(keySpec)
+      
+      val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
+      cipher.init(Cipher.ENCRYPT_MODE, publicKey)
+      val messageBytes = Base64.decode(message, Base64.DEFAULT)
+      val encryptedBytes = cipher.doFinal(messageBytes)
+      val result = Base64.encodeToString(encryptedBytes, Base64.DEFAULT)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun rsaDecrypt(encodedMessage: String, privateKeyString: String, promise: Promise) {
+    try {
+      val privateKeyBytes = pemToKey(privateKeyString)
+      val keySpec = PKCS8EncodedKeySpec(privateKeyBytes)
+      val keyFactory = KeyFactory.getInstance("RSA")
+      val privateKey = keyFactory.generatePrivate(keySpec)
+      
+      val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
+      cipher.init(Cipher.DECRYPT_MODE, privateKey)
+      val encryptedBytes = Base64.decode(encodedMessage, Base64.DEFAULT)
+      val decryptedBytes = cipher.doFinal(encryptedBytes)
+      val result = String(decryptedBytes, StandardCharsets.UTF_8)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun rsaDecrypt64(encodedMessage: String, privateKeyString: String, promise: Promise) {
+    try {
+      val privateKeyBytes = pemToKey(privateKeyString)
+      val keySpec = PKCS8EncodedKeySpec(privateKeyBytes)
+      val keyFactory = KeyFactory.getInstance("RSA")
+      val privateKey = keyFactory.generatePrivate(keySpec)
+      
+      val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
+      cipher.init(Cipher.DECRYPT_MODE, privateKey)
+      val encryptedBytes = Base64.decode(encodedMessage, Base64.DEFAULT)
+      val decryptedBytes = cipher.doFinal(encryptedBytes)
+      val result = Base64.encodeToString(decryptedBytes, Base64.DEFAULT)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun rsaSign(message: String, privateKeyString: String, hash: String?, promise: Promise) {
+    try {
+      val privateKeyBytes = pemToKey(privateKeyString)
+      val keySpec = PKCS8EncodedKeySpec(privateKeyBytes)
+      val keyFactory = KeyFactory.getInstance("RSA")
+      val privateKey = keyFactory.generatePrivate(keySpec)
+      
+      val signature = Signature.getInstance(getAlgorithmFromHash(hash))
+      signature.initSign(privateKey)
+      signature.update(message.toByteArray(StandardCharsets.UTF_8))
+      val signatureBytes = signature.sign()
+      val result = Base64.encodeToString(signatureBytes, Base64.DEFAULT)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun rsaSign64(message: String, privateKeyString: String, hash: String?, promise: Promise) {
+    try {
+      val privateKeyBytes = pemToKey(privateKeyString)
+      val keySpec = PKCS8EncodedKeySpec(privateKeyBytes)
+      val keyFactory = KeyFactory.getInstance("RSA")
+      val privateKey = keyFactory.generatePrivate(keySpec)
+      
+      val signature = Signature.getInstance(getAlgorithmFromHash(hash))
+      signature.initSign(privateKey)
+      val messageBytes = Base64.decode(message, Base64.DEFAULT)
+      signature.update(messageBytes)
+      val signatureBytes = signature.sign()
+      val result = Base64.encodeToString(signatureBytes, Base64.DEFAULT)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun rsaVerify(signatureString: String, message: String, publicKeyString: String, hash: String?, promise: Promise) {
+    try {
+      val publicKeyBytes = pemToKey(publicKeyString)
+      val keySpec = X509EncodedKeySpec(publicKeyBytes)
+      val keyFactory = KeyFactory.getInstance("RSA")
+      val publicKey = keyFactory.generatePublic(keySpec)
+      
+      val signature = Signature.getInstance(getAlgorithmFromHash(hash))
+      signature.initVerify(publicKey)
+      signature.update(message.toByteArray(StandardCharsets.UTF_8))
+      val signatureBytes = Base64.decode(signatureString, Base64.DEFAULT)
+      val result = signature.verify(signatureBytes)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun rsaVerify64(signatureString: String, message: String, publicKeyString: String, hash: String?, promise: Promise) {
+    try {
+      val publicKeyBytes = pemToKey(publicKeyString)
+      val keySpec = X509EncodedKeySpec(publicKeyBytes)
+      val keyFactory = KeyFactory.getInstance("RSA")
+      val publicKey = keyFactory.generatePublic(keySpec)
+      
+      val signature = Signature.getInstance(getAlgorithmFromHash(hash))
+      signature.initVerify(publicKey)
+      val messageBytes = Base64.decode(message, Base64.DEFAULT)
+      signature.update(messageBytes)
+      val signatureBytes = Base64.decode(signatureString, Base64.DEFAULT)
+      val result = signature.verify(signatureBytes)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun calculateFileChecksum(filePath: String, promise: Promise) {
+    try {
+      val file = if (filePath.startsWith("file://")) {
+        File(filePath.substring(7))
+      } else {
+        File(filePath)
+      }
+      
+      val inputStream = FileInputStream(file)
+      val digest = MessageDigest.getInstance("SHA-256")
+      val buffer = ByteArray(4096)
+      var bytesRead: Int
+      
+      while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+        digest.update(buffer, 0, bytesRead)
+      }
+      inputStream.close()
+      
+      val hash = digest.digest()
+      val result = bytesToHex(hash)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun getRandomValues(length: Double, promise: Promise) {
+    try {
+      val alphanumericChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+      val random = SecureRandom()
+      val result = (1..length.toInt())
+        .map { alphanumericChars[random.nextInt(alphanumericChars.length)] }
+        .joinToString("")
       promise.resolve(result)
     } catch (e: Exception) {
       promise.reject("-1", e.message)

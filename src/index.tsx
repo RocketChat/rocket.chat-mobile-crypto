@@ -75,3 +75,81 @@ export function randomKey(length: number): Promise<string> {
 export function randomBytes(size: number): Promise<string> {
   return MobileCrypto.randomBytes(size);
 }
+
+// RSA Functions
+export function rsaGenerateKeys(
+  keySize?: number
+): Promise<{ public: string; private: string }> {
+  return MobileCrypto.rsaGenerateKeys(keySize);
+}
+
+export function rsaEncrypt(
+  message: string,
+  publicKey: string
+): Promise<string> {
+  return MobileCrypto.rsaEncrypt(message, publicKey);
+}
+
+export function rsaEncrypt64(
+  message: string,
+  publicKey: string
+): Promise<string> {
+  return MobileCrypto.rsaEncrypt64(message, publicKey);
+}
+
+export function rsaDecrypt(
+  encodedMessage: string,
+  privateKey: string
+): Promise<string> {
+  return MobileCrypto.rsaDecrypt(encodedMessage, privateKey);
+}
+
+export function rsaDecrypt64(
+  encodedMessage: string,
+  privateKey: string
+): Promise<string> {
+  return MobileCrypto.rsaDecrypt64(encodedMessage, privateKey);
+}
+
+export function rsaSign(
+  message: string,
+  privateKey: string,
+  hash?: string
+): Promise<string> {
+  return MobileCrypto.rsaSign(message, privateKey, hash);
+}
+
+export function rsaSign64(
+  message: string,
+  privateKey: string,
+  hash?: string
+): Promise<string> {
+  return MobileCrypto.rsaSign64(message, privateKey, hash);
+}
+
+export function rsaVerify(
+  signature: string,
+  message: string,
+  publicKey: string,
+  hash?: string
+): Promise<boolean> {
+  return MobileCrypto.rsaVerify(signature, message, publicKey, hash);
+}
+
+export function rsaVerify64(
+  signature: string,
+  message: string,
+  publicKey: string,
+  hash?: string
+): Promise<boolean> {
+  return MobileCrypto.rsaVerify64(signature, message, publicKey, hash);
+}
+
+// Utility Functions
+export function calculateFileChecksum(filePath: string): Promise<string> {
+  return MobileCrypto.calculateFileChecksum(filePath);
+}
+
+export function getRandomValues(length: number): Promise<string> {
+  return MobileCrypto.getRandomValues(length);
+}
