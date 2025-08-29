@@ -126,38 +126,54 @@ RCT_EXPORT_MODULE()
         NSData *passwordData = [[NSData alloc] initWithBase64EncodedString:pwdBase64 options:0];
         NSData *saltData = [[NSData alloc] initWithBase64EncodedString:saltBase64 options:0];
         
-        if (!passwordData || !saltData) {
-            reject(@"-1", @"Invalid base64 input", nil);
+        if (!passwordData || !saltData || keyLen <= 0 || iterations <= 0) {
+            reject(@"-1", @"Invalid input parameters", nil);
             return;
         }
         
-        CCPseudoRandomAlgorithm algorithm;
-        if ([hash isEqualToString:@"SHA1"]) {
-            algorithm = kCCPRFHmacAlgSHA1;
-        } else if ([hash isEqualToString:@"SHA256"]) {
-            algorithm = kCCPRFHmacAlgSHA256;
-        } else if ([hash isEqualToString:@"SHA512"]) {
-            algorithm = kCCPRFHmacAlgSHA512;
-        } else {
-            algorithm = kCCPRFHmacAlgSHA1;  // Default
+        // Algorithm mapping using dictionary like the original code
+        NSDictionary *algMap = @{
+            @"SHA1" : [NSNumber numberWithInt:kCCPRFHmacAlgSHA1],
+            @"SHA224" : [NSNumber numberWithInt:kCCPRFHmacAlgSHA224],
+            @"SHA256" : [NSNumber numberWithInt:kCCPRFHmacAlgSHA256],
+            @"SHA384" : [NSNumber numberWithInt:kCCPRFHmacAlgSHA384],
+            @"SHA512" : [NSNumber numberWithInt:kCCPRFHmacAlgSHA512],
+        };
+        
+        NSNumber *algNumber = [algMap valueForKey:hash];
+        if (!algNumber) {
+            algNumber = [algMap valueForKey:@"SHA1"]; // Default to SHA1
+        }
+        int alg = [algNumber intValue];
+        
+        // Hash key data length - using same variable name as original
+        NSMutableData *hashKeyData = [NSMutableData dataWithLength:(NSUInteger)keyLen];
+        if (!hashKeyData || hashKeyData.length == 0) {
+            reject(@"-1", @"Failed to allocate memory for derived key", nil);
+            return;
         }
         
-        NSMutableData *derivedKey = [NSMutableData dataWithLength:(NSUInteger)keyLen];
-        
+        // Key Derivation using PBKDF2 algorithm
         int status = CCKeyDerivationPBKDF(
             kCCPBKDF2,
-            passwordData.bytes, passwordData.length,
-            saltData.bytes, saltData.length,
-            algorithm,
-            (uint)iterations,
-            derivedKey.mutableBytes, derivedKey.length
+            (const char *)passwordData.bytes,
+            passwordData.length,
+            (const uint8_t *)saltData.bytes,
+            saltData.length,
+            (CCPseudoRandomAlgorithm)alg,
+            (unsigned)(int)iterations,
+            (uint8_t *)hashKeyData.mutableBytes,
+            hashKeyData.length
         );
         
-        if (status == kCCSuccess) {
-            NSString *result = [derivedKey base64EncodedStringWithOptions:0];
+        if (status == kCCParamError) {
+            NSLog(@"Key derivation error");
+            reject(@"-1", @"PBKDF2 parameter error", nil);
+        } else if (status == kCCSuccess) {
+            NSString *result = [hashKeyData base64EncodedStringWithOptions:0];
             resolve(result);
         } else {
-            reject(@"-1", @"PBKDF2 derivation failed", nil);
+            reject(@"-1", [NSString stringWithFormat:@"PBKDF2 derivation failed with status: %d", status], nil);
         }
     } @catch (NSException *exception) {
         reject(@"-1", exception.reason, nil);
