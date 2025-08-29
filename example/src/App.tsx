@@ -16,6 +16,9 @@ import {
   rsaSign,
   rsaVerify,
   getRandomValues,
+  rsaImportKey,
+  rsaExportKey,
+  type JWK,
 } from '@rocket.chat/mobile-crypto';
 
 export default function App() {
@@ -230,6 +233,92 @@ export default function App() {
         },
         expected: 'VALID:',
       },
+      {
+        key: 'rsa-jwk-export-test',
+        label: 'RSA Export Key to JWK Format',
+        fn: async () => {
+          try {
+            const keyPair = await rsaGenerateKeys(2048);
+            const jwk = await rsaExportKey(keyPair.private);
+
+            const hasRequiredProps =
+              jwk.kty === 'RSA' &&
+              jwk.n &&
+              jwk.e &&
+              jwk.d &&
+              jwk.p &&
+              jwk.q &&
+              jwk.dp &&
+              jwk.dq &&
+              jwk.qi;
+
+            return hasRequiredProps ? 'VALID JWK' : 'INVALID JWK';
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'VALID JWK',
+      },
+      {
+        key: 'rsa-jwk-import-test',
+        label: 'RSA Import JWK to PEM Format',
+        fn: async () => {
+          try {
+            // Generate a real RSA key pair first
+            const keyPair = await rsaGenerateKeys(2048);
+
+            // Export the public key to JWK format
+            const publicJwk = await rsaExportKey(keyPair.public);
+
+            // Remove private key components to make it a public-only JWK
+            const publicOnlyJwk: JWK = {
+              kty: publicJwk.kty,
+              n: publicJwk.n,
+              e: publicJwk.e,
+            };
+
+            // Now try to import the JWK back to PEM
+            const pem = await rsaImportKey(publicOnlyJwk);
+            const isValidPem =
+              pem.includes('-----BEGIN RSA PUBLIC KEY-----') &&
+              pem.includes('-----END RSA PUBLIC KEY-----');
+
+            return isValidPem ? 'VALID PEM' : 'INVALID PEM';
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'VALID PEM',
+      },
+      {
+        key: 'rsa-jwk-roundtrip-test',
+        label: 'RSA JWK to PEM to JWK Roundtrip',
+        fn: async () => {
+          try {
+            const keyPair = await rsaGenerateKeys(2048);
+
+            // Export PEM to JWK
+            const originalJwk = await rsaExportKey(keyPair.private);
+
+            // Import JWK to PEM
+            const pemFromJwk = await rsaImportKey(originalJwk);
+
+            // Export PEM back to JWK
+            const roundtripJwk = await rsaExportKey(pemFromJwk);
+
+            // Compare key properties (n should be the same)
+            const isEqual =
+              originalJwk.n === roundtripJwk.n &&
+              originalJwk.e === roundtripJwk.e &&
+              originalJwk.d === roundtripJwk.d;
+
+            return isEqual ? 'ROUNDTRIP PASS' : 'ROUNDTRIP FAIL';
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'ROUNDTRIP PASS',
+      },
     ];
 
     for (const test of tests) {
@@ -435,6 +524,27 @@ export default function App() {
           {loading['random-values-test']
             ? 'Loading...'
             : results['random-values-test'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>RSA Export Key to JWK Format:</Text>
+        <Text style={styles.result}>
+          {loading['rsa-jwk-export-test']
+            ? 'Loading...'
+            : results['rsa-jwk-export-test'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>RSA Import JWK to PEM Format:</Text>
+        <Text style={styles.result}>
+          {loading['rsa-jwk-import-test']
+            ? 'Loading...'
+            : results['rsa-jwk-import-test'] || 'Not run'}
+        </Text>
+
+        <Text style={styles.testLabel}>RSA JWK ↔ PEM Roundtrip Test:</Text>
+        <Text style={styles.result}>
+          {loading['rsa-jwk-roundtrip-test']
+            ? 'Loading...'
+            : results['rsa-jwk-roundtrip-test'] || 'Not run'}
         </Text>
       </View>
 

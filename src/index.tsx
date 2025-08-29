@@ -1,4 +1,7 @@
-import MobileCrypto from './NativeMobileCrypto';
+import MobileCrypto, { type JWK } from './NativeMobileCrypto';
+
+// Export the JWK type for users
+export type { JWK };
 
 export function shaBase64(data: string, algorithm: string): Promise<string> {
   return MobileCrypto.shaBase64(data, algorithm);
@@ -139,6 +142,14 @@ export function rsaVerify64(
   hash?: string
 ): Promise<boolean> {
   return MobileCrypto.rsaVerify64(signature, message, publicKey, hash);
+}
+
+export function rsaImportKey(jwk: JWK): Promise<string> {
+  return MobileCrypto.rsaImportKey(jwk);
+}
+
+export function rsaExportKey(pem: string): Promise<JWK> {
+  return MobileCrypto.rsaExportKey(pem);
 }
 
 // Utility Functions

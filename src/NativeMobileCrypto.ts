@@ -1,5 +1,20 @@
 import { TurboModuleRegistry, type TurboModule } from 'react-native';
 
+export interface JWK {
+  kty: string;
+  alg?: string;
+  ext?: boolean;
+  key_ops?: string[];
+  n: string;
+  e: string;
+  d?: string;
+  p?: string;
+  q?: string;
+  dp?: string;
+  dq?: string;
+  qi?: string;
+}
+
 export interface Spec extends TurboModule {
   shaBase64(data: string, algorithm: string): Promise<string>;
   shaUtf8(data: string, algorithm: string): Promise<string>;
@@ -61,6 +76,8 @@ export interface Spec extends TurboModule {
   ): Promise<boolean>;
   calculateFileChecksum(filePath: string): Promise<string>;
   getRandomValues(length: number): Promise<string>;
+  rsaImportKey(jwk: JWK): Promise<string>;
+  rsaExportKey(pem: string): Promise<JWK>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MobileCrypto');
