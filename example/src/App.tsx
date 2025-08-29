@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, ScrollView, Button } from 'react-native';
 import {
-  multiply,
   shaBase64,
   shaUtf8,
   pbkdf2Hash,
@@ -22,8 +21,6 @@ import {
 export default function App() {
   const [results, setResults] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
-
-  const multiplyResult = multiply(3, 7);
 
   const runCryptoTests = async () => {
     const tests = [
@@ -282,11 +279,6 @@ export default function App() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Mobile Crypto Test</Text>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Multiply Test:</Text>
-        <Text>3 × 7 = {multiplyResult}</Text>
-      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>SHA Tests:</Text>

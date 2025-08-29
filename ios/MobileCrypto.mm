@@ -50,10 +50,7 @@ RCT_EXPORT_MODULE()
     return base64;
 }
 
-// MARK: - Basic Method
-- (NSNumber *)multiply:(double)a b:(double)b {
-    return @(a * b);
-}
+
 
 // MARK: - SHA Methods
 - (void)shaBase64:(NSString *)data 

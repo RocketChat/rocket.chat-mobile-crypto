@@ -54,11 +54,7 @@ class MobileCryptoModule(reactContext: ReactApplicationContext) :
     return NAME
   }
 
-  // Example method
-  // See https://reactnative.dev/docs/native-modules-android
-  override fun multiply(a: Double, b: Double): Double {
-    return a * b
-  }
+
 
   private val algorithms = listOf("SHA-1", "SHA-256", "SHA-512")
 
