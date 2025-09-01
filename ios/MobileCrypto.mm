@@ -9,19 +9,17 @@ RCT_EXPORT_MODULE()
 
 // MARK: - Helper Methods
 
-- (NSData *)hexToBytes:(NSString *)hex {
+- (NSData *)fromHex: (NSString *)string {
     NSMutableData *data = [[NSMutableData alloc] init];
-    unsigned char byte[2] = {0, 0};
-    
-    for (NSInteger i = 0; i < [hex length]; i += 2) {
-        byte[0] = [hex characterAtIndex:i];
-        byte[1] = [hex characterAtIndex:i + 1];
-        
-        unsigned char wholeByte = strtol((char *)byte, NULL, 16);
-        [data appendBytes:&wholeByte length:1];
+    unsigned char whole_byte;
+    char byte_chars[3] = {'\0','\0','\0'};
+    for (int i = 0; i < ([string length] / 2); i++) {
+        byte_chars[0] = [string characterAtIndex:i*2];
+        byte_chars[1] = [string characterAtIndex:i*2+1];
+        whole_byte = strtol(byte_chars, NULL, 16);
+        [data appendBytes:&whole_byte length:1];
     }
-    
-    return [NSData dataWithData:data];
+    return data;
 }
 
 - (NSString *)bytesToHex:(NSData *)data {
@@ -183,8 +181,8 @@ RCT_EXPORT_MODULE()
         resolve:(RCTPromiseResolveBlock)resolve
          reject:(RCTPromiseRejectBlock)reject {
     @try {
-        NSData *contentData = [self hexToBytes:data];
-        NSData *keyData = [self hexToBytes:key];
+        NSData *contentData = [self fromHex:data];
+        NSData *keyData = [self fromHex:key];
         
         NSMutableData *hash = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
         CCHmac(kCCHmacAlgSHA256, keyData.bytes, keyData.length, contentData.bytes, contentData.length, hash.mutableBytes);
@@ -198,8 +196,8 @@ RCT_EXPORT_MODULE()
 
 // MARK: - AES Methods
 - (NSData *)aes128CBC:(NSString *)operation data:(NSData *)data key:(NSString *)key iv:(NSString *)iv {
-    NSData *keyData = [self hexToBytes:key];
-    NSData *ivData = [self hexToBytes:iv];
+    NSData *keyData = [self fromHex:key];
+    NSData *ivData = [self fromHex:iv];
     size_t numBytes = 0;
     NSMutableData *buffer = [[NSMutableData alloc] initWithLength:[data length] + kCCBlockSizeAES128];
 

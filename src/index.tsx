@@ -152,6 +152,10 @@ export function rsaExportKey(pem: string): Promise<JWK> {
   return MobileCrypto.rsaExportKey(pem);
 }
 
+export function rsaPemToJwk(pemKey: string): Promise<JWK> {
+  return MobileCrypto.rsaExportKey(pemKey);
+}
+
 // Utility Functions
 export function calculateFileChecksum(filePath: string): Promise<string> {
   return MobileCrypto.calculateFileChecksum(filePath);
