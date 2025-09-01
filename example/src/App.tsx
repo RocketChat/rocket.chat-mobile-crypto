@@ -319,7 +319,171 @@ export default function App() {
         },
         expected: 'ROUNDTRIP PASS',
       },
+      {
+        key: 'e2e-keys-workflow-test',
+        label: 'E2E Keys Workflow (Create → Encode → Decode → Verify)',
+        fn: async () => {
+          try {
+            // Simulate the E2E workflow from the old architecture
+            const userId = 'user123';
+
+            // 1. Create Keys (equivalent to createKeys)
+            const keyPair = await rsaGenerateKeys(2048);
+
+            // Export keys to JWK format (similar to old exportKey)
+            const privateJwk = await rsaExportKey(keyPair.private);
+
+            // 2. Create Random Password (equivalent to createRandomPassword)
+            const password = await getRandomValues(32); // 32 char alphanumeric password
+
+            // 4. Encode Private Key (equivalent to encodePrivateKey)
+            const encodedPrivateKey = await encodePrivateKeyE2E(
+              JSON.stringify(privateJwk),
+              password,
+              userId
+            );
+
+            // 5. Decode Private Key (equivalent to decodePrivateKey)
+            const decodedPrivateKey = await decodePrivateKeyE2E(
+              encodedPrivateKey,
+              password,
+              userId
+            );
+
+            // 6. Verify the roundtrip worked
+            const decodedJwk = JSON.parse(decodedPrivateKey);
+            const isValid =
+              decodedJwk.n === privateJwk.n && decodedJwk.d === privateJwk.d;
+
+            // 7. Test encryption/decryption with the keys
+            const testMessage = 'Hello E2E World!';
+            const encrypted = await rsaEncrypt(testMessage, keyPair.public);
+            const decrypted = await rsaDecrypt(encrypted, keyPair.private);
+
+            const encryptDecryptWorks = decrypted === testMessage;
+
+            if (isValid && encryptDecryptWorks) {
+              return 'E2E WORKFLOW PASS';
+            } else {
+              return `E2E WORKFLOW FAIL: valid=${isValid}, encrypt=${encryptDecryptWorks}`;
+            }
+          } catch (error) {
+            return `E2E WORKFLOW ERROR: ${error}`;
+          }
+        },
+        expected: 'E2E WORKFLOW PASS',
+      },
     ];
+
+    // E2E Utility Functions (equivalent to old architecture helper functions)
+
+    // Equivalent to generateMasterKey
+    const generateMasterKeyE2E = async (
+      password: string,
+      userId: string
+    ): Promise<string> => {
+      const iterations = 1000;
+      const hash = 'SHA256';
+      const keyLen = 32;
+
+      // Convert strings to base64 (equivalent to utf8ToBuffer)
+      const passwordBase64 = btoa(password);
+      const userIdBase64 = btoa(userId);
+
+      const masterKey = await pbkdf2Hash(
+        passwordBase64,
+        userIdBase64,
+        iterations,
+        keyLen,
+        hash
+      );
+      return masterKey;
+    };
+
+    // Equivalent to encodePrivateKey
+    const encodePrivateKeyE2E = async (
+      privateKey: string,
+      password: string,
+      userId: string
+    ): Promise<string> => {
+      const masterKey = await generateMasterKeyE2E(password, userId);
+
+      // Generate random 16-byte IV (equivalent to randomBytes(16))
+      const ivBase64 = await randomBytes(16);
+
+      // Convert private key to base64 (equivalent to utf8ToBuffer)
+      const privateKeyBase64 = btoa(privateKey);
+
+      // Convert base64 masterKey to hex format for AES
+      const masterKeyHex = base64ToHex(masterKey);
+      const ivHex = base64ToHex(ivBase64);
+
+      // Encrypt the private key
+      const encryptedData = await aesEncrypt(
+        privateKeyBase64,
+        masterKeyHex,
+        ivHex
+      );
+
+      // Join IV and encrypted data (equivalent to joinVectorData)
+      return joinVectorData(ivBase64, encryptedData);
+    };
+
+    // Equivalent to decodePrivateKey
+    const decodePrivateKeyE2E = async (
+      encodedPrivateKey: string,
+      password: string,
+      userId: string
+    ): Promise<string> => {
+      const masterKey = await generateMasterKeyE2E(password, userId);
+
+      // Split IV and cipher text (equivalent to splitVectorData)
+      const [ivBase64, encryptedData] = splitVectorData(encodedPrivateKey);
+
+      // Convert to hex format for AES
+      const masterKeyHex = base64ToHex(masterKey);
+      const ivHex = base64ToHex(ivBase64);
+
+      // Decrypt the private key
+      const decryptedBase64 = await aesDecrypt(
+        encryptedData,
+        masterKeyHex,
+        ivHex
+      );
+
+      // Convert back from base64 (equivalent to toString)
+      return atob(decryptedBase64);
+    };
+
+    // Helper function to convert base64 to hex
+    const base64ToHex = (base64: string): string => {
+      const binaryString = atob(base64);
+      let hex = '';
+      for (let i = 0; i < binaryString.length; i++) {
+        const hexChar = binaryString
+          .charCodeAt(i)
+          .toString(16)
+          .padStart(2, '0');
+        hex += hexChar;
+      }
+      return hex;
+    };
+
+    // Helper function to join IV and encrypted data (equivalent to joinVectorData)
+    const joinVectorData = (iv: string, data: string): string => {
+      // Create a combined structure - in a real implementation, you might use a different format
+      const combined = {
+        iv,
+        data,
+      };
+      return btoa(JSON.stringify(combined));
+    };
+
+    // Helper function to split IV and encrypted data (equivalent to splitVectorData)
+    const splitVectorData = (combined: string): [string, string] => {
+      const parsed = JSON.parse(atob(combined));
+      return [parsed.iv, parsed.data];
+    };
 
     for (const test of tests) {
       try {
@@ -545,6 +709,19 @@ export default function App() {
           {loading['rsa-jwk-roundtrip-test']
             ? 'Loading...'
             : results['rsa-jwk-roundtrip-test'] || 'Not run'}
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>E2E Encryption Workflow Tests:</Text>
+
+        <Text style={styles.testLabel}>
+          E2E Keys Workflow (Create → Encode → Decode → Verify):
+        </Text>
+        <Text style={styles.result}>
+          {loading['e2e-keys-workflow-test']
+            ? 'Loading...'
+            : results['e2e-keys-workflow-test'] || 'Not run'}
         </Text>
       </View>
 
