@@ -1,4 +1,4 @@
-package com.rocketchat.mobilecrypto.algorithms
+package chat.rocket.mobilecrypto.algorithms
 
 import java.io.File
 import java.io.FileInputStream

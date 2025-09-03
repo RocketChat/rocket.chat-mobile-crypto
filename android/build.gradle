@@ -26,7 +26,7 @@ def getExtOrIntegerDefault(name) {
 }
 
 android {
-  namespace "com.rocketchat.mobilecrypto"
+  namespace "chat.rocket.mobilecrypto"
 
   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 

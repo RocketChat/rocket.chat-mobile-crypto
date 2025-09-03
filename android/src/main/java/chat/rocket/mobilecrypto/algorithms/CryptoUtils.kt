@@ -1,4 +1,4 @@
-package com.rocketchat.mobilecrypto.algorithms
+package chat.rocket.mobilecrypto.algorithms
 
 import android.util.Base64
 import java.nio.charset.StandardCharsets

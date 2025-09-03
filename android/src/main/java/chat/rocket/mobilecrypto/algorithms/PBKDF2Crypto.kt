@@ -1,4 +1,4 @@
-package com.rocketchat.mobilecrypto.algorithms
+package chat.rocket.mobilecrypto.algorithms
 
 import java.security.NoSuchAlgorithmException
 import org.spongycastle.crypto.ExtendedDigest

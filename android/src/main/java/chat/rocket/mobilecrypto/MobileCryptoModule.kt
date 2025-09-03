@@ -1,16 +1,16 @@
-package com.rocketchat.mobilecrypto
+package chat.rocket.mobilecrypto
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.bridge.ReadableMap
-import com.rocketchat.mobilecrypto.algorithms.AESCrypto
-import com.rocketchat.mobilecrypto.algorithms.FileUtils
-import com.rocketchat.mobilecrypto.algorithms.HMACCrypto
-import com.rocketchat.mobilecrypto.algorithms.PBKDF2Crypto
-import com.rocketchat.mobilecrypto.algorithms.RSACrypto
-import com.rocketchat.mobilecrypto.algorithms.RandomUtils
-import com.rocketchat.mobilecrypto.algorithms.SHACrypto
+import chat.rocket.mobilecrypto.algorithms.AESCrypto
+import chat.rocket.mobilecrypto.algorithms.FileUtils
+import chat.rocket.mobilecrypto.algorithms.HMACCrypto
+import chat.rocket.mobilecrypto.algorithms.PBKDF2Crypto
+import chat.rocket.mobilecrypto.algorithms.RSACrypto
+import chat.rocket.mobilecrypto.algorithms.RandomUtils
+import chat.rocket.mobilecrypto.algorithms.SHACrypto
 
 @ReactModule(name = MobileCryptoModule.NAME)
 class MobileCryptoModule(reactContext: ReactApplicationContext) :

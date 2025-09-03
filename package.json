@@ -155,7 +155,7 @@
     "type": "modules",
     "jsSrcsDir": "src",
     "android": {
-      "javaPackageName": "com.rocketchat.mobilecrypto"
+      "javaPackageName": "chat.rocket.mobilecrypto"
     }
   },
   "create-react-native-library": {

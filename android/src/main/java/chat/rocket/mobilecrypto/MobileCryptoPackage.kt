@@ -1,4 +1,4 @@
-package com.rocketchat.mobilecrypto
+package chat.rocket.mobilecrypto
 
 import com.facebook.react.BaseReactPackage
 import com.facebook.react.bridge.NativeModule
