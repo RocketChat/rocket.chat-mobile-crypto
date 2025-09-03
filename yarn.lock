@@ -3104,6 +3104,7 @@ __metadata:
     "@react-native/typescript-config": 0.79.0
     "@rocket.chat/mobile-crypto": "workspace:*"
     "@types/react": ^19.0.0
+    ejson: ^2.2.3
     js-base64: ^3.7.8
     react: 19.0.0
     react-native: 0.79.0
@@ -5425,6 +5426,13 @@ __metadata:
   version: 1.1.1
   resolution: "ee-first@npm:1.1.1"
   checksum: 1b4cac778d64ce3b582a7e26b218afe07e207a0f9bfe13cc7395a6d307849cfe361e65033c3251e00c27dd060cab43014c2d6b2647676135e18b77d2d05b3f4f
+  languageName: node
+  linkType: hard
+
+"ejson@npm:^2.2.3":
+  version: 2.2.3
+  resolution: "ejson@npm:2.2.3"
+  checksum: d6f6fc3bee140cfb3fcf034bbbd4eff8c7aafcfce637e068f6a7d3a1aad8a4812ba214651605243a62932b7e22caff15e5dfe831933f29ed36173b9241517384
   languageName: node
   linkType: hard
 
