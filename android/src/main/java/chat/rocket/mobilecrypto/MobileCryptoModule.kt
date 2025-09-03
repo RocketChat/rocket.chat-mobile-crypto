@@ -16,9 +16,6 @@ import chat.rocket.mobilecrypto.algorithms.SHACrypto
 class MobileCryptoModule(reactContext: ReactApplicationContext) :
   NativeMobileCryptoSpec(reactContext) {
 
-  // Initialize algorithm modules
-  private val aesCrypto = AESCrypto(reactContext)
-
   override fun getName(): String {
     return NAME
   }
@@ -75,7 +72,7 @@ class MobileCryptoModule(reactContext: ReactApplicationContext) :
 
   override fun aesEncrypt(dataBase64: String, keyHex: String, ivHex: String, promise: Promise) {
     try {
-      val result = aesCrypto.encryptBase64(dataBase64, keyHex, ivHex)
+      val result = AESCrypto.encryptBase64(dataBase64, keyHex, ivHex)
       promise.resolve(result)
     } catch (e: Exception) {
       promise.reject("-1", e.message)
@@ -84,7 +81,7 @@ class MobileCryptoModule(reactContext: ReactApplicationContext) :
 
   override fun aesDecrypt(dataBase64: String, keyHex: String, ivHex: String, promise: Promise) {
     try {
-      val result = aesCrypto.decryptBase64(dataBase64, keyHex, ivHex)
+      val result = AESCrypto.decryptBase64(dataBase64, keyHex, ivHex)
       promise.resolve(result)
     } catch (e: Exception) {
       promise.reject("-1", e.message)
@@ -93,7 +90,7 @@ class MobileCryptoModule(reactContext: ReactApplicationContext) :
 
   override fun aesEncryptFile(filePath: String, base64UrlKey: String, base64Iv: String, promise: Promise) {
     try {
-      val result = aesCrypto.encryptFile(filePath, base64UrlKey, base64Iv)
+      val result = AESCrypto.encryptFile(filePath, base64UrlKey, base64Iv, reactApplicationContext)
       promise.resolve(result)
     } catch (e: Exception) {
       promise.reject("-1", e.message)
@@ -102,7 +99,7 @@ class MobileCryptoModule(reactContext: ReactApplicationContext) :
 
   override fun aesDecryptFile(filePath: String, base64UrlKey: String, base64Iv: String, promise: Promise) {
     try {
-      val result = aesCrypto.decryptFile(filePath, base64UrlKey, base64Iv)
+      val result = AESCrypto.decryptFile(filePath, base64UrlKey, base64Iv, reactApplicationContext)
       promise.resolve(result)
     } catch (e: Exception) {
       promise.reject("-1", e.message)

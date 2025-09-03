@@ -14,15 +14,13 @@ import javax.crypto.spec.SecretKeySpec
 /**
  * AES encryption and decryption operations
  */
-class AESCrypto(private val reactContext: ReactApplicationContext) {
+object AESCrypto {
 
-    companion object {
-        private const val CIPHER_ALGORITHM = "AES/CBC/PKCS7Padding"
-        private const val FILE_CIPHER_ALGORITHM = "AES/CTR/NoPadding"
-        private const val KEY_ALGORITHM = "AES"
-        private const val BUFFER_SIZE = 4096
-        private val EMPTY_IV_SPEC = IvParameterSpec(ByteArray(16) { 0 })
-    }
+    private const val CIPHER_ALGORITHM = "AES/CBC/PKCS7Padding"
+    private const val FILE_CIPHER_ALGORITHM = "AES/CTR/NoPadding"
+    private const val KEY_ALGORITHM = "AES"
+    private const val BUFFER_SIZE = 4096
+    private val EMPTY_IV_SPEC = IvParameterSpec(ByteArray(16) { 0 })
 
     /**
      * Encrypt Base64-encoded data using AES-CBC with PKCS7 padding
@@ -61,21 +59,21 @@ class AESCrypto(private val reactContext: ReactApplicationContext) {
     /**
      * Encrypt a file using AES-CTR mode
      */
-    fun encryptFile(inputFile: String, base64UrlKey: String, base64Iv: String): String {
-        return processFile(inputFile, base64UrlKey, base64Iv, "encrypt")
+    fun encryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, reactContext: ReactApplicationContext): String {
+        return processFile(inputFile, base64UrlKey, base64Iv, "encrypt", reactContext)
     }
 
     /**
      * Decrypt a file using AES-CTR mode
      */
-    fun decryptFile(inputFile: String, base64UrlKey: String, base64Iv: String): String {
-        return processFile(inputFile, base64UrlKey, base64Iv, "decrypt")
+    fun decryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, reactContext: ReactApplicationContext): String {
+        return processFile(inputFile, base64UrlKey, base64Iv, "decrypt", reactContext)
     }
 
     /**
      * Process file encryption/decryption using AES-CTR mode
      */
-    private fun processFile(inputFile: String, base64UrlKey: String, base64Iv: String, mode: String): String {
+    private fun processFile(inputFile: String, base64UrlKey: String, base64Iv: String, mode: String, reactContext: ReactApplicationContext): String {
         // Decode the key and IV
         val key = Base64.decode(base64UrlKey, Base64.URL_SAFE or Base64.NO_WRAP)
         val iv = CryptoUtils.decodeBase64NoWrap(base64Iv)
