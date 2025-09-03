@@ -47,14 +47,6 @@ export function aesDecrypt(
   return MobileCrypto.aesDecrypt(dataBase64, keyHex, ivHex);
 }
 
-export function aesDecryptCtr(
-  dataBase64: string,
-  keyHex: string,
-  ivHex: string
-): Promise<string> {
-  return MobileCrypto.aesDecryptCtr(dataBase64, keyHex, ivHex);
-}
-
 export function aesEncryptFile(
   filePath: string,
   base64UrlKey: string,
