@@ -1,0 +1,31 @@
+import { type JWK } from './NativeMobileCrypto';
+export type { JWK };
+export declare function shaBase64(data: string, algorithm: string): Promise<string>;
+export declare function shaUtf8(data: string, algorithm: string): Promise<string>;
+export declare function pbkdf2Hash(pwdBase64: string, saltBase64: string, iterations: number, keyLen: number, hash: string): Promise<string>;
+export declare function hmac256(data: string, key: string): Promise<string>;
+export declare function aesEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>;
+export declare function aesDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>;
+export declare function aesEncryptFile(filePath: string, base64UrlKey: string, base64Iv: string): Promise<string>;
+export declare function aesDecryptFile(filePath: string, base64UrlKey: string, base64Iv: string): Promise<string>;
+export declare function randomUuid(): Promise<string>;
+export declare function randomKey(length: number): Promise<string>;
+export declare function randomBytes(size: number): Promise<string>;
+export declare function rsaGenerateKeys(keySize?: number): Promise<{
+    public: string;
+    private: string;
+}>;
+export declare function rsaEncrypt(message: string, publicKey: string): Promise<string>;
+export declare function rsaEncrypt64(message: string, publicKey: string): Promise<string>;
+export declare function rsaDecrypt(encodedMessage: string, privateKey: string): Promise<string>;
+export declare function rsaDecrypt64(encodedMessage: string, privateKey: string): Promise<string>;
+export declare function rsaSign(message: string, privateKey: string, hash?: string): Promise<string>;
+export declare function rsaSign64(message: string, privateKey: string, hash?: string): Promise<string>;
+export declare function rsaVerify(signature: string, message: string, publicKey: string, hash?: string): Promise<boolean>;
+export declare function rsaVerify64(signature: string, message: string, publicKey: string, hash?: string): Promise<boolean>;
+export declare function rsaImportKey(jwk: JWK): Promise<string>;
+export declare function rsaExportKey(pem: string): Promise<JWK>;
+export declare function rsaPemToJwk(pemKey: string): Promise<JWK>;
+export declare function calculateFileChecksum(filePath: string): Promise<string>;
+export declare function getRandomValues(length: number): Promise<string>;
+//# sourceMappingURL=index.d.ts.map
