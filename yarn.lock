@@ -3104,8 +3104,6 @@ __metadata:
     "@react-native/typescript-config": 0.79.0
     "@rocket.chat/mobile-crypto": "workspace:*"
     "@types/react": ^19.0.0
-    ejson: ^2.2.3
-    js-base64: ^3.7.8
     react: 19.0.0
     react-native: 0.79.0
     react-native-builder-bob: ^0.40.13
@@ -5426,13 +5424,6 @@ __metadata:
   version: 1.1.1
   resolution: "ee-first@npm:1.1.1"
   checksum: 1b4cac778d64ce3b582a7e26b218afe07e207a0f9bfe13cc7395a6d307849cfe361e65033c3251e00c27dd060cab43014c2d6b2647676135e18b77d2d05b3f4f
-  languageName: node
-  linkType: hard
-
-"ejson@npm:^2.2.3":
-  version: 2.2.3
-  resolution: "ejson@npm:2.2.3"
-  checksum: d6f6fc3bee140cfb3fcf034bbbd4eff8c7aafcfce637e068f6a7d3a1aad8a4812ba214651605243a62932b7e22caff15e5dfe831933f29ed36173b9241517384
   languageName: node
   linkType: hard
 
@@ -8270,13 +8261,6 @@ __metadata:
     "@sideway/formula": ^3.0.1
     "@sideway/pinpoint": ^2.0.0
   checksum: 66ed454fee3d8e8da1ce21657fd2c7d565d98f3e539d2c5c028767e5f38cbd6297ce54df8312d1d094e62eb38f9452ebb43da4ce87321df66cf5e3f128cbc400
-  languageName: node
-  linkType: hard
-
-"js-base64@npm:^3.7.8":
-  version: 3.7.8
-  resolution: "js-base64@npm:3.7.8"
-  checksum: 891746b0f23aea7dd466c5ef2d349b093944a25eca6093c09b2cbb99bc47a94237c63b91623bbc203306b7c72aab5112e90378544bceef3fd0eb9ab86d7af496
   languageName: node
   linkType: hard
 
