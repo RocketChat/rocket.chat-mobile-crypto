@@ -65,10 +65,7 @@ object RSACrypto {
      * @return Base64-encoded encrypted data
      */
     fun encrypt(message: String, publicKeyPem: String): String {
-        val publicKeyBytes = pemToKey(publicKeyPem)
-        val keySpec = X509EncodedKeySpec(publicKeyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-        val publicKey = keyFactory.generatePublic(keySpec)
+        val publicKey = createPublicKeyFromPem(publicKeyPem)
         
         val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
         cipher.init(Cipher.ENCRYPT_MODE, publicKey)
@@ -84,10 +81,7 @@ object RSACrypto {
      * @return Base64-encoded encrypted data
      */
     fun encryptBase64(messageBase64: String, publicKeyPem: String): String {
-        val publicKeyBytes = pemToKey(publicKeyPem)
-        val keySpec = X509EncodedKeySpec(publicKeyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-        val publicKey = keyFactory.generatePublic(keySpec)
+        val publicKey = createPublicKeyFromPem(publicKeyPem)
         
         val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
         cipher.init(Cipher.ENCRYPT_MODE, publicKey)
@@ -321,6 +315,26 @@ object RSACrypto {
         }
         val base64Content = lines.joinToString("")
         return Base64.decode(base64Content, Base64.DEFAULT)
+    }
+
+    private fun createPublicKeyFromPem(publicKeyPem: String): PublicKey {
+        val keyData = pemToData(publicKeyPem)
+        val isRsaPkcs1 = publicKeyPem.contains("RSA")
+        val keyFactory = KeyFactory.getInstance("RSA")
+        
+        return if (isRsaPkcs1) {
+            // PKCS#1 RSA PUBLIC KEY format - need to convert to X.509
+            val inputStream = ASN1InputStream(keyData)
+            val obj = inputStream.readObject()
+            val rsaPublicKey = org.spongycastle.asn1.pkcs.RSAPublicKey.getInstance(obj)
+            
+            val keySpec = RSAPublicKeySpec(rsaPublicKey.modulus, rsaPublicKey.publicExponent)
+            keyFactory.generatePublic(keySpec)
+        } else {
+            // X.509 SubjectPublicKeyInfo format
+            val keySpec = X509EncodedKeySpec(keyData)
+            keyFactory.generatePublic(keySpec)
+        }
     }
 
     private fun pemToData(pemKey: String): ByteArray {
