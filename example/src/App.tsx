@@ -320,6 +320,71 @@ export default function App() {
         },
         expected: 'ROUNDTRIP PASS',
       },
+      {
+        key: 'rsa-encrypt-pkcs1-test',
+        label: 'RSA Encrypt with PKCS#1 Key (from JWK)',
+        fn: async () => {
+          try {
+            // Generate a key pair and export to JWK
+            const keyPair = await rsaGenerateKeys(2048);
+            const publicJwk = await rsaExportKey(keyPair.public);
+
+            // Import JWK to get PKCS#1 format key
+            const pkcs1PublicKey = await rsaImportKey(publicJwk);
+
+            // Verify it's PKCS#1 format (contains "RSA PUBLIC KEY")
+            if (!pkcs1PublicKey.includes('RSA PUBLIC KEY')) {
+              return 'ERROR: Expected PKCS#1 format key';
+            }
+
+            const message = 'Test PKCS#1 encryption!';
+
+            // Test encryption with PKCS#1 key
+            const encrypted = await rsaEncrypt(message, pkcs1PublicKey);
+
+            // Decrypt with original private key to verify
+            const decrypted = await rsaDecrypt(encrypted, keyPair.private);
+
+            return decrypted === message
+              ? 'PKCS#1 ENCRYPT OK'
+              : `FAIL: got "${decrypted}"`;
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'PKCS#1 ENCRYPT OK',
+      },
+      {
+        key: 'rsa-encrypt-x509-test',
+        label: 'RSA Encrypt with X.509 Key (standard)',
+        fn: async () => {
+          try {
+            // Generate standard X.509 key pair
+            const keyPair = await rsaGenerateKeys(2048);
+
+            // Verify it's X.509 format (contains "PUBLIC KEY")
+            if (
+              !keyPair.public.includes('PUBLIC KEY') ||
+              keyPair.public.includes('RSA PUBLIC KEY')
+            ) {
+              return 'ERROR: Expected X.509 format key';
+            }
+
+            const message = 'Test X.509 encryption!';
+
+            // Test encryption with X.509 key
+            const encrypted = await rsaEncrypt(message, keyPair.public);
+            const decrypted = await rsaDecrypt(encrypted, keyPair.private);
+
+            return decrypted === message
+              ? 'X.509 ENCRYPT OK'
+              : `FAIL: got "${decrypted}"`;
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'X.509 ENCRYPT OK',
+      },
     ];
 
     for (const test of tests) {
@@ -561,6 +626,24 @@ export default function App() {
               {loading['rsa-jwk-roundtrip-test']
                 ? 'Loading...'
                 : results['rsa-jwk-roundtrip-test'] || 'Not run'}
+            </Text>
+
+            <Text style={styles.testLabel}>
+              RSA Encrypt with PKCS#1 Key (from JWK):
+            </Text>
+            <Text style={styles.result}>
+              {loading['rsa-encrypt-pkcs1-test']
+                ? 'Loading...'
+                : results['rsa-encrypt-pkcs1-test'] || 'Not run'}
+            </Text>
+
+            <Text style={styles.testLabel}>
+              RSA Encrypt with X.509 Key (standard):
+            </Text>
+            <Text style={styles.result}>
+              {loading['rsa-encrypt-x509-test']
+                ? 'Loading...'
+                : results['rsa-encrypt-x509-test'] || 'Not run'}
             </Text>
           </View>
 
