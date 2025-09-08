@@ -88,6 +88,24 @@ class MobileCryptoModule(reactContext: ReactApplicationContext) :
     }
   }
 
+  override fun aesGcmEncrypt(dataBase64: String, keyHex: String, ivHex: String, promise: Promise) {
+    try {
+      val result = AESCrypto.encryptGcmBase64(dataBase64, keyHex, ivHex)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
+  override fun aesGcmDecrypt(dataBase64: String, keyHex: String, ivHex: String, promise: Promise) {
+    try {
+      val result = AESCrypto.decryptGcmBase64(dataBase64, keyHex, ivHex)
+      promise.resolve(result)
+    } catch (e: Exception) {
+      promise.reject("-1", e.message)
+    }
+  }
+
   override fun aesEncryptFile(filePath: String, base64UrlKey: String, base64Iv: String, promise: Promise) {
     try {
       val result = AESCrypto.encryptFile(filePath, base64UrlKey, base64Iv, reactApplicationContext)

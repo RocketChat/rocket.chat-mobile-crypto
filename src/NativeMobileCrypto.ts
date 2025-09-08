@@ -36,6 +36,16 @@ export interface Spec extends TurboModule {
     keyHex: string,
     ivHex: string
   ): Promise<string>;
+  aesGcmEncrypt(
+    dataBase64: string,
+    keyHex: string,
+    ivHex: string
+  ): Promise<string>;
+  aesGcmDecrypt(
+    dataBase64: string,
+    keyHex: string,
+    ivHex: string
+  ): Promise<string>;
   aesEncryptFile(
     filePath: string,
     base64UrlKey: string,
