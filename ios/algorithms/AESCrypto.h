@@ -27,6 +27,24 @@ NS_ASSUME_NONNULL_BEGIN
 + (nullable NSString *)decryptBase64:(NSString *)dataBase64 keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex;
 
 /**
+ * Encrypt Base64-encoded data using AES-256-GCM
+ * @param dataBase64 Base64-encoded data to encrypt
+ * @param keyHex 256-bit (32 bytes) key in hexadecimal format
+ * @param ivHex 96-bit (12 bytes) IV in hexadecimal format, or nil to use zero IV
+ * @return Base64-encoded encrypted data with authentication tag, nil if encryption fails
+ */
++ (nullable NSString *)encryptGcmBase64:(NSString *)dataBase64 keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex;
+
+/**
+ * Decrypt Base64-encoded data using AES-256-GCM
+ * @param ciphertext Base64-encoded ciphertext with authentication tag to decrypt
+ * @param keyHex 256-bit (32 bytes) key in hexadecimal format
+ * @param ivHex 96-bit (12 bytes) IV in hexadecimal format, or nil to use zero IV
+ * @return Base64-encoded decrypted data, nil if decryption fails or authentication failure
+ */
++ (nullable NSString *)decryptGcmBase64:(NSString *)ciphertext keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex;
+
+/**
  * Encrypt a file using AES-CTR mode
  * @param filePath Path to the file to encrypt
  * @param base64UrlKey Base64URL-encoded key

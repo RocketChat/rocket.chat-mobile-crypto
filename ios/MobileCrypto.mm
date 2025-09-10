@@ -132,6 +132,42 @@ RCT_EXPORT_MODULE(MobileCrypto)
     }
 }
 
+- (void)aesGcmEncrypt:(NSString *)dataBase64
+               keyHex:(NSString *)keyHex
+                ivHex:(NSString *)ivHex
+              resolve:(RCTPromiseResolveBlock)resolve
+               reject:(RCTPromiseRejectBlock)reject {
+    @try {
+        if (!dataBase64 || dataBase64.length == 0) {
+            resolve([NSNull null]);
+            return;
+        }
+        
+        NSString *result = [AESCrypto encryptGcmBase64:dataBase64 keyHex:keyHex ivHex:ivHex];
+        resolve(result ?: [NSNull null]);
+    } @catch (NSException *exception) {
+        reject(@"-1", exception.reason, nil);
+    }
+}
+
+- (void)aesGcmDecrypt:(NSString *)dataBase64
+               keyHex:(NSString *)keyHex
+                ivHex:(NSString *)ivHex
+              resolve:(RCTPromiseResolveBlock)resolve
+               reject:(RCTPromiseRejectBlock)reject {
+    @try {
+        if (!dataBase64 || dataBase64.length == 0) {
+            resolve([NSNull null]);
+            return;
+        }
+        
+        NSString *result = [AESCrypto decryptGcmBase64:dataBase64 keyHex:keyHex ivHex:ivHex];
+        resolve(result ?: [NSNull null]);
+    } @catch (NSException *exception) {
+        reject(@"-1", exception.reason, nil);
+    }
+}
+
 - (void)aesEncryptFile:(NSString *)filePath
           base64UrlKey:(NSString *)base64UrlKey
               base64Iv:(NSString *)base64Iv

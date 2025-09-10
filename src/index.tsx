@@ -47,6 +47,22 @@ export function aesDecrypt(
   return MobileCrypto.aesDecrypt(dataBase64, keyHex, ivHex);
 }
 
+export function aesGcmEncrypt(
+  dataBase64: string,
+  keyHex: string,
+  ivHex: string
+): Promise<string> {
+  return MobileCrypto.aesGcmEncrypt(dataBase64, keyHex, ivHex);
+}
+
+export function aesGcmDecrypt(
+  dataBase64: string,
+  keyHex: string,
+  ivHex: string
+): Promise<string> {
+  return MobileCrypto.aesGcmDecrypt(dataBase64, keyHex, ivHex);
+}
+
 export function aesEncryptFile(
   filePath: string,
   base64UrlKey: string,
