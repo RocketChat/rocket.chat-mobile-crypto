@@ -18,15 +18,13 @@ Pod::Spec.new do |s|
   s.swift_version = "5.0"
   s.requires_arc = true
   
-  # Ensure Swift bridging header is available
-  s.module_name = "MobileCrypto"
-  
-  # Ensure Swift files are compiled with the module
+  # Minimal module configuration
   s.pod_target_xcconfig = {
-    'DEFINES_MODULE' => 'YES',
-    'SWIFT_OBJC_INTERFACE_HEADER_NAME' => 'MobileCrypto-Swift.h'
+    'DEFINES_MODULE' => 'YES'
   }
-
+  
+  # Ensure Swift files are properly compiled and linked
+  s.frameworks = 'Foundation'
 
   install_modules_dependencies(s)
 end

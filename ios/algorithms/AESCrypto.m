@@ -1,7 +1,10 @@
 #import "AESCrypto.h"
 #import "CryptoUtils.h"
 #import <CommonCrypto/CommonCryptor.h>
+
+#if __has_include("MobileCrypto-Swift.h")
 #import "MobileCrypto-Swift.h"
+#endif
 
 @implementation AESCrypto
 
@@ -40,11 +43,21 @@
 }
 
 + (nullable NSString *)encryptGcmBase64:(NSString *)dataBase64 keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex {
+#if __has_include("MobileCrypto-Swift.h")
     return [AESGCMCrypto encryptGcmBase64:dataBase64 keyHex:keyHex ivHex:ivHex];
+#else
+    NSLog(@"[MobileCrypto] GCM encryption not available - Swift module not linked");
+    return nil;
+#endif
 }
 
 + (nullable NSString *)decryptGcmBase64:(NSString *)ciphertext keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex {
+#if __has_include("MobileCrypto-Swift.h")
     return [AESGCMCrypto decryptGcmBase64:ciphertext keyHex:keyHex ivHex:ivHex];
+#else
+    NSLog(@"[MobileCrypto] GCM decryption not available - requires iOS 13.0+ and Swift module");
+    return nil;
+#endif
 }
 
 + (nullable NSString *)encryptFile:(NSString *)filePath base64UrlKey:(NSString *)base64UrlKey base64Iv:(NSString *)base64Iv {
