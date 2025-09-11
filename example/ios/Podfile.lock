@@ -1991,7 +1991,7 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: cd4bd90f051e3658c83cc00e87c603dfe1b75947
-  MobileCrypto: c3f48f1463d932a67b49e426f46a509599b043a8
+  MobileCrypto: 4046f0d04d51a82a32c8f0fd6c384068f8da73dd
   RCT-Folly: 36fe2295e44b10d831836cc0d1daec5f8abcf809
   RCTDeprecation: c147f8912f768e5eedbc5f115b2b223d007d9fe3
   RCTRequired: a71a7e9efd6546704d5abc683e0b68fcaa759861
