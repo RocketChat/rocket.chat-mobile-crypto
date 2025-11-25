@@ -11,20 +11,24 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9C482D6FB341DA86E48F7052 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		D8B428723E13E14E4F76D6E3 /* libPods-MobileCryptoExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DF9155010867FA48B235FDE /* libPods-MobileCryptoExample.a */; };
+		AE1234567890123456789001 /* AESGCMNativeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = AE1234567890123456789000 /* AESGCMNativeTest.m */; };
+		BC4681FE94B0DD581590F368 /* libPods-MobileCryptoExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F2E025086E7CEA35DB442049 /* libPods-MobileCryptoExample.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		10C68551FCE53452DBDDD0D6 /* Pods-MobileCryptoExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileCryptoExample.debug.xcconfig"; path = "Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample.debug.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* MobileCryptoExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileCryptoExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = MobileCryptoExample/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = MobileCryptoExample/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = MobileCryptoExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		4FAE7EBF632E416D80D7A006 /* Pods-MobileCryptoExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileCryptoExample.release.xcconfig"; path = "Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample.release.xcconfig"; sourceTree = "<group>"; };
-		5DF9155010867FA48B235FDE /* libPods-MobileCryptoExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MobileCryptoExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		741B7A080C138C21B0B7884B /* Pods-MobileCryptoExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileCryptoExample.debug.xcconfig"; path = "Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample.debug.xcconfig"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = MobileCryptoExample/AppDelegate.swift; sourceTree = "<group>"; };
+		7AEBD3282E7356AC00B758B9 /* MobileCryptoExample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MobileCryptoExample-Bridging-Header.h"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = MobileCryptoExample/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		AE1234567890123456789000 /* AESGCMNativeTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AESGCMNativeTest.m; path = MobileCryptoExample/AESGCMNativeTest.m; sourceTree = "<group>"; };
+		AE1234567890123456789002 /* AESGCMNativeTest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AESGCMNativeTest.h; path = MobileCryptoExample/AESGCMNativeTest.h; sourceTree = "<group>"; };
+		EB53CB28865FD380398E7C85 /* Pods-MobileCryptoExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileCryptoExample.release.xcconfig"; path = "Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F2E025086E7CEA35DB442049 /* libPods-MobileCryptoExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MobileCryptoExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,7 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D8B428723E13E14E4F76D6E3 /* libPods-MobileCryptoExample.a in Frameworks */,
+				BC4681FE94B0DD581590F368 /* libPods-MobileCryptoExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,9 +48,12 @@
 			children = (
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
+				AE1234567890123456789002 /* AESGCMNativeTest.h */,
+				AE1234567890123456789000 /* AESGCMNativeTest.m */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				7AEBD3282E7356AC00B758B9 /* MobileCryptoExample-Bridging-Header.h */,
 			);
 			name = MobileCryptoExample;
 			sourceTree = "<group>";
@@ -55,7 +62,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				5DF9155010867FA48B235FDE /* libPods-MobileCryptoExample.a */,
+				F2E025086E7CEA35DB442049 /* libPods-MobileCryptoExample.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -92,8 +99,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				10C68551FCE53452DBDDD0D6 /* Pods-MobileCryptoExample.debug.xcconfig */,
-				4FAE7EBF632E416D80D7A006 /* Pods-MobileCryptoExample.release.xcconfig */,
+				741B7A080C138C21B0B7884B /* Pods-MobileCryptoExample.debug.xcconfig */,
+				EB53CB28865FD380398E7C85 /* Pods-MobileCryptoExample.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -105,13 +112,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "MobileCryptoExample" */;
 			buildPhases = (
-				C6689D09FFF8954E233FA6D7 /* [CP] Check Pods Manifest.lock */,
+				B7DD3F9D794C518543D6C9B8 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				FEF2221E12D9F0D0797451E2 /* [CP] Embed Pods Frameworks */,
-				D8D2ACFDA9CD3B09EDB66E83 /* [CP] Copy Pods Resources */,
+				080DFE951E728A2C9B6021A7 /* [CP] Embed Pods Frameworks */,
+				2F813F331DAE83D8B44BAB7C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -183,7 +190,41 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		C6689D09FFF8954E233FA6D7 /* [CP] Check Pods Manifest.lock */ = {
+		080DFE951E728A2C9B6021A7 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		2F813F331DAE83D8B44BAB7C /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B7DD3F9D794C518543D6C9B8 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -205,40 +246,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		D8D2ACFDA9CD3B09EDB66E83 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FEF2221E12D9F0D0797451E2 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MobileCryptoExample/Pods-MobileCryptoExample-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -247,6 +254,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				AE1234567890123456789001 /* AESGCMNativeTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -255,7 +263,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 10C68551FCE53452DBDDD0D6 /* Pods-MobileCryptoExample.debug.xcconfig */;
+			baseConfigurationReference = 741B7A080C138C21B0B7884B /* Pods-MobileCryptoExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -275,6 +283,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = rocketchat.mobilecrypto.example;
 				PRODUCT_NAME = MobileCryptoExample;
+				SWIFT_OBJC_BRIDGING_HEADER = "MobileCryptoExample-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -283,7 +292,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4FAE7EBF632E416D80D7A006 /* Pods-MobileCryptoExample.release.xcconfig */;
+			baseConfigurationReference = EB53CB28865FD380398E7C85 /* Pods-MobileCryptoExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -302,6 +311,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = rocketchat.mobilecrypto.example;
 				PRODUCT_NAME = MobileCryptoExample;
+				SWIFT_OBJC_BRIDGING_HEADER = "MobileCryptoExample-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -376,10 +386,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -448,10 +455,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

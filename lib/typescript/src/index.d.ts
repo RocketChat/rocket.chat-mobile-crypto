@@ -6,6 +6,8 @@ export declare function pbkdf2Hash(pwdBase64: string, saltBase64: string, iterat
 export declare function hmac256(data: string, key: string): Promise<string>;
 export declare function aesEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>;
 export declare function aesDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>;
+export declare function aesGcmEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>;
+export declare function aesGcmDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>;
 export declare function aesEncryptFile(filePath: string, base64UrlKey: string, base64Iv: string): Promise<string>;
 export declare function aesDecryptFile(filePath: string, base64UrlKey: string, base64Iv: string): Promise<string>;
 export declare function randomUuid(): Promise<string>;

@@ -7,6 +7,8 @@ import {
   hmac256,
   aesEncrypt,
   aesDecrypt,
+  aesGcmEncrypt,
+  aesGcmDecrypt,
   randomUuid,
   randomKey,
   randomBytes,
@@ -108,6 +110,58 @@ export default function App() {
           return decrypted === original ? 'PASS' : `FAIL: got ${decrypted}`;
         },
         expected: 'PASS',
+      },
+      {
+        key: 'aes-gcm-encrypt-test',
+        label: 'AES-256-GCM Encrypt ("SGVsbG8gV29ybGQ=", key, iv)', // "Hello World" in base64
+        fn: async () => {
+          const encrypted = await aesGcmEncrypt(
+            'SGVsbG8gV29ybGQ=', // "Hello World" base64
+            '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', // 256-bit key in hex
+            'fedcba9876543210fedcba98' // 96-bit IV in hex (12 bytes)
+          );
+          return encrypted || 'null';
+        },
+        expected: 'encrypted', // We'll verify it's not null and not the original
+      },
+      {
+        key: 'aes-gcm-roundtrip-test',
+        label: 'AES-256-GCM Encrypt->Decrypt Roundtrip',
+        fn: async () => {
+          const original = 'SGVsbG8gV29ybGQ='; // "Hello World" base64
+          const key =
+            '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'; // 256-bit key
+          const iv = 'fedcba9876543210fedcba98'; // 96-bit IV
+
+          const encrypted = await aesGcmEncrypt(original, key, iv);
+          if (!encrypted) return 'encrypt failed';
+
+          const decrypted = await aesGcmDecrypt(encrypted, key, iv);
+          return decrypted === original ? 'PASS' : `FAIL: got ${decrypted}`;
+        },
+        expected: 'PASS',
+      },
+      {
+        key: 'aes-gcm-auth-test',
+        label: 'AES-256-GCM Authentication Test (wrong key)',
+        fn: async () => {
+          const original = 'SGVsbG8gV29ybGQ='; // "Hello World" base64
+          const key =
+            '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+          const wrongKey =
+            '1123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'; // Different key
+          const iv = 'fedcba9876543210fedcba98';
+
+          const encrypted = await aesGcmEncrypt(original, key, iv);
+          if (!encrypted) return 'encrypt failed';
+
+          // Try to decrypt with wrong key - should fail authentication
+          const decrypted = await aesGcmDecrypt(encrypted, wrongKey, iv);
+          return decrypted === null
+            ? 'PASS (auth failed as expected)'
+            : `FAIL: got ${decrypted}`;
+        },
+        expected: 'PASS (auth failed as expected)',
       },
       {
         key: 'random-uuid-test',
@@ -399,6 +453,12 @@ export default function App() {
             result !== 'null' &&
             result !== 'SGVsbG8gV29ybGQ=' &&
             result.length > 0;
+        } else if (test.key === 'aes-gcm-encrypt-test') {
+          // For AES-GCM encrypt, just verify it's not null and not the original base64
+          isCorrect =
+            result !== 'null' &&
+            result !== 'SGVsbG8gV29ybGQ=' &&
+            result.length > 0;
         } else if (test.key === 'random-bytes-test') {
           // For random bytes, check if result starts with "VALID BYTES"
           isCorrect = result.startsWith('VALID BYTES');
@@ -533,6 +593,33 @@ export default function App() {
               {loading['aes-roundtrip-test']
                 ? 'Loading...'
                 : results['aes-roundtrip-test'] || 'Not run'}
+            </Text>
+
+            <Text style={styles.testLabel}>
+              AES-256-GCM Encrypt (Hello World):
+            </Text>
+            <Text style={styles.result}>
+              {loading['aes-gcm-encrypt-test']
+                ? 'Loading...'
+                : results['aes-gcm-encrypt-test'] || 'Not run'}
+            </Text>
+
+            <Text style={styles.testLabel}>
+              AES-256-GCM Encrypt to Decrypt Roundtrip:
+            </Text>
+            <Text style={styles.result}>
+              {loading['aes-gcm-roundtrip-test']
+                ? 'Loading...'
+                : results['aes-gcm-roundtrip-test'] || 'Not run'}
+            </Text>
+
+            <Text style={styles.testLabel}>
+              AES-256-GCM Authentication Test (wrong key):
+            </Text>
+            <Text style={styles.result}>
+              {loading['aes-gcm-auth-test']
+                ? 'Loading...'
+                : results['aes-gcm-auth-test'] || 'Not run'}
             </Text>
 
             <Text style={styles.testLabel}>Random UUID Generation:</Text>

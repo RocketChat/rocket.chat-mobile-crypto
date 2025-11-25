@@ -2,6 +2,8 @@
 #import "CryptoUtils.h"
 #import <CommonCrypto/CommonCryptor.h>
 
+#import <MobileCrypto/MobileCrypto-Swift.h>
+
 @implementation AESCrypto
 
 + (nullable NSString *)encryptBase64:(NSString *)dataBase64 keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex {
@@ -36,6 +38,14 @@
         return [CryptoUtils encodeBase64:result];
     }
     return nil;
+}
+
++ (nullable NSString *)encryptGcmBase64:(NSString *)dataBase64 keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex {
+    return [AESGCMCrypto encryptGcmBase64:dataBase64 keyHex:keyHex ivHex:ivHex];
+}
+
++ (nullable NSString *)decryptGcmBase64:(NSString *)ciphertext keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex {
+    return [AESGCMCrypto decryptGcmBase64:ciphertext keyHex:keyHex ivHex:ivHex];
 }
 
 + (nullable NSString *)encryptFile:(NSString *)filePath base64UrlKey:(NSString *)base64UrlKey base64Iv:(NSString *)base64Iv {
