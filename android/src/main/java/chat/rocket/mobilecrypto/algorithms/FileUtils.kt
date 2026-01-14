@@ -3,11 +3,18 @@ package chat.rocket.mobilecrypto.algorithms
 import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
+import android.content.Context
+import android.net.Uri
 
 /**
  * File-related cryptographic utilities
  */
 object FileUtils {
+    private lateinit var appContext: Context
+
+    fun init(context: Context) {
+        appContext = context.applicationContext
+    }
 
     private const val BUFFER_SIZE = 4096
 
@@ -167,11 +174,24 @@ object FileUtils {
      * @return File object with normalized path
      */
     private fun normalizeFilePath(filePath: String): File {
-        val path = if (filePath.startsWith("file://")) {
-            filePath.substring(7)
-        } else {
-            filePath
+        val uri = Uri.parse(filePath)
+
+        if (uri.scheme == null || uri.scheme == "file") {
+            return File(uri.path ?: filePath)
         }
-        return File(path)
+
+        if (!::appContext.isInitialized) {
+            throw IllegalStateException("FileUtils.init(context) not called")
+        }
+
+        val file = File(appContext.cacheDir, "temp_${System.currentTimeMillis()}")
+
+        appContext.contentResolver.openInputStream(uri)!!.use { input ->
+            file.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+
+        return file
     }
 }
