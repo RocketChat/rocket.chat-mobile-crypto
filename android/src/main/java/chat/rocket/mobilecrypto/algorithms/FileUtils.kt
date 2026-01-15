@@ -2,9 +2,11 @@ package chat.rocket.mobilecrypto.algorithms
 
 import java.io.File
 import java.io.FileInputStream
+import java.io.InputStream
 import java.security.MessageDigest
 import android.content.Context
 import android.net.Uri
+import android.provider.OpenableColumns
 
 /**
  * File-related cryptographic utilities
@@ -51,77 +53,97 @@ object FileUtils {
     /**
      * Calculate checksum of a file using specified algorithm
      * 
-     * @param filePath Path to the file (supports file:// prefix)
+     * @param filePath Path to the file (supports file:// and content:// prefixes)
      * @param algorithm Hash algorithm (SHA-1, SHA-256, SHA-384, SHA-512, MD5)
      * @return Hexadecimal checksum string
      */
     fun calculateChecksum(filePath: String, algorithm: String): String {
-        val file = normalizeFilePath(filePath)
-        
-        val inputStream = FileInputStream(file)
-        val digest = MessageDigest.getInstance(algorithm)
-        val buffer = ByteArray(BUFFER_SIZE)
-        var bytesRead: Int
-        
-        try {
+        getInputStream(filePath).use { inputStream ->
+            val digest = MessageDigest.getInstance(algorithm)
+            val buffer = ByteArray(BUFFER_SIZE)
+            var bytesRead: Int
+            
             while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                 digest.update(buffer, 0, bytesRead)
             }
-        } finally {
-            inputStream.close()
+            
+            val hash = digest.digest()
+            return CryptoUtils.bytesToHex(hash)
         }
-        
-        val hash = digest.digest()
-        return CryptoUtils.bytesToHex(hash)
     }
 
     /**
      * Calculate checksum of a file using specified algorithm and return Base64
      * 
-     * @param filePath Path to the file (supports file:// prefix)
+     * @param filePath Path to the file (supports file:// and content:// prefixes)
      * @param algorithm Hash algorithm (SHA-1, SHA-256, SHA-384, SHA-512, MD5)
      * @return Base64-encoded checksum string
      */
     fun calculateChecksumBase64(filePath: String, algorithm: String): String {
-        val file = normalizeFilePath(filePath)
-        
-        val inputStream = FileInputStream(file)
-        val digest = MessageDigest.getInstance(algorithm)
-        val buffer = ByteArray(BUFFER_SIZE)
-        var bytesRead: Int
-        
-        try {
+        getInputStream(filePath).use { inputStream ->
+            val digest = MessageDigest.getInstance(algorithm)
+            val buffer = ByteArray(BUFFER_SIZE)
+            var bytesRead: Int
+            
             while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                 digest.update(buffer, 0, bytesRead)
             }
-        } finally {
-            inputStream.close()
+            
+            val hash = digest.digest()
+            return CryptoUtils.encodeBase64NoWrap(hash)
         }
-        
-        val hash = digest.digest()
-        return CryptoUtils.encodeBase64NoWrap(hash)
     }
 
     /**
      * Get file size in bytes
      * 
-     * @param filePath Path to the file (supports file:// prefix)
-     * @return File size in bytes
+     * @param filePath Path to the file (supports file:// and content:// prefixes)
+     * @return File size in bytes, or -1 if size cannot be determined
      */
     fun getFileSize(filePath: String): Long {
-        val file = normalizeFilePath(filePath)
-        return file.length()
+        val uri = Uri.parse(filePath)
+
+        return if (uri.scheme == null || uri.scheme == "file") {
+            File(uri.path ?: filePath).length()
+        } else {
+            if (!::appContext.isInitialized) {
+                throw IllegalStateException("FileUtils.init(context) not called")
+            }
+            
+            appContext.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                if (cursor.moveToFirst() && sizeIndex != -1) {
+                    cursor.getLong(sizeIndex)
+                } else {
+                    -1L
+                }
+            } ?: -1L
+        }
     }
 
     /**
      * Check if file exists
      * 
-     * @param filePath Path to the file (supports file:// prefix)
+     * @param filePath Path to the file (supports file:// and content:// prefixes)
      * @return True if file exists
      */
     fun fileExists(filePath: String): Boolean {
-        val file = normalizeFilePath(filePath)
-        return file.exists() && file.isFile
+        val uri = Uri.parse(filePath)
+
+        return if (uri.scheme == null || uri.scheme == "file") {
+            val file = File(uri.path ?: filePath)
+            file.exists() && file.isFile
+        } else {
+            if (!::appContext.isInitialized) {
+                throw IllegalStateException("FileUtils.init(context) not called")
+            }
+            
+            try {
+                appContext.contentResolver.openInputStream(uri)?.use { true } ?: false
+            } catch (e: Exception) {
+                false
+            }
+        }
     }
 
     /**
@@ -140,26 +162,22 @@ object FileUtils {
     /**
      * Calculate multiple checksums for a file
      * 
-     * @param filePath Path to the file (supports file:// prefix)
+     * @param filePath Path to the file (supports file:// and content:// prefixes)
      * @param algorithms List of hash algorithms to use
      * @return Map of algorithm to checksum (hexadecimal)
      */
     fun calculateMultipleChecksums(filePath: String, algorithms: List<String>): Map<String, String> {
-        val file = normalizeFilePath(filePath)
         val digests = algorithms.associateWith { MessageDigest.getInstance(it) }
         
-        val inputStream = FileInputStream(file)
-        val buffer = ByteArray(BUFFER_SIZE)
-        var bytesRead: Int
-        
-        try {
+        getInputStream(filePath).use { inputStream ->
+            val buffer = ByteArray(BUFFER_SIZE)
+            var bytesRead: Int
+            
             while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                 digests.values.forEach { digest ->
                     digest.update(buffer, 0, bytesRead)
                 }
             }
-        } finally {
-            inputStream.close()
         }
         
         return digests.mapValues { (_, digest) ->
@@ -168,30 +186,19 @@ object FileUtils {
     }
 
     /**
-     * Normalize file path by removing file:// prefix if present
-     * 
-     * @param filePath Original file path
-     * @return File object with normalized path
+     * Get input stream for any URI type without creating temp files
      */
-    private fun normalizeFilePath(filePath: String): File {
+    private fun getInputStream(filePath: String): InputStream {
         val uri = Uri.parse(filePath)
 
-        if (uri.scheme == null || uri.scheme == "file") {
-            return File(uri.path ?: filePath)
-        }
-
-        if (!::appContext.isInitialized) {
-            throw IllegalStateException("FileUtils.init(context) not called")
-        }
-
-        val file = File(appContext.cacheDir, "temp_${System.currentTimeMillis()}")
-
-        appContext.contentResolver.openInputStream(uri)!!.use { input ->
-            file.outputStream().use { output ->
-                input.copyTo(output)
+        return if (uri.scheme == null || uri.scheme == "file") {
+            FileInputStream(uri.path ?: filePath)
+        } else {
+            if (!::appContext.isInitialized) {
+                throw IllegalStateException("FileUtils.init(context) not called")
             }
+            appContext.contentResolver.openInputStream(uri)
+                ?: throw IllegalArgumentException("Cannot open input stream for URI: $uri")
         }
-
-        return file
     }
 }
