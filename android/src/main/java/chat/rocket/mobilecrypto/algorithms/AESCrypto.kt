@@ -188,7 +188,7 @@ object AESCrypto {
     }
 
     /**
-     * Get input stream for a file path
+     * Get input stream for a file path with better error handling
      */
     private fun getInputStream(filePath: String, reactContext: ReactApplicationContext): InputStream {
         val uri = Uri.parse(filePath)
@@ -197,7 +197,7 @@ object AESCrypto {
             FileInputStream(uri.path ?: filePath)
         } else {
             reactContext.contentResolver.openInputStream(uri)
-                ?: throw IllegalArgumentException("Cannot open input stream")
+                ?: throw IllegalArgumentException("Cannot open input stream for URI: $uri")
         }
     }
 }
