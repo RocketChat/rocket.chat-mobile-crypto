@@ -16,6 +16,10 @@ import chat.rocket.mobilecrypto.algorithms.SHACrypto
 class MobileCryptoModule(reactContext: ReactApplicationContext) :
   NativeMobileCryptoSpec(reactContext) {
 
+  init {
+    FileUtils.init(reactContext)
+  }
+
   override fun getName(): String {
     return NAME
   }

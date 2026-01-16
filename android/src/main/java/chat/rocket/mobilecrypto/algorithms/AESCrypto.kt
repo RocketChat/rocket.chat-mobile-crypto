@@ -1,5 +1,6 @@
 package chat.rocket.mobilecrypto.algorithms
 
+import android.net.Uri
 import android.util.Base64
 import com.facebook.react.bridge.ReactApplicationContext
 import java.io.File
@@ -93,7 +94,7 @@ object AESCrypto {
         val outputFileObj = File(reactContext.cacheDir, "processed_${UUID.randomUUID()}")
 
         try {
-            getInputStream(inputFile).use { inputStream ->
+            getInputStream(inputFile, reactContext).use { inputStream ->
                 FileOutputStream(outputFileObj).use { fos ->
                     val buffer = ByteArray(BUFFER_SIZE)
                     var numBytesRead: Int
@@ -187,10 +188,16 @@ object AESCrypto {
     }
 
     /**
-     * Get input stream for a file path
+     * Get input stream for a file path with better error handling
      */
-    private fun getInputStream(filePath: String): InputStream {
-        val path = if (filePath.startsWith("file://")) filePath.substring(7) else filePath
-        return FileInputStream(File(path))
+    private fun getInputStream(filePath: String, reactContext: ReactApplicationContext): InputStream {
+        val uri = Uri.parse(filePath)
+
+        return if (uri.scheme == null || uri.scheme == "file") {
+            FileInputStream(uri.path ?: filePath)
+        } else {
+            reactContext.contentResolver.openInputStream(uri)
+                ?: throw IllegalArgumentException("Cannot open input stream for URI: $uri")
+        }
     }
 }
