@@ -7,6 +7,8 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.util.UUID
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
@@ -115,7 +117,7 @@ object AESCrypto {
 
         return if (mode == "decrypt") {
             // Overwrite the input file with the decrypted file
-            val targetPath = if (inputFile.startsWith("file://")) inputFile.substring(7) else inputFile
+            val targetPath = normalizeFilePath(inputFile)
             FileInputStream(outputFileObj).use { inputStream ->
                 FileOutputStream(targetPath).use { fos ->
                     val buffer = ByteArray(BUFFER_SIZE)
@@ -194,10 +196,33 @@ object AESCrypto {
         val uri = Uri.parse(filePath)
 
         return if (uri.scheme == null || uri.scheme == "file") {
-            FileInputStream(uri.path ?: filePath)
+            // Use the decoded path for FileInputStream
+            val normalizedPath = normalizeFilePath(filePath)
+            FileInputStream(normalizedPath)
         } else {
             reactContext.contentResolver.openInputStream(uri)
                 ?: throw IllegalArgumentException("Cannot open input stream for URI: $uri")
+        }
+    }
+
+    /**
+     * Normalize file path by removing file:// prefix and decoding URL-encoded characters
+     * (e.g., %20 for spaces, %D0%9D for Cyrillic chars)
+     */
+    private fun normalizeFilePath(filePath: String): String {
+        var path = filePath
+
+        // Remove file:// prefix if present
+        if (path.startsWith("file://")) {
+            path = path.substring(7)
+        }
+
+        // Decode URL-encoded characters
+        return try {
+            URLDecoder.decode(path, StandardCharsets.UTF_8.toString())
+        } catch (e: Exception) {
+            // If decoding fails, return the original path
+            path
         }
     }
 }

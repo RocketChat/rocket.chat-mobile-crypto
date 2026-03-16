@@ -87,7 +87,8 @@
     NSData *keyData = [CryptoUtils decodeBase64:keyBase64];
     NSData *ivData = [CryptoUtils decodeBase64:base64Iv];
 
-    NSString *normalizedFilePath = [filePath stringByReplacingOccurrencesOfString:@"file://" withString:@""];
+    NSString *path = [filePath stringByReplacingOccurrencesOfString:@"file://" withString:@""];
+    NSString *normalizedFilePath = [path stringByRemovingPercentEncoding] ?: path;
     NSString *outputFileName = [@"processed_" stringByAppendingString:[normalizedFilePath lastPathComponent]];
     NSString *outputFilePath = [[normalizedFilePath stringByDeletingLastPathComponent] stringByAppendingPathComponent:outputFileName];
     
@@ -149,20 +150,29 @@
     [outputStream close];
 
     if (status == kCCSuccess) {
-        NSURL *originalFileURL = [NSURL fileURLWithPath:normalizedFilePath];
-        NSURL *outputFileURL = [NSURL fileURLWithPath:outputFilePath];
+        // For decrypt: return the temp file with sanitized name (to avoid issues with non-ASCII filenames)
+        NSString *originalName = [normalizedFilePath lastPathComponent];
+        NSString *sanitizedName = [originalName stringByReplacingOccurrencesOfString:@"[^a-zA-Z0-9._-]"
+                                                                          withString:@"_"
+                                                                             options:NSRegularExpressionSearch
+                                                                               range:NSMakeRange(0, originalName.length)];
+
+        // Create final file in cache directory with sanitized name
+        NSString *cachePath = NSTemporaryDirectory();
+        NSString *finalPath = [cachePath stringByAppendingPathComponent:[NSString stringWithFormat:@"decrypted_%@", sanitizedName]];
+
         NSError *error = nil;
-        [[NSFileManager defaultManager] replaceItemAtURL:originalFileURL
-                                          withItemAtURL:outputFileURL
-                                         backupItemName:nil
-                                                options:NSFileManagerItemReplacementUsingNewMetadataOnly
-                                       resultingItemURL:nil
-                                                  error:&error];
+        [[NSFileManager defaultManager] removeItemAtPath:finalPath error:nil]; // Remove if exists
+        [[NSFileManager defaultManager] copyItemAtPath:outputFilePath toPath:finalPath error:&error];
+        [[NSFileManager defaultManager] removeItemAtPath:outputFilePath error:nil];
+
         if (error) {
-            NSLog(@"Failed to replace original file: %@", error);
+            NSLog(@"Failed to copy decrypted file: %@", error);
             return nil;
         }
-        return [NSString stringWithFormat:@"file://%@", normalizedFilePath];
+
+        NSLog(@"AESCrypto: Decrypted to temp file: %@", finalPath);
+        return [NSString stringWithFormat:@"file://%@", finalPath];
     } else {
         [[NSFileManager defaultManager] removeItemAtPath:outputFilePath error:nil];
         return nil;
