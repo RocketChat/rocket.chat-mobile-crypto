@@ -114,6 +114,7 @@
     if ([inputStream streamStatus] != NSStreamStatusOpen || [outputStream streamStatus] != NSStreamStatusOpen) {
         [inputStream close];
         [outputStream close];
+        [fileManager removeItemAtPath:outputFilePath error:nil];
         return nil;
     }
 
@@ -125,6 +126,7 @@
         NSLog(@"Failed to create cryptor: %d", status);
         [inputStream close];
         [outputStream close];
+        [fileManager removeItemAtPath:outputFilePath error:nil];
         return nil;
     }
 
