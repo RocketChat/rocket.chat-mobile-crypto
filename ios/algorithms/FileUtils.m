@@ -224,11 +224,11 @@ static const NSUInteger BUFFER_SIZE = 4096;
 
     if ([path hasPrefix:@"file://"]) {
         path = [path substringFromIndex:7];
+        NSString *decodedPath = [path stringByRemovingPercentEncoding];
+        return decodedPath ?: path;
     }
 
-    // Decode URL-encoded characters (e.g., %20 for spaces, %D0%9D for Cyrillic chars)
-    NSString *decodedPath = [path stringByRemovingPercentEncoding];
-    return decodedPath ?: path;
+    return path;
 }
 
 @end

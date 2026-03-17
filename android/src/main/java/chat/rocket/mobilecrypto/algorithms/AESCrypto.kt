@@ -213,14 +213,13 @@ object AESCrypto {
         // Remove file:// prefix if present
         if (path.startsWith("file://")) {
             path = path.substring(7)
+            return try {
+                Uri.decode(path)
+            } catch (e: Exception) {
+                path
+            }
         }
 
-        // Decode URL-encoded characters
-        return try {
-            Uri.decode(path)
-        } catch (e: Exception) {
-            // If decoding fails, return the original path
-            path
-        }
+        return path
     }
 }

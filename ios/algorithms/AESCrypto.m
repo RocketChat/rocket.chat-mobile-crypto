@@ -1,5 +1,6 @@
 #import "AESCrypto.h"
 #import "CryptoUtils.h"
+#import "FileUtils.h"
 #import <CommonCrypto/CommonCryptor.h>
 
 #import <MobileCrypto/MobileCrypto-Swift.h>
@@ -87,14 +88,7 @@
     NSData *keyData = [CryptoUtils decodeBase64:keyBase64];
     NSData *ivData = [CryptoUtils decodeBase64:base64Iv];
 
-    // Use NSURL to properly parse the file path and handle URL encoding
-    NSURL *fileURL = [NSURL URLWithString:filePath];
-    NSString *normalizedFilePath = [fileURL path];
-    if (!normalizedFilePath) {
-        // Fallback: strip file:// and decode
-        NSString *path = [filePath stringByReplacingOccurrencesOfString:@"file://" withString:@""];
-        normalizedFilePath = [path stringByRemovingPercentEncoding] ?: path;
-    }
+    NSString *normalizedFilePath = [FileUtils normalizeFilePath:filePath];
 
     // Check if input file exists
     NSFileManager *fileManager = [NSFileManager defaultManager];
