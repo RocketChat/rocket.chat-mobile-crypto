@@ -7,8 +7,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 import java.util.UUID
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
@@ -219,7 +217,7 @@ object AESCrypto {
 
         // Decode URL-encoded characters
         return try {
-            URLDecoder.decode(path, StandardCharsets.UTF_8.toString())
+            Uri.decode(path)
         } catch (e: Exception) {
             // If decoding fails, return the original path
             path
