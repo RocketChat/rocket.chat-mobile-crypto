@@ -118,6 +118,8 @@
 
     // Validate stream opening
     if ([inputStream streamStatus] != NSStreamStatusOpen || [outputStream streamStatus] != NSStreamStatusOpen) {
+        [inputStream close];
+        [outputStream close];
         return nil;
     }
 
@@ -183,23 +185,21 @@
     }
 
     if (operation == kCCDecrypt) {
-        // For decrypt: overwrite the original file with decrypted content (matches Android behavior)
+        // For decrypt: atomically replace the original file with decrypted content
+        NSURL *originalFileURL = [NSURL fileURLWithPath:normalizedFilePath];
+        NSURL *outputFileURL = [NSURL fileURLWithPath:outputFilePath];
         NSError *error = nil;
-        [[NSFileManager defaultManager] removeItemAtPath:normalizedFilePath error:nil];
-        [[NSFileManager defaultManager] moveItemAtPath:outputFilePath toPath:normalizedFilePath error:&error];
-
-        if (error) {
-            // Try copy as fallback
-            [[NSFileManager defaultManager] copyItemAtPath:outputFilePath toPath:normalizedFilePath error:&error];
+        BOOL success = [[NSFileManager defaultManager] replaceItemAtURL:originalFileURL
+                                                      withItemAtURL:outputFileURL
+                                                     backupItemName:nil
+                                                            options:NSFileManagerItemReplacementUsingNewMetadataOnly
+                                                   resultingItemURL:nil
+                                                              error:&error];
+        if (!success) {
+            NSLog(@"Failed to replace original file: %@", error);
             [[NSFileManager defaultManager] removeItemAtPath:outputFilePath error:nil];
-            if (error) {
-                NSLog(@"Failed to overwrite decrypted file: %@", error);
-                return nil;
-            }
+            return nil;
         }
-
-        NSLog(@"AESCrypto: Decrypted successfully to: %@", normalizedFilePath);
-        // Return the original file path (matches Android behavior)
         return [NSString stringWithFormat:@"file://%@", normalizedFilePath];
     } else {
         // For encrypt: return the processed file path
