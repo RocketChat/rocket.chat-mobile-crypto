@@ -135,13 +135,10 @@
     }
 
     BOOL loopSuccess = YES;
-    size_t totalBytesRead = 0;
-    size_t totalBytesWritten = 0;
 
     while ([inputStream hasBytesAvailable]) {
         NSInteger bytesRead = [inputStream read:buffer maxLength:sizeof(buffer)];
         if (bytesRead > 0) {
-            totalBytesRead += bytesRead;
 
             size_t dataOutMoved;
             status = CCCryptorUpdate(cryptor, buffer, bytesRead, buffer, bufferSize, &dataOutMoved);
@@ -151,7 +148,6 @@
                     loopSuccess = NO;
                     break;
                 }
-                totalBytesWritten += bytesWritten;
             } else {
                 NSLog(@"Cryptor update failed: %d", status);
                 loopSuccess = NO;
@@ -169,7 +165,6 @@
         status = CCCryptorFinal(cryptor, buffer, bufferSize, &finalBytesOut);
         if (status == kCCSuccess && finalBytesOut > 0) {
             [outputStream write:buffer maxLength:finalBytesOut];
-            totalBytesWritten += finalBytesOut;
         } else if (status != kCCSuccess) {
             NSLog(@"Cryptor final failed: %d", status);
         }
@@ -189,13 +184,13 @@
         NSURL *originalFileURL = [NSURL fileURLWithPath:normalizedFilePath];
         NSURL *outputFileURL = [NSURL fileURLWithPath:outputFilePath];
         NSError *error = nil;
-        BOOL success = [[NSFileManager defaultManager] replaceItemAtURL:originalFileURL
-                                                      withItemAtURL:outputFileURL
-                                                     backupItemName:nil
-                                                            options:NSFileManagerItemReplacementUsingNewMetadataOnly
-                                                   resultingItemURL:nil
-                                                              error:&error];
-        if (!success) {
+        NSURL *replacedURL = [[NSFileManager defaultManager] replaceItemAtURL:originalFileURL
+                                                             withItemAtURL:outputFileURL
+                                                            backupItemName:nil
+                                                                   options:NSFileManagerItemReplacementUsingNewMetadataOnly
+                                                          resultingItemURL:nil
+                                                                     error:&error];
+        if (!replacedURL) {
             NSLog(@"Failed to replace original file: %@", error);
             [[NSFileManager defaultManager] removeItemAtPath:outputFilePath error:nil];
             return nil;
