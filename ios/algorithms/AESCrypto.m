@@ -87,15 +87,39 @@
     NSData *keyData = [CryptoUtils decodeBase64:keyBase64];
     NSData *ivData = [CryptoUtils decodeBase64:base64Iv];
 
-    NSString *path = [filePath stringByReplacingOccurrencesOfString:@"file://" withString:@""];
-    NSString *normalizedFilePath = [path stringByRemovingPercentEncoding] ?: path;
+    // Use NSURL to properly parse the file path and handle URL encoding
+    NSURL *fileURL = [NSURL URLWithString:filePath];
+    NSString *normalizedFilePath = [fileURL path];
+    if (!normalizedFilePath) {
+        // Fallback: strip file:// and decode
+        NSString *path = [filePath stringByReplacingOccurrencesOfString:@"file://" withString:@""];
+        normalizedFilePath = [path stringByRemovingPercentEncoding] ?: path;
+    }
+
+    // Check if input file exists
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:normalizedFilePath]) {
+        return nil;
+    }
+
     NSString *outputFileName = [@"processed_" stringByAppendingString:[normalizedFilePath lastPathComponent]];
     NSString *outputFilePath = [[normalizedFilePath stringByDeletingLastPathComponent] stringByAppendingPathComponent:outputFileName];
-    
+
     NSInputStream *inputStream = [NSInputStream inputStreamWithFileAtPath:normalizedFilePath];
     NSOutputStream *outputStream = [NSOutputStream outputStreamToFileAtPath:outputFilePath append:NO];
+
+    // Validate stream creation
+    if (!inputStream || !outputStream) {
+        return nil;
+    }
+
     [inputStream open];
     [outputStream open];
+
+    // Validate stream opening
+    if ([inputStream streamStatus] != NSStreamStatusOpen || [outputStream streamStatus] != NSStreamStatusOpen) {
+        return nil;
+    }
 
     size_t bufferSize = 4096;
     uint8_t buffer[bufferSize];
@@ -108,40 +132,44 @@
         return nil;
     }
 
+    BOOL loopSuccess = YES;
+    size_t totalBytesRead = 0;
+    size_t totalBytesWritten = 0;
+
     while ([inputStream hasBytesAvailable]) {
         NSInteger bytesRead = [inputStream read:buffer maxLength:sizeof(buffer)];
         if (bytesRead > 0) {
+            totalBytesRead += bytesRead;
+
             size_t dataOutMoved;
             status = CCCryptorUpdate(cryptor, buffer, bytesRead, buffer, bufferSize, &dataOutMoved);
             if (status == kCCSuccess) {
-                [outputStream write:buffer maxLength:dataOutMoved];
+                NSInteger bytesWritten = [outputStream write:buffer maxLength:dataOutMoved];
+                if (bytesWritten != (NSInteger)dataOutMoved) {
+                    loopSuccess = NO;
+                    break;
+                }
+                totalBytesWritten += bytesWritten;
             } else {
                 NSLog(@"Cryptor update failed: %d", status);
-                CCCryptorRelease(cryptor);
-                [inputStream close];
-                [outputStream close];
-                return nil;
+                loopSuccess = NO;
+                break;
             }
         } else if (bytesRead < 0) {
             NSLog(@"Input stream read error");
-            CCCryptorRelease(cryptor);
-            [inputStream close];
-            [outputStream close];
-            return nil;
+            loopSuccess = NO;
+            break;
         }
     }
 
-    if (status == kCCSuccess) {
+    if (loopSuccess) {
         size_t finalBytesOut;
         status = CCCryptorFinal(cryptor, buffer, bufferSize, &finalBytesOut);
-        if (status == kCCSuccess) {
+        if (status == kCCSuccess && finalBytesOut > 0) {
             [outputStream write:buffer maxLength:finalBytesOut];
-        } else {
+            totalBytesWritten += finalBytesOut;
+        } else if (status != kCCSuccess) {
             NSLog(@"Cryptor final failed: %d", status);
-            CCCryptorRelease(cryptor);
-            [inputStream close];
-            [outputStream close];
-            return nil;
         }
     }
 
@@ -149,33 +177,33 @@
     [inputStream close];
     [outputStream close];
 
-    if (status == kCCSuccess) {
-        // For decrypt: return the temp file with sanitized name (to avoid issues with non-ASCII filenames)
-        NSString *originalName = [normalizedFilePath lastPathComponent];
-        NSString *sanitizedName = [originalName stringByReplacingOccurrencesOfString:@"[^a-zA-Z0-9._-]"
-                                                                          withString:@"_"
-                                                                             options:NSRegularExpressionSearch
-                                                                               range:NSMakeRange(0, originalName.length)];
-
-        // Create final file in cache directory with sanitized name
-        NSString *cachePath = NSTemporaryDirectory();
-        NSString *finalPath = [cachePath stringByAppendingPathComponent:[NSString stringWithFormat:@"decrypted_%@", sanitizedName]];
-
-        NSError *error = nil;
-        [[NSFileManager defaultManager] removeItemAtPath:finalPath error:nil]; // Remove if exists
-        [[NSFileManager defaultManager] copyItemAtPath:outputFilePath toPath:finalPath error:&error];
-        [[NSFileManager defaultManager] removeItemAtPath:outputFilePath error:nil];
-
-        if (error) {
-            NSLog(@"Failed to copy decrypted file: %@", error);
-            return nil;
-        }
-
-        NSLog(@"AESCrypto: Decrypted to temp file: %@", finalPath);
-        return [NSString stringWithFormat:@"file://%@", finalPath];
-    } else {
+    if (status != kCCSuccess || !loopSuccess) {
         [[NSFileManager defaultManager] removeItemAtPath:outputFilePath error:nil];
         return nil;
+    }
+
+    if (operation == kCCDecrypt) {
+        // For decrypt: overwrite the original file with decrypted content (matches Android behavior)
+        NSError *error = nil;
+        [[NSFileManager defaultManager] removeItemAtPath:normalizedFilePath error:nil];
+        [[NSFileManager defaultManager] moveItemAtPath:outputFilePath toPath:normalizedFilePath error:&error];
+
+        if (error) {
+            // Try copy as fallback
+            [[NSFileManager defaultManager] copyItemAtPath:outputFilePath toPath:normalizedFilePath error:&error];
+            [[NSFileManager defaultManager] removeItemAtPath:outputFilePath error:nil];
+            if (error) {
+                NSLog(@"Failed to overwrite decrypted file: %@", error);
+                return nil;
+            }
+        }
+
+        NSLog(@"AESCrypto: Decrypted successfully to: %@", normalizedFilePath);
+        // Return the original file path (matches Android behavior)
+        return [NSString stringWithFormat:@"file://%@", normalizedFilePath];
+    } else {
+        // For encrypt: return the processed file path
+        return [NSString stringWithFormat:@"file://%@", outputFilePath];
     }
 }
 
