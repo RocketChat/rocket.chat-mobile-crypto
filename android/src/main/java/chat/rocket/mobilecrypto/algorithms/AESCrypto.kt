@@ -115,9 +115,15 @@ object AESCrypto {
 
         return if (mode == "decrypt") {
             // Overwrite the input file with the decrypted file
-            val targetPath = normalizeFilePath(inputFile)
+            val targetUri = Uri.parse(inputFile)
             FileInputStream(outputFileObj).use { inputStream ->
-                FileOutputStream(targetPath).use { fos ->
+                val outputStream = if (targetUri.scheme == null || targetUri.scheme == "file") {
+                    FileOutputStream(normalizeFilePath(inputFile))
+                } else {
+                    reactContext.contentResolver.openOutputStream(targetUri)
+                        ?: throw IllegalArgumentException("Cannot open output stream for URI: $targetUri")
+                }
+                outputStream.use { fos ->
                     val buffer = ByteArray(BUFFER_SIZE)
                     var numBytesRead: Int
                     
