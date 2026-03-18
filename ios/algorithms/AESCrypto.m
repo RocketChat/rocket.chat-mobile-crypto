@@ -160,7 +160,11 @@
         size_t finalBytesOut;
         status = CCCryptorFinal(cryptor, buffer, bufferSize, &finalBytesOut);
         if (status == kCCSuccess && finalBytesOut > 0) {
-            [outputStream write:buffer maxLength:finalBytesOut];
+            NSInteger finalBytesWritten = [outputStream write:buffer maxLength:finalBytesOut];
+            if (finalBytesWritten != (NSInteger)finalBytesOut) {
+                NSLog(@"Output stream write error on final block");
+                loopSuccess = NO;
+            }
         } else if (status != kCCSuccess) {
             NSLog(@"Cryptor final failed: %d", status);
         }
