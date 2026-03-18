@@ -180,13 +180,13 @@
         NSURL *originalFileURL = [NSURL fileURLWithPath:normalizedFilePath];
         NSURL *outputFileURL = [NSURL fileURLWithPath:outputFilePath];
         NSError *error = nil;
-        NSURL *replacedURL = [[NSFileManager defaultManager] replaceItemAtURL:originalFileURL
-                                                             withItemAtURL:outputFileURL
-                                                            backupItemName:nil
-                                                                   options:NSFileManagerItemReplacementUsingNewMetadataOnly
-                                                          resultingItemURL:nil
-                                                                     error:&error];
-        if (!replacedURL) {
+        BOOL success = [[NSFileManager defaultManager] replaceItemAtURL:originalFileURL
+                                                           withItemAtURL:outputFileURL
+                                                          backupItemName:nil
+                                                                 options:NSFileManagerItemReplacementUsingNewMetadataOnly
+                                                        resultingItemURL:nil
+                                                                   error:&error];
+        if (!success) {
             NSLog(@"Failed to replace original file: %@", error);
             [[NSFileManager defaultManager] removeItemAtPath:outputFilePath error:nil];
             return nil;
