@@ -220,10 +220,15 @@ static const NSUInteger BUFFER_SIZE = 4096;
 }
 
 + (NSString *)normalizeFilePath:(NSString *)filePath {
-    if ([filePath hasPrefix:@"file://"]) {
-        return [filePath substringFromIndex:7];
+    NSString *path = filePath;
+
+    if ([path hasPrefix:@"file://"]) {
+        path = [path substringFromIndex:7];
+        NSString *decodedPath = [path stringByRemovingPercentEncoding];
+        return decodedPath ?: path;
     }
-    return filePath;
+
+    return path;
 }
 
 @end

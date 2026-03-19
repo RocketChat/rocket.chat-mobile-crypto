@@ -115,9 +115,15 @@ object AESCrypto {
 
         return if (mode == "decrypt") {
             // Overwrite the input file with the decrypted file
-            val targetPath = if (inputFile.startsWith("file://")) inputFile.substring(7) else inputFile
+            val targetUri = Uri.parse(inputFile)
             FileInputStream(outputFileObj).use { inputStream ->
-                FileOutputStream(targetPath).use { fos ->
+                val outputStream = if (targetUri.scheme == null || targetUri.scheme == "file") {
+                    FileOutputStream(normalizeFilePath(inputFile))
+                } else {
+                    reactContext.contentResolver.openOutputStream(targetUri)
+                        ?: throw IllegalArgumentException("Cannot open output stream for URI: $targetUri")
+                }
+                outputStream.use { fos ->
                     val buffer = ByteArray(BUFFER_SIZE)
                     var numBytesRead: Int
                     
@@ -194,10 +200,32 @@ object AESCrypto {
         val uri = Uri.parse(filePath)
 
         return if (uri.scheme == null || uri.scheme == "file") {
-            FileInputStream(uri.path ?: filePath)
+            // Use the decoded path for FileInputStream
+            val normalizedPath = normalizeFilePath(filePath)
+            FileInputStream(normalizedPath)
         } else {
             reactContext.contentResolver.openInputStream(uri)
                 ?: throw IllegalArgumentException("Cannot open input stream for URI: $uri")
         }
+    }
+
+    /**
+     * Normalize file path by removing file:// prefix and decoding URL-encoded characters
+     * (e.g., %20 for spaces, %D0%9D for Cyrillic chars)
+     */
+    private fun normalizeFilePath(filePath: String): String {
+        var path = filePath
+
+        // Remove file:// prefix if present
+        if (path.startsWith("file://")) {
+            path = path.substring(7)
+            return try {
+                Uri.decode(path)
+            } catch (e: Exception) {
+                path
+            }
+        }
+
+        return path
     }
 }
