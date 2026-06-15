@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, ScrollView, Button } from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  ScrollView,
+  Button,
+  Platform,
+} from 'react-native';
 import {
   shaBase64,
   shaUtf8,
@@ -23,6 +30,141 @@ import {
   type JWK,
 } from '@rocket.chat/mobile-crypto';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+
+// ---------------------------------------------------------------------------
+// Fixed RSA known-answer vectors (KAT)
+//
+// One 2048-bit keypair generated once with openssl; the same key material is
+// expressed in two encodings because the native layers parse different PEM
+// forms: Android (KeyFactory) needs PKCS#8 private + X.509/SPKI public, iOS
+// (SecKeyCreateWithData) needs raw PKCS#1 ("RSA PRIVATE/PUBLIC KEY"). Both
+// encodings share the same modulus, so the SAME ciphertext and SAME signature
+// below decrypt/verify on either platform.
+//
+// Params: OAEP-SHA256 / MGF1-SHA256 for encryption; PKCS#1 v1.5 + SHA-256 for
+// signatures (deterministic, so the signature is pinned for exact equality).
+// Generation commands are recorded in the NATIVE-1235 report.
+// ---------------------------------------------------------------------------
+
+const RSA_FIXED_PRIVATE_PKCS8 = `-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCnKUeAYbH9k0PF
+omxXMiq927jIcLQn8FF0pTA3fVnORn69S5ALVIUoVsI60z2aYElP+Xfdoe4kCnfJ
+GWFb+6pHf3MowwQJQbRDvFByRnrayop8RC002bY4jxoJiD9ITEtb6SMteNZAaSuu
+aiZxnqd2wcYiZQEWhF/niYNQbwYCQfPcEIxDX+vA6EQOs6asMm0dW14qtBC9xMhY
+1eSAVIXEaxKxMqedlkDHKReLblLARebCYQdCsCcRcG+o/n33ygM7PX8cWe71Tb1F
+UGqPAGBWKLgndY/NLkewrGE+tsHuaTiDDtipaLR5dfc5RNbKqVCdOHrff16hu0TK
+rz9AALO1AgMBAAECggEAC0pX+H1gwsJQGQiz7Z3HUkSFchBesrXiIpFHtO/EAZE0
+XT+9zm4aglN90fBToFoxiXPNm0wlJA0K8yvCLi7M3QBoPFATtTZZYRvWiSlmgeGd
+QfBu5ztvOdm8hflMYOs6Sc5w4FDhk78mwqSLzS/MmtJSuh79WFJ/kclxc5zUGJHU
+tj7LJN39XVoo7QHNsR+jirmEjKNhSfcua7GhkZZC/u21jIvse9cwJBGQHazTWesP
+XM6n37pqVMRqR8uQ+q+ZfesfiJZENSVkKYkd3yRIHRFkgN+sKSEgKcyuE71Yj6wD
+jA9HZQVSTdiiqsrwUFeo3fEib9fBgPXMRBc51X49XwKBgQDmSL6MH2V22zB3S+ED
+8Zb/CSIOK+rjD/wAVWFMcGgKSVtC9qi8wY6RKDBrNW1P5Bph1rqvmMwxErn/q8GH
+e9WxmFMjPrg50ojANl0kJ+/pY3D9QmCdDXaL5YY0GSSQgGtw9WyqbFrrfEp27BFB
+onWEmQUZ1b68D1g8AcW2mle1wwKBgQC51AG76qhZO6+hFkrNWz/et7c6pUrnN7gL
+ipSW82SKN521DXk7Dyx/hIAyARuVimYHzi67dklIIwv4b2kLhWBtp9qD5z5cijpY
+AXzlK2Zyw43avubLjJrxyROA1iQlvwpnSP7GUsIBIrUWGDDjIRcg2i9AP3CSzLkx
+cr2kezTBJwKBgCmHlu2YP+kmcGAjTAo1CIEn+X9Kxkp6uHyq6Sgq4WhxgEbcSuP3
+mClvcQP0l6kfvu5EFljSmoiDEw4bwIQZfhlQGjYx+nFbGZRoeXWqyiZx64+Q5/GK
+2wUxuHkuy5xPvJCbgiRd9Cuht6AoxJfsn3rxSa02EfbCYaw4uZpLzWOXAoGAZWtH
+5v+TEeB5YjmAacO7gBpUbjV4Q+ktEV946Um9PZJNCFtqJsmJR69RJ/lizKLUPL5S
+0w0jwbMe/WAQvLD2h+JsaED00BzA6vck6w5cw5Xm/dPisoTyq7NKaa513AP/8Y7t
+PeA88dG3c2+QfuW4cb2ivDXjgrso98vfpL15dVECgYBp9FX8KFcau2XJQAcn/58U
+SlrkRatVddO681C1HjV5XoopNf2HzRU/YE6UqOlBSH/IKEZ3EhEsrLl7VtnNsvJJ
+N7PFLSQF6tZjgNBft/DuA5gmuU2B8OjTM173b/B9DJQhoQ3NYvYfgobCrwfCRoZ5
+tFzdyeChLZyQfOZF7PzCAQ==
+-----END PRIVATE KEY-----`;
+
+const RSA_FIXED_PUBLIC_SPKI = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApylHgGGx/ZNDxaJsVzIq
+vdu4yHC0J/BRdKUwN31ZzkZ+vUuQC1SFKFbCOtM9mmBJT/l33aHuJAp3yRlhW/uq
+R39zKMMECUG0Q7xQckZ62sqKfEQtNNm2OI8aCYg/SExLW+kjLXjWQGkrrmomcZ6n
+dsHGImUBFoRf54mDUG8GAkHz3BCMQ1/rwOhEDrOmrDJtHVteKrQQvcTIWNXkgFSF
+xGsSsTKnnZZAxykXi25SwEXmwmEHQrAnEXBvqP5998oDOz1/HFnu9U29RVBqjwBg
+Vii4J3WPzS5HsKxhPrbB7mk4gw7YqWi0eXX3OUTWyqlQnTh6339eobtEyq8/QACz
+tQIDAQAB
+-----END PUBLIC KEY-----`;
+
+const RSA_FIXED_PRIVATE_PKCS1 = `-----BEGIN RSA PRIVATE KEY-----
+MIIEogIBAAKCAQEApylHgGGx/ZNDxaJsVzIqvdu4yHC0J/BRdKUwN31ZzkZ+vUuQ
+C1SFKFbCOtM9mmBJT/l33aHuJAp3yRlhW/uqR39zKMMECUG0Q7xQckZ62sqKfEQt
+NNm2OI8aCYg/SExLW+kjLXjWQGkrrmomcZ6ndsHGImUBFoRf54mDUG8GAkHz3BCM
+Q1/rwOhEDrOmrDJtHVteKrQQvcTIWNXkgFSFxGsSsTKnnZZAxykXi25SwEXmwmEH
+QrAnEXBvqP5998oDOz1/HFnu9U29RVBqjwBgVii4J3WPzS5HsKxhPrbB7mk4gw7Y
+qWi0eXX3OUTWyqlQnTh6339eobtEyq8/QACztQIDAQABAoIBAAtKV/h9YMLCUBkI
+s+2dx1JEhXIQXrK14iKRR7TvxAGRNF0/vc5uGoJTfdHwU6BaMYlzzZtMJSQNCvMr
+wi4uzN0AaDxQE7U2WWEb1okpZoHhnUHwbuc7bznZvIX5TGDrOknOcOBQ4ZO/JsKk
+i80vzJrSUroe/VhSf5HJcXOc1BiR1LY+yyTd/V1aKO0BzbEfo4q5hIyjYUn3Lmux
+oZGWQv7ttYyL7HvXMCQRkB2s01nrD1zOp9+6alTEakfLkPqvmX3rH4iWRDUlZCmJ
+Hd8kSB0RZIDfrCkhICnMrhO9WI+sA4wPR2UFUk3YoqrK8FBXqN3xIm/XwYD1zEQX
+OdV+PV8CgYEA5ki+jB9ldtswd0vhA/GW/wkiDivq4w/8AFVhTHBoCklbQvaovMGO
+kSgwazVtT+QaYda6r5jMMRK5/6vBh3vVsZhTIz64OdKIwDZdJCfv6WNw/UJgnQ12
+i+WGNBkkkIBrcPVsqmxa63xKduwRQaJ1hJkFGdW+vA9YPAHFtppXtcMCgYEAudQB
+u+qoWTuvoRZKzVs/3re3OqVK5ze4C4qUlvNkijedtQ15Ow8sf4SAMgEblYpmB84u
+u3ZJSCML+G9pC4Vgbafag+c+XIo6WAF85StmcsON2r7my4ya8ckTgNYkJb8KZ0j+
+xlLCASK1Fhgw4yEXINovQD9wksy5MXK9pHs0wScCgYAph5btmD/pJnBgI0wKNQiB
+J/l/SsZKerh8qukoKuFocYBG3Erj95gpb3ED9JepH77uRBZY0pqIgxMOG8CEGX4Z
+UBo2MfpxWxmUaHl1qsomceuPkOfxitsFMbh5LsucT7yQm4IkXfQrobegKMSX7J96
+8UmtNhH2wmGsOLmaS81jlwKBgGVrR+b/kxHgeWI5gGnDu4AaVG41eEPpLRFfeOlJ
+vT2STQhbaibJiUevUSf5Ysyi1Dy+UtMNI8GzHv1gELyw9ofibGhA9NAcwOr3JOsO
+XMOV5v3T4rKE8quzSmmuddwD//GO7T3gPPHRt3NvkH7luHG9orw144K7KPfL36S9
+eXVRAoGAafRV/ChXGrtlyUAHJ/+fFEpa5EWrVXXTuvNQtR41eV6KKTX9h80VP2BO
+lKjpQUh/yChGdxIRLKy5e1bZzbLySTezxS0kBerWY4DQX7fw7gOYJrlNgfDo0zNe
+92/wfQyUIaENzWL2H4KGwq8HwkaGebRc3cngoS2ckHzmRez8wgE=
+-----END RSA PRIVATE KEY-----`;
+
+const RSA_FIXED_PUBLIC_PKCS1 = `-----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEApylHgGGx/ZNDxaJsVzIqvdu4yHC0J/BRdKUwN31ZzkZ+vUuQC1SF
+KFbCOtM9mmBJT/l33aHuJAp3yRlhW/uqR39zKMMECUG0Q7xQckZ62sqKfEQtNNm2
+OI8aCYg/SExLW+kjLXjWQGkrrmomcZ6ndsHGImUBFoRf54mDUG8GAkHz3BCMQ1/r
+wOhEDrOmrDJtHVteKrQQvcTIWNXkgFSFxGsSsTKnnZZAxykXi25SwEXmwmEHQrAn
+EXBvqP5998oDOz1/HFnu9U29RVBqjwBgVii4J3WPzS5HsKxhPrbB7mk4gw7YqWi0
+eXX3OUTWyqlQnTh6339eobtEyq8/QACztQIDAQAB
+-----END RSA PUBLIC KEY-----`;
+
+// Platform-branched key material (same modulus, encoding the native layer parses).
+const RSA_FIXED_PRIVATE_KEY = Platform.select({
+  ios: RSA_FIXED_PRIVATE_PKCS1,
+  default: RSA_FIXED_PRIVATE_PKCS8,
+});
+const RSA_FIXED_PUBLIC_KEY = Platform.select({
+  ios: RSA_FIXED_PUBLIC_PKCS1,
+  default: RSA_FIXED_PUBLIC_SPKI,
+});
+
+const RSA_FIXED_PLAINTEXT = 'Hello RSA fixed vector!';
+const RSA_FIXED_SIGN_MESSAGE = 'Hello RSA signature fixed vector!';
+
+// OAEP-SHA256/MGF1-SHA256 ciphertext of RSA_FIXED_PLAINTEXT (base64).
+const RSA_FIXED_OAEP_CIPHERTEXT_B64 =
+  'i08WpnMEqWx2wLI85uir06hnBpUgMM/zO1y/XWgue/tIz6Nb28MFTBuDPMshhpoz' +
+  'WM8uhYhfcnYAPwAmKiN5Mp8uFYKO2f0kpSs7GYopR7D284NX+ar67LLxXgRdDhXb' +
+  'mo5msDqSCmrhN1MTMVI2GGr/RStdRyODmHiRAqw0+6OM1431GvNm2MOPh+imTEwgu' +
+  'Si/tqiWvRDP4n9A9Kk+tBrhJLfHjMMY5ig1NuvzV35KM96hw6R6VpcWVX3cNbnxW' +
+  'bytRsygp7oswA83PZtAvLH8wIAqLDBHoQTHNg0TNWbfR6WxoSecTh7W/4iB8XUeJ' +
+  '4mwT/KgnRz6yIVQ0iLgnw==';
+
+// PKCS#1 v1.5 SHA-256 signature of RSA_FIXED_SIGN_MESSAGE (base64, deterministic).
+const RSA_FIXED_SIGNATURE_B64 =
+  'lySFWshaUVSbp+U1m+dq1wW4VuHBX1jE30L4gJywhjvfB4jMf2WrTMdYbdMnvXgj' +
+  'E4kGJ3Lkcu5C6isOUHZMMIYDdL8DRW6GNTWj5ChwQXLQ6TV0NYkOmGqrEkWxztk6' +
+  '/lu/SWogTuKiq7iVpbAtjfyFTY6GWeyqIw0AOoFfDKQSezeF6ubRkKEDLc42v+pX' +
+  'FTRxWMJTMXX6+Xz5PiDV+ApXO4ExDtsgW1gqwNUTeY7y/A+2XIxllZTVj4LB7twa' +
+  'K5DirX0GIvUD5VomiHiy8dGGQc3m8FZa6c5te78FC7JCe4GRLHKNdH1hzEggTH3S' +
+  'MDHrlJnNqFiE2bQenbHKEg==';
+
+// JWK of the same key (base64url components) — pins export/import answers.
+const RSA_FIXED_JWK: JWK = {
+  kty: 'RSA',
+  n:
+    'pylHgGGx_ZNDxaJsVzIqvdu4yHC0J_BRdKUwN31ZzkZ-vUuQC1SFKFbCOtM9mmBJ' +
+    'T_l33aHuJAp3yRlhW_uqR39zKMMECUG0Q7xQckZ62sqKfEQtNNm2OI8aCYg_SExL' +
+    'W-kjLXjWQGkrrmomcZ6ndsHGImUBFoRf54mDUG8GAkHz3BCMQ1_rwOhEDrOmrDJt' +
+    'HVteKrQQvcTIWNXkgFSFxGsSsTKnnZZAxykXi25SwEXmwmEHQrAnEXBvqP5998oD' +
+    'Oz1_HFnu9U29RVBqjwBgVii4J3WPzS5HsKxhPrbB7mk4gw7YqWi0eXX3OUTWyqlQ' +
+    'nTh6339eobtEyq8_QACztQ',
+  e: 'AQAB',
+};
 
 export default function App() {
   const [results, setResults] = useState<{ [key: string]: string }>({});
@@ -439,6 +581,99 @@ export default function App() {
         },
         expected: 'X.509 ENCRYPT OK',
       },
+      {
+        key: 'rsa-kat-decrypt-test',
+        label: 'RSA OAEP-SHA256 Decrypt (fixed vector)',
+        fn: async () => {
+          try {
+            const decrypted = await rsaDecrypt(
+              RSA_FIXED_OAEP_CIPHERTEXT_B64,
+              RSA_FIXED_PRIVATE_KEY!
+            );
+            return decrypted === RSA_FIXED_PLAINTEXT
+              ? 'KAT DECRYPT OK'
+              : `FAIL: got "${decrypted}"`;
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'KAT DECRYPT OK',
+      },
+      {
+        key: 'rsa-kat-verify-test',
+        label: 'RSA PKCS#1 v1.5 SHA-256 Verify (fixed vector)',
+        fn: async () => {
+          try {
+            const verified = await rsaVerify(
+              RSA_FIXED_SIGNATURE_B64,
+              RSA_FIXED_SIGN_MESSAGE,
+              RSA_FIXED_PUBLIC_KEY!,
+              'SHA256'
+            );
+            return verified ? 'KAT VERIFY OK' : 'FAIL: signature rejected';
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'KAT VERIFY OK',
+      },
+      {
+        key: 'rsa-kat-sign-test',
+        label: 'RSA PKCS#1 v1.5 SHA-256 Sign (deterministic, exact)',
+        fn: async () => {
+          try {
+            const signature = await rsaSign(
+              RSA_FIXED_SIGN_MESSAGE,
+              RSA_FIXED_PRIVATE_KEY!,
+              'SHA256'
+            );
+            return signature === RSA_FIXED_SIGNATURE_B64
+              ? 'KAT SIGN OK'
+              : `FAIL: got "${signature}"`;
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'KAT SIGN OK',
+      },
+      {
+        key: 'rsa-kat-jwk-export-test',
+        label: 'RSA Export Key to JWK (fixed n/e)',
+        fn: async () => {
+          try {
+            const jwk = await rsaExportKey(RSA_FIXED_PUBLIC_KEY!);
+            return jwk.kty === 'RSA' &&
+              jwk.n === RSA_FIXED_JWK.n &&
+              jwk.e === RSA_FIXED_JWK.e
+              ? 'KAT JWK EXPORT OK'
+              : `FAIL: n=${jwk.n} e=${jwk.e}`;
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'KAT JWK EXPORT OK',
+      },
+      {
+        key: 'rsa-kat-jwk-import-test',
+        label: 'RSA Import JWK then Verify (fixed vector)',
+        fn: async () => {
+          try {
+            const importedPem = await rsaImportKey(RSA_FIXED_JWK);
+            const verified = await rsaVerify(
+              RSA_FIXED_SIGNATURE_B64,
+              RSA_FIXED_SIGN_MESSAGE,
+              importedPem,
+              'SHA256'
+            );
+            return verified
+              ? 'KAT JWK IMPORT OK'
+              : 'FAIL: imported key rejected signature';
+          } catch (error) {
+            return `ERROR: ${error}`;
+          }
+        },
+        expected: 'KAT JWK IMPORT OK',
+      },
     ];
 
     for (const test of tests) {
@@ -731,6 +966,51 @@ export default function App() {
               {loading['rsa-encrypt-x509-test']
                 ? 'Loading...'
                 : results['rsa-encrypt-x509-test'] || 'Not run'}
+            </Text>
+
+            <Text style={styles.testLabel}>
+              RSA OAEP-SHA256 Decrypt (fixed vector):
+            </Text>
+            <Text style={styles.result}>
+              {loading['rsa-kat-decrypt-test']
+                ? 'Loading...'
+                : results['rsa-kat-decrypt-test'] || 'Not run'}
+            </Text>
+
+            <Text style={styles.testLabel}>
+              RSA PKCS#1 v1.5 SHA-256 Verify (fixed vector):
+            </Text>
+            <Text style={styles.result}>
+              {loading['rsa-kat-verify-test']
+                ? 'Loading...'
+                : results['rsa-kat-verify-test'] || 'Not run'}
+            </Text>
+
+            <Text style={styles.testLabel}>
+              RSA PKCS#1 v1.5 SHA-256 Sign (deterministic, exact):
+            </Text>
+            <Text style={styles.result}>
+              {loading['rsa-kat-sign-test']
+                ? 'Loading...'
+                : results['rsa-kat-sign-test'] || 'Not run'}
+            </Text>
+
+            <Text style={styles.testLabel}>
+              RSA Export Key to JWK (fixed n/e):
+            </Text>
+            <Text style={styles.result}>
+              {loading['rsa-kat-jwk-export-test']
+                ? 'Loading...'
+                : results['rsa-kat-jwk-export-test'] || 'Not run'}
+            </Text>
+
+            <Text style={styles.testLabel}>
+              RSA Import JWK then Verify (fixed vector):
+            </Text>
+            <Text style={styles.result}>
+              {loading['rsa-kat-jwk-import-test']
+                ? 'Loading...'
+                : results['rsa-kat-jwk-import-test'] || 'Not run'}
             </Text>
           </View>
 

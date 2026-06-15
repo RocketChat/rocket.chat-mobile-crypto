@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@rocket.chat/mobile-crypto": "workspace:*",
-    "react": "19.0.0",
-    "react-native": "0.79.0",
-    "react-native-safe-area-context": "^5.4.0"
+    "react": "19.2.0",
+    "react-native": "0.83.9",
+    "react-native-safe-area-context": "^5.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -22,14 +22,14 @@
     "@react-native-community/cli": "20.0.0",
     "@react-native-community/cli-platform-android": "20.0.0",
     "@react-native-community/cli-platform-ios": "20.0.0",
-    "@react-native/babel-preset": "0.79.0",
-    "@react-native/metro-config": "0.79.0",
-    "@react-native/typescript-config": "0.79.0",
-    "@types/react": "^19.0.0",
+    "@react-native/babel-preset": "0.83.9",
+    "@react-native/metro-config": "0.83.9",
+    "@react-native/typescript-config": "0.83.9",
+    "@types/react": "^19.2.0",
     "react-native-builder-bob": "^0.40.13",
     "react-native-monorepo-config": "^0.1.9"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }
