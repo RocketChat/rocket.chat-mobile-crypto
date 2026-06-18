@@ -183,11 +183,7 @@ object RSACrypto {
      * @return True if signature is valid
      */
     fun verify(signatureBase64: String, message: String, publicKeyPem: String, hashAlgorithm: String? = null): Boolean {
-        val publicKeyBytes = pemToKey(publicKeyPem)
-        val keySpec = X509EncodedKeySpec(publicKeyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-        val publicKey = keyFactory.generatePublic(keySpec)
-        
+        val publicKey = createPublicKeyFromPem(publicKeyPem)
         val signature = Signature.getInstance(getSignatureAlgorithm(hashAlgorithm))
         signature.initVerify(publicKey)
         signature.update(CryptoUtils.stringToUtf8Bytes(message))
@@ -205,11 +201,7 @@ object RSACrypto {
      * @return True if signature is valid
      */
     fun verifyBase64(signatureBase64: String, messageBase64: String, publicKeyPem: String, hashAlgorithm: String? = null): Boolean {
-        val publicKeyBytes = pemToKey(publicKeyPem)
-        val keySpec = X509EncodedKeySpec(publicKeyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-        val publicKey = keyFactory.generatePublic(keySpec)
-        
+        val publicKey = createPublicKeyFromPem(publicKeyPem)
         val signature = Signature.getInstance(getSignatureAlgorithm(hashAlgorithm))
         signature.initVerify(publicKey)
         val messageBytes = CryptoUtils.decodeBase64(messageBase64)

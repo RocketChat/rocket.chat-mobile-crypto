@@ -3,7 +3,15 @@
 #import "FileUtils.h"
 #import <CommonCrypto/CommonCryptor.h>
 
+// Supports both framework linkage (use_frameworks!) and static-lib linkage (default
+// for RN 0.83+). The angle-bracket module form is required by dynamic frameworks;
+// the flat double-quoted form is required by static libs where the header lands in
+// OBJECT_FILE_DIR_normal rather than a framework Headers folder.
+#if __has_include(<MobileCrypto/MobileCrypto-Swift.h>)
 #import <MobileCrypto/MobileCrypto-Swift.h>
+#else
+#import "MobileCrypto-Swift.h"
+#endif
 
 @implementation AESCrypto
 
