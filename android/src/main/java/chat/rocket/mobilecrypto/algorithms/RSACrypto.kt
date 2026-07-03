@@ -21,13 +21,13 @@ import java.security.spec.RSAPublicKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.Arrays
 import javax.crypto.Cipher
-import org.spongycastle.asn1.ASN1InputStream
-import org.spongycastle.asn1.ASN1Primitive
-import org.spongycastle.asn1.pkcs.PrivateKeyInfo
-import org.spongycastle.asn1.x509.SubjectPublicKeyInfo
-import org.spongycastle.util.io.pem.PemObject
-import org.spongycastle.util.io.pem.PemReader
-import org.spongycastle.util.io.pem.PemWriter
+import org.bouncycastle.asn1.ASN1InputStream
+import org.bouncycastle.asn1.ASN1Primitive
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
+import org.bouncycastle.util.io.pem.PemObject
+import org.bouncycastle.util.io.pem.PemReader
+import org.bouncycastle.util.io.pem.PemWriter
 
 /**
  * RSA encryption, decryption, signing and key format conversion operations
@@ -318,7 +318,7 @@ object RSACrypto {
             // PKCS#1 RSA PUBLIC KEY format - need to convert to X.509
             val inputStream = ASN1InputStream(keyData)
             val obj = inputStream.readObject()
-            val rsaPublicKey = org.spongycastle.asn1.pkcs.RSAPublicKey.getInstance(obj)
+            val rsaPublicKey = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(obj)
             
             val keySpec = RSAPublicKeySpec(rsaPublicKey.modulus, rsaPublicKey.publicExponent)
             keyFactory.generatePublic(keySpec)
@@ -412,7 +412,7 @@ object RSACrypto {
     }
 
     private fun pkcs1ToPublicKey(obj: ASN1Primitive): WritableMap {
-        val keyStruct = org.spongycastle.asn1.pkcs.RSAPublicKey.getInstance(obj)
+        val keyStruct = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(obj)
 
         val jwk = Arguments.createMap()
         jwk.putString("n", toBase64String(keyStruct.modulus, true))
@@ -422,7 +422,7 @@ object RSACrypto {
     }
 
     private fun pkcs1ToPrivateKey(obj: ASN1Primitive): WritableMap {
-        val keyStruct = org.spongycastle.asn1.pkcs.RSAPrivateKey.getInstance(obj)
+        val keyStruct = org.bouncycastle.asn1.pkcs.RSAPrivateKey.getInstance(obj)
 
         val jwk = Arguments.createMap()
         jwk.putString("n", toBase64String(keyStruct.modulus, true))

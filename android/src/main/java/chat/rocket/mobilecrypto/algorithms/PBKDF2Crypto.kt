@@ -1,15 +1,15 @@
 package chat.rocket.mobilecrypto.algorithms
 
 import java.security.NoSuchAlgorithmException
-import org.spongycastle.crypto.ExtendedDigest
-import org.spongycastle.crypto.PBEParametersGenerator
-import org.spongycastle.crypto.digests.SHA1Digest
-import org.spongycastle.crypto.digests.SHA224Digest
-import org.spongycastle.crypto.digests.SHA256Digest
-import org.spongycastle.crypto.digests.SHA384Digest
-import org.spongycastle.crypto.digests.SHA512Digest
-import org.spongycastle.crypto.generators.PKCS5S2ParametersGenerator
-import org.spongycastle.crypto.params.KeyParameter
+import org.bouncycastle.crypto.ExtendedDigest
+import org.bouncycastle.crypto.PBEParametersGenerator
+import org.bouncycastle.crypto.digests.SHA1Digest
+import org.bouncycastle.crypto.digests.SHA224Digest
+import org.bouncycastle.crypto.digests.SHA256Digest
+import org.bouncycastle.crypto.digests.SHA384Digest
+import org.bouncycastle.crypto.digests.SHA512Digest
+import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator
+import org.bouncycastle.crypto.params.KeyParameter
 
 /**
  * PBKDF2 (Password-Based Key Derivation Function 2) operations
