@@ -106,7 +106,7 @@ Run the complete suite after the smoke tests pass:
 yarn test --harnessRunner ios
 ```
 
-The suite covers SHA, PBKDF2, HMAC, AES-CBC, AES-GCM authentication failures, secure random output formats, RSA encryption/signatures, PEM/JWK conversion, file checksums, and AES-CTR file operations. Fixed answers live in `example/__tests__/__fixtures__`; they come from independent crypto vectors rather than the library under test. The public RSA test keys reuse the example app's conformance vectors.
+The suite covers SHA, PBKDF2, HMAC, AES-CBC, AES-GCM authentication failures, secure random output formats, RSA encryption/signatures, PEM/JWK conversion, file checksums, and AES-CTR file operations. Fixed answers live in `example/__tests__/__fixtures__`; they come from independent crypto vectors rather than the library under test. The public RSA keys and fixed answers live in `example/fixtures/rsa.ts`, shared by the tests and the example app.
 
 File tests use `react-native-file-access` as an example-app development dependency to create and remove real cache files, including binary data, encoded file URIs, empty files, and files spanning multiple native read buffers. Rebuild the example app after changing native dependencies.
 

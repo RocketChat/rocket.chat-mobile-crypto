@@ -1,4 +1,4 @@
-// Public test-only keys and fixed answers from the example app conformance vectors.
+// Public test-only keys and fixed answers shared by the app and native tests.
 // The PKCS#1 and PKCS#8/SPKI encodings represent the same 2048-bit RSA key.
 import { Platform } from 'react-native';
 import type { JWK } from '@rocket.chat/mobile-crypto';

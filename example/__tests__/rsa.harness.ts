@@ -21,7 +21,7 @@ import {
   RSA_FIXED_PUBLIC_KEY,
   RSA_FIXED_SIGNATURE_B64,
   RSA_FIXED_SIGN_MESSAGE,
-} from './__fixtures__/rsa';
+} from '../fixtures/rsa';
 
 describe('RSA encryption and signatures', () => {
   let generatedKeys: { public: string; private: string };

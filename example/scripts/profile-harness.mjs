@@ -52,6 +52,7 @@ for (const file of [
   ...filesIn(path.join(repositoryRoot, 'src')),
   ...filesIn(path.join(repositoryRoot, 'ios/algorithms')),
   ...filesIn(path.join(projectRoot, '__tests__')),
+  ...filesIn(path.join(projectRoot, 'fixtures')),
   path.join(repositoryRoot, 'ios/MobileCrypto.mm'),
   path.join(repositoryRoot, 'yarn.lock'),
   path.join(projectRoot, 'rn-harness.config.mjs'),
