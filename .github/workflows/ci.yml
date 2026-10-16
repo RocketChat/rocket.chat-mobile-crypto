@@ -26,6 +26,12 @@ jobs:
       - name: Typecheck files
         run: yarn typecheck
 
+      - name: Check Nitro generated code is up to date
+        run: |
+          yarn nitrogen
+          git diff --exit-code -- nitrogen
+          test -z "$(git status --porcelain -- nitrogen)"
+
   test:
     runs-on: macos-15
     timeout-minutes: 30

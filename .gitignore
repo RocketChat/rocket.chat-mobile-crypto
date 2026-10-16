@@ -83,9 +83,6 @@ coverage/
 ios/generated
 android/generated
 
-# React Native Nitro Modules
-nitrogen/
-
 # Agent skills (local-only issue tracker and docs)
 .scratch/
 docs/

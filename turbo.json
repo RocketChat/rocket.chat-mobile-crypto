@@ -23,6 +23,8 @@
         "package.json",
         "*.podspec",
         "ios",
+        "nitrogen",
+        "nitro.json",
         "src/*.ts",
         "src/*.tsx",
         "example/package.json",

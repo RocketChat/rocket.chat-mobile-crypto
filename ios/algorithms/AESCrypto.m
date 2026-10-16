@@ -3,16 +3,6 @@
 #import "FileUtils.h"
 #import <CommonCrypto/CommonCryptor.h>
 
-// Supports both framework linkage (use_frameworks!) and static-lib linkage (default
-// for RN 0.83+). The angle-bracket module form is required by dynamic frameworks;
-// the flat double-quoted form is required by static libs where the header lands in
-// OBJECT_FILE_DIR_normal rather than a framework Headers folder.
-#if __has_include(<MobileCrypto/MobileCrypto-Swift.h>)
-#import <MobileCrypto/MobileCrypto-Swift.h>
-#else
-#import "MobileCrypto-Swift.h"
-#endif
-
 @implementation AESCrypto
 
 + (nullable NSString *)encryptBase64:(NSString *)dataBase64 keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex {
@@ -47,14 +37,6 @@
         return [CryptoUtils encodeBase64:result];
     }
     return nil;
-}
-
-+ (nullable NSString *)encryptGcmBase64:(NSString *)dataBase64 keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex {
-    return [AESGCMCrypto encryptGcmBase64:dataBase64 keyHex:keyHex ivHex:ivHex];
-}
-
-+ (nullable NSString *)decryptGcmBase64:(NSString *)ciphertext keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex {
-    return [AESGCMCrypto decryptGcmBase64:ciphertext keyHex:keyHex ivHex:ivHex];
 }
 
 + (nullable NSString *)encryptFile:(NSString *)filePath base64UrlKey:(NSString *)base64UrlKey base64Iv:(NSString *)base64Iv {

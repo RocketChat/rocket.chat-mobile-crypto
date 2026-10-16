@@ -20,7 +20,9 @@
     "android",
     "ios",
     "cpp",
+    "nitrogen",
     "*.podspec",
+    "nitro.json",
     "react-native.config.js",
     "!ios/build",
     "!android/build",
@@ -42,7 +44,8 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
-    "release": "release-it --only-version"
+    "release": "release-it --only-version",
+    "nitrogen": "nitrogen"
   },
   "keywords": [
     "react-native",
@@ -77,17 +80,20 @@
     "eslint": "^9.22.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.3",
+    "nitrogen": "0.37.1",
     "prettier": "^3.0.3",
     "react": "19.3.0",
     "react-native": "0.88.0",
     "react-native-builder-bob": "^0.40.13",
+    "react-native-nitro-modules": "0.37.1",
     "release-it": "^17.10.0",
     "turbo": "^1.10.7",
     "typescript": "^5.8.3"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-nitro-modules": "*"
   },
   "workspaces": [
     "example"

@@ -1,4 +1,5 @@
-import MobileCrypto, { type JWK } from './NativeMobileCrypto';
+import MobileCrypto from './MobileCryptoModule';
+import type { JWK } from './NativeMobileCrypto';
 
 // Export the JWK type for users
 export type { JWK };
