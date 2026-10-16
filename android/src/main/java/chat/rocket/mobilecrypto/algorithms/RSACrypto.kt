@@ -1,10 +1,8 @@
 package chat.rocket.mobilecrypto.algorithms
 
 import android.util.Base64
-import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.bridge.WritableMap
-import com.facebook.react.bridge.WritableNativeMap
+import com.margelo.nitro.mobilecrypto.JWK
+import com.margelo.nitro.mobilecrypto.RSAKeyPair
 import java.io.StringReader
 import java.io.StringWriter
 import java.math.BigInteger
@@ -38,9 +36,9 @@ object RSACrypto {
      * Generate RSA key pair
      * 
      * @param keySize Key size in bits (default: 2048)
-     * @return Map containing PEM-formatted public and private keys
+     * @return PEM-formatted public and private keys
      */
-    fun generateKeyPair(keySize: Int = 2048): WritableMap {
+    fun generateKeyPair(keySize: Int = 2048): RSAKeyPair {
         val keyPairGenerator = KeyPairGenerator.getInstance("RSA")
         keyPairGenerator.initialize(keySize)
         val keyPair = keyPairGenerator.generateKeyPair()
@@ -51,10 +49,7 @@ object RSACrypto {
         val publicPem = keyToPem(publicKeyBytes, "PUBLIC KEY")
         val privatePem = keyToPem(privateKeyBytes, "PRIVATE KEY")
         
-        val result = WritableNativeMap()
-        result.putString("public", publicPem)
-        result.putString("private", privatePem)
-        return result
+        return RSAKeyPair(publicPem, privatePem)
     }
 
     /**
@@ -216,8 +211,8 @@ object RSACrypto {
      * @param jwk JWK key data
      * @return PEM-formatted key
      */
-    fun importJwkKey(jwk: ReadableMap): String {
-        val isPrivate = jwk.hasKey("d")
+    fun importJwkKey(jwk: JWK): String {
+        val isPrivate = jwk.d != null
         
         return if (isPrivate) {
             jwkToPrivatePkcs1(jwk)
@@ -232,12 +227,12 @@ object RSACrypto {
      * @param pemKey PEM-formatted key
      * @return JWK key data
      */
-    fun exportPemKey(pemKey: String): WritableMap {
+    fun exportPemKey(pemKey: String): JWK {
         val keyData = pemToData(pemKey)
         val isPublic = pemKey.contains("PUBLIC")
         val isRsaPkcs1 = pemKey.contains("RSA")
 
-        val jwk = if (isPublic) {
+        return if (isPublic) {
             if (isRsaPkcs1) {
                 // PKCS#1 RSA PUBLIC KEY format
                 val inputStream = ASN1InputStream(keyData)
@@ -262,20 +257,6 @@ object RSACrypto {
                 pkcs1ToPrivateKey(primitive)
             }
         }
-        
-        jwk.putString("kty", "RSA")
-        jwk.putString("alg", "RSA-OAEP-256")
-        jwk.putBoolean("ext", true)
-
-        val keyOps = Arguments.createArray()
-        if (isPublic) {
-            keyOps.pushString("encrypt")
-        } else {
-            keyOps.pushString("decrypt")
-        }
-        jwk.putArray("key_ops", keyOps)
-
-        return jwk
     }
 
     // Private helper methods
@@ -336,9 +317,9 @@ object RSACrypto {
         return pemObject.content
     }
 
-    private fun jwkToPublicPkcs1(jwk: ReadableMap): String {
-        val nStr = jwk.getString("n") ?: throw Exception("Missing 'n' parameter")
-        val eStr = jwk.getString("e") ?: throw Exception("Missing 'e' parameter")
+    private fun jwkToPublicPkcs1(jwk: JWK): String {
+        val nStr = jwk.n
+        val eStr = jwk.e
         
         // Decode and validate parameters
         val modulusBytes = decodeSequence(nStr)
@@ -371,15 +352,15 @@ object RSACrypto {
         return stringWriter.toString()
     }
 
-    private fun jwkToPrivatePkcs1(jwk: ReadableMap): String {
-        val nStr = jwk.getString("n") ?: throw Exception("Missing 'n' parameter")
-        val eStr = jwk.getString("e") ?: throw Exception("Missing 'e' parameter")
-        val dStr = jwk.getString("d") ?: throw Exception("Missing 'd' parameter")
-        val pStr = jwk.getString("p") ?: throw Exception("Missing 'p' parameter")
-        val qStr = jwk.getString("q") ?: throw Exception("Missing 'q' parameter")
-        val dpStr = jwk.getString("dp") ?: throw Exception("Missing 'dp' parameter")
-        val dqStr = jwk.getString("dq") ?: throw Exception("Missing 'dq' parameter")
-        val qiStr = jwk.getString("qi") ?: throw Exception("Missing 'qi' parameter")
+    private fun jwkToPrivatePkcs1(jwk: JWK): String {
+        val nStr = jwk.n
+        val eStr = jwk.e
+        val dStr = jwk.d ?: throw Exception("Missing 'd' parameter")
+        val pStr = jwk.p ?: throw Exception("Missing 'p' parameter")
+        val qStr = jwk.q ?: throw Exception("Missing 'q' parameter")
+        val dpStr = jwk.dp ?: throw Exception("Missing 'dp' parameter")
+        val dqStr = jwk.dq ?: throw Exception("Missing 'dq' parameter")
+        val qiStr = jwk.qi ?: throw Exception("Missing 'qi' parameter")
 
         val modulus = toBigInteger(decodeSequence(nStr))
         val publicExponent = toBigInteger(decodeSequence(eStr))
@@ -411,30 +392,42 @@ object RSACrypto {
         return stringWriter.toString()
     }
 
-    private fun pkcs1ToPublicKey(obj: ASN1Primitive): WritableMap {
+    private fun pkcs1ToPublicKey(obj: ASN1Primitive): JWK {
         val keyStruct = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(obj)
 
-        val jwk = Arguments.createMap()
-        jwk.putString("n", toBase64String(keyStruct.modulus, true))
-        jwk.putString("e", toBase64String(keyStruct.publicExponent, false))
-
-        return jwk
+        return JWK(
+            kty = "RSA",
+            alg = "RSA-OAEP-256",
+            ext = true,
+            key_ops = arrayOf("encrypt"),
+            n = toBase64String(keyStruct.modulus, true),
+            e = toBase64String(keyStruct.publicExponent, false),
+            d = null,
+            p = null,
+            q = null,
+            dp = null,
+            dq = null,
+            qi = null
+        )
     }
 
-    private fun pkcs1ToPrivateKey(obj: ASN1Primitive): WritableMap {
+    private fun pkcs1ToPrivateKey(obj: ASN1Primitive): JWK {
         val keyStruct = org.bouncycastle.asn1.pkcs.RSAPrivateKey.getInstance(obj)
 
-        val jwk = Arguments.createMap()
-        jwk.putString("n", toBase64String(keyStruct.modulus, true))
-        jwk.putString("e", toBase64String(keyStruct.publicExponent, true))
-        jwk.putString("d", toBase64String(keyStruct.privateExponent, true))
-        jwk.putString("p", toBase64String(keyStruct.prime1, true))
-        jwk.putString("q", toBase64String(keyStruct.prime2, true))
-        jwk.putString("dp", toBase64String(keyStruct.exponent1, true))
-        jwk.putString("dq", toBase64String(keyStruct.exponent2, true))
-        jwk.putString("qi", toBase64String(keyStruct.coefficient, true))
-
-        return jwk
+        return JWK(
+            kty = "RSA",
+            alg = "RSA-OAEP-256",
+            ext = true,
+            key_ops = arrayOf("decrypt"),
+            n = toBase64String(keyStruct.modulus, true),
+            e = toBase64String(keyStruct.publicExponent, true),
+            d = toBase64String(keyStruct.privateExponent, true),
+            p = toBase64String(keyStruct.prime1, true),
+            q = toBase64String(keyStruct.prime2, true),
+            dp = toBase64String(keyStruct.exponent1, true),
+            dq = toBase64String(keyStruct.exponent2, true),
+            qi = toBase64String(keyStruct.coefficient, true)
+        )
     }
 
     private fun publicKeyToPkcs1(publicKey: PublicKey): ByteArray {

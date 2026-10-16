@@ -1,8 +1,8 @@
 package chat.rocket.mobilecrypto.algorithms
 
+import android.content.Context
 import android.net.Uri
 import android.util.Base64
-import com.facebook.react.bridge.ReactApplicationContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -64,21 +64,21 @@ object AESCrypto {
     /**
      * Encrypt a file using AES-CTR mode
      */
-    fun encryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, reactContext: ReactApplicationContext): String {
-        return processFile(inputFile, base64UrlKey, base64Iv, "encrypt", reactContext)
+    fun encryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, context: Context): String {
+        return processFile(inputFile, base64UrlKey, base64Iv, "encrypt", context)
     }
 
     /**
      * Decrypt a file using AES-CTR mode
      */
-    fun decryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, reactContext: ReactApplicationContext): String {
-        return processFile(inputFile, base64UrlKey, base64Iv, "decrypt", reactContext)
+    fun decryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, context: Context): String {
+        return processFile(inputFile, base64UrlKey, base64Iv, "decrypt", context)
     }
 
     /**
      * Process file encryption/decryption using AES-CTR mode
      */
-    private fun processFile(inputFile: String, base64UrlKey: String, base64Iv: String, mode: String, reactContext: ReactApplicationContext): String {
+    private fun processFile(inputFile: String, base64UrlKey: String, base64Iv: String, mode: String, context: Context): String {
         // Decode the key and IV
         val key = Base64.decode(base64UrlKey, Base64.URL_SAFE or Base64.NO_WRAP)
         val iv = CryptoUtils.decodeBase64NoWrap(base64Iv)
@@ -91,10 +91,10 @@ object AESCrypto {
         cipher.init(cipherMode, secretKey, ivParameterSpec)
 
         // Create a temporary output file in the cache directory
-        val outputFileObj = File(reactContext.cacheDir, "processed_${UUID.randomUUID()}")
+        val outputFileObj = File(context.cacheDir, "processed_${UUID.randomUUID()}")
 
         try {
-            getInputStream(inputFile, reactContext).use { inputStream ->
+            getInputStream(inputFile, context).use { inputStream ->
                 FileOutputStream(outputFileObj).use { fos ->
                     val buffer = ByteArray(BUFFER_SIZE)
                     var numBytesRead: Int
@@ -120,7 +120,7 @@ object AESCrypto {
                 val outputStream = if (targetUri.scheme == null || targetUri.scheme == "file") {
                     FileOutputStream(normalizeFilePath(inputFile))
                 } else {
-                    reactContext.contentResolver.openOutputStream(targetUri)
+                    context.contentResolver.openOutputStream(targetUri)
                         ?: throw IllegalArgumentException("Cannot open output stream for URI: $targetUri")
                 }
                 outputStream.use { fos ->
@@ -196,7 +196,7 @@ object AESCrypto {
     /**
      * Get input stream for a file path with better error handling
      */
-    private fun getInputStream(filePath: String, reactContext: ReactApplicationContext): InputStream {
+    private fun getInputStream(filePath: String, context: Context): InputStream {
         val uri = Uri.parse(filePath)
 
         return if (uri.scheme == null || uri.scheme == "file") {
@@ -204,7 +204,7 @@ object AESCrypto {
             val normalizedPath = normalizeFilePath(filePath)
             FileInputStream(normalizedPath)
         } else {
-            reactContext.contentResolver.openInputStream(uri)
+            context.contentResolver.openInputStream(uri)
                 ?: throw IllegalArgumentException("Cannot open input stream for URI: $uri")
         }
     }

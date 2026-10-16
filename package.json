@@ -148,14 +148,6 @@
       ]
     ]
   },
-  "codegenConfig": {
-    "name": "MobileCryptoSpec",
-    "type": "modules",
-    "jsSrcsDir": "src",
-    "android": {
-      "javaPackageName": "chat.rocket.mobilecrypto"
-    }
-  },
   "create-react-native-library": {
     "languages": "kotlin-objc",
     "type": "turbo-module",

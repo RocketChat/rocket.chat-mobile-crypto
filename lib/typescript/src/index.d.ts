@@ -1,4 +1,4 @@
-import type { JWK } from './NativeMobileCrypto';
+import type { JWK } from './specs/JWK';
 export type { JWK };
 export declare function shaBase64(data: string, algorithm: string): Promise<string>;
 export declare function shaUtf8(data: string, algorithm: string): Promise<string>;

@@ -13,6 +13,10 @@
       "ios": {
         "language": "swift",
         "implementationClassName": "HybridMobileCrypto"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridMobileCrypto"
       }
     }
   },

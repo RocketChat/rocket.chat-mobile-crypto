@@ -8,7 +8,7 @@ Rocket.Chat Mobile Crypto - A comprehensive cryptographic library for React Nati
 npm install @rocket.chat/mobile-crypto react-native-nitro-modules
 ```
 
-On iOS the native module is built with [Nitro Modules](https://nitro.margelo.com), so `react-native-nitro-modules` must be installed alongside it (React Native 0.75+).
+The native module is built with [Nitro Modules](https://nitro.margelo.com), so `react-native-nitro-modules` must be installed alongside it (React Native 0.75+).
 
 ## Usage
 

@@ -7,6 +7,7 @@ import type { RSAKeyPair } from './RSAKeyPair';
  */
 export interface MobileCrypto extends HybridObject<{
     ios: 'swift';
+    android: 'kotlin';
 }> {
     shaBase64(data: string, algorithm: string): Promise<string>;
     shaUtf8(data: string, algorithm: string): Promise<string>;

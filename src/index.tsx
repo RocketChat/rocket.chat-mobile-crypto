@@ -1,5 +1,12 @@
-import MobileCrypto from './MobileCryptoModule';
-import type { JWK } from './NativeMobileCrypto';
+import { NitroModules } from 'react-native-nitro-modules';
+import type { JWK } from './specs/JWK';
+import type { MobileCrypto as MobileCryptoSpec } from './specs/MobileCrypto.nitro';
+
+const MobileCrypto =
+  NitroModules.createHybridObject<MobileCryptoSpec>('MobileCrypto');
+
+const nullWhenUndefined = (value: string | undefined) =>
+  (value ?? null) as string;
 
 // Export the JWK type for users
 export type { JWK };
@@ -37,7 +44,9 @@ export function aesEncrypt(
   keyHex: string,
   ivHex: string
 ): Promise<string> {
-  return MobileCrypto.aesEncrypt(dataBase64, keyHex, ivHex);
+  return MobileCrypto.aesEncrypt(dataBase64, keyHex, ivHex).then(
+    nullWhenUndefined
+  );
 }
 
 export function aesDecrypt(
@@ -45,7 +54,9 @@ export function aesDecrypt(
   keyHex: string,
   ivHex: string
 ): Promise<string> {
-  return MobileCrypto.aesDecrypt(dataBase64, keyHex, ivHex);
+  return MobileCrypto.aesDecrypt(dataBase64, keyHex, ivHex).then(
+    nullWhenUndefined
+  );
 }
 
 export function aesGcmEncrypt(
@@ -53,7 +64,9 @@ export function aesGcmEncrypt(
   keyHex: string,
   ivHex: string
 ): Promise<string> {
-  return MobileCrypto.aesGcmEncrypt(dataBase64, keyHex, ivHex);
+  return MobileCrypto.aesGcmEncrypt(dataBase64, keyHex, ivHex).then(
+    nullWhenUndefined
+  );
 }
 
 export function aesGcmDecrypt(
@@ -61,7 +74,9 @@ export function aesGcmDecrypt(
   keyHex: string,
   ivHex: string
 ): Promise<string> {
-  return MobileCrypto.aesGcmDecrypt(dataBase64, keyHex, ivHex);
+  return MobileCrypto.aesGcmDecrypt(dataBase64, keyHex, ivHex).then(
+    nullWhenUndefined
+  );
 }
 
 export function aesEncryptFile(
@@ -96,7 +111,9 @@ export function randomBytes(size: number): Promise<string> {
 export function rsaGenerateKeys(
   keySize?: number
 ): Promise<{ public: string; private: string }> {
-  return MobileCrypto.rsaGenerateKeys(keySize);
+  return MobileCrypto.rsaGenerateKeys(keySize).then(
+    ({ publicKey, privateKey }) => ({ public: publicKey, private: privateKey })
+  );
 }
 
 export function rsaEncrypt(

@@ -6,7 +6,8 @@ import type { RSAKeyPair } from './RSAKeyPair';
  * Native hashing, key derivation, symmetric and asymmetric encryption,
  * signing, and secure random generation.
  */
-export interface MobileCrypto extends HybridObject<{ ios: 'swift' }> {
+export interface MobileCrypto
+  extends HybridObject<{ ios: 'swift'; android: 'kotlin' }> {
   shaBase64(data: string, algorithm: string): Promise<string>;
   shaUtf8(data: string, algorithm: string): Promise<string>;
   pbkdf2Hash(
