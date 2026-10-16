@@ -4,7 +4,8 @@ const pkg = require('../package.json');
 module.exports = {
   project: {
     ios: {
-      automaticPodsInstallation: true,
+      // CI installs pods explicitly before building.
+      automaticPodsInstallation: !process.env.CI,
     },
   },
   dependencies: {
