@@ -5,57 +5,42 @@ import ReactAppDependencyProvider
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-  var reactNativeDelegate: ReactNativeDelegate?
-  var reactNativeFactory: RCTReactNativeFactory?
-
   func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
-    // Run native AES GCM tests before starting React Native
     AESGCMNativeTest.runTests()
-    
-    let delegate = ReactNativeDelegate()
-    let factory = RCTReactNativeFactory(delegate: delegate)
-    delegate.dependencyProvider = RCTAppDependencyProvider()
-
-    reactNativeDelegate = delegate
-    reactNativeFactory = factory
-
     return true
   }
 }
 
-class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate {
   var window: UIWindow?
+  var reactNativeFactory: RCTReactNativeFactory?
 
   func scene(
     _ scene: UIScene,
     willConnectTo session: UISceneSession,
     options connectionOptions: UIScene.ConnectionOptions
   ) {
-    guard let windowScene = scene as? UIWindowScene,
-          let appDelegate = UIApplication.shared.delegate as? AppDelegate,
-          let factory = appDelegate.reactNativeFactory else {
+    guard let windowScene = scene as? UIWindowScene else {
       return
     }
 
+    dependencyProvider = RCTAppDependencyProvider()
+    reactNativeFactory = RCTReactNativeFactory(delegate: self)
     window = UIWindow(windowScene: windowScene)
-    factory.startReactNative(
-      withModuleName: "MobileCryptoExample",
-      in: window
-    )
-  }
-}
 
-class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
-  override func sourceURL(for bridge: RCTBridge) -> URL? {
-    self.bundleURL()
+    reactNativeFactory?.startReactNative(
+      withModuleName: "MobileCryptoExample",
+      in: window,
+      connectionOptions: connectionOptions
+    )
   }
 
   override func bundleURL() -> URL? {
 #if DEBUG
-    return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
+    RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
 #else
     Bundle.main.url(forResource: "main", withExtension: "jsbundle")
 #endif
