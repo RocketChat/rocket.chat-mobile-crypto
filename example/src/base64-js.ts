@@ -1,14 +1,13 @@
 /* eslint-disable no-bitwise */
 // https://github.com/beatgammit/base64-js/blob/master/index.js
 
-const lookup: string[] = [];
+const lookup =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 const revLookup: number[] = [];
 const Arr = typeof Uint8Array !== 'undefined' ? Uint8Array : Array;
 
-const code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-for (let i = 0, len = code.length; i < len; i += 1) {
-  lookup[i] = code[i];
-  revLookup[code.charCodeAt(i)] = i;
+for (let i = 0, len = lookup.length; i < len; i += 1) {
+  revLookup[lookup.charCodeAt(i)] = i;
 }
 
 // Support decoding URL-safe base64 strings, as Node.js does.
@@ -16,7 +15,7 @@ for (let i = 0, len = code.length; i < len; i += 1) {
 revLookup['-'.charCodeAt(0)] = 62;
 revLookup['_'.charCodeAt(0)] = 63;
 
-const getLens = (b64: string) => {
+const getLens = (b64: string): [number, number] => {
   const len = b64.length;
 
   // We're encoding some strings not multiple of 4, so, disable this check
@@ -38,22 +37,18 @@ const getLens = (b64: string) => {
 
 // base64 is 4/3 + up to two characters of the original data
 export const byteLength = (b64: string): number => {
-  const lens = getLens(b64);
-  const validLen = lens[0];
-  const placeHoldersLen = lens[1];
+  const [validLen, placeHoldersLen] = getLens(b64);
   return ((validLen + placeHoldersLen) * 3) / 4 - placeHoldersLen;
 };
 
-const _byteLength = (b64: string, validLen: number, placeHoldersLen: number) =>
+const _byteLength = (validLen: number, placeHoldersLen: number) =>
   ((validLen + placeHoldersLen) * 3) / 4 - placeHoldersLen;
 
 export const toByteArray = (b64: string): any[] | Uint8Array => {
   let tmp;
-  const lens = getLens(b64);
-  const validLen = lens[0];
-  const placeHoldersLen = lens[1];
+  const [validLen, placeHoldersLen] = getLens(b64);
 
-  const arr = new Arr(_byteLength(b64, validLen, placeHoldersLen));
+  const arr = new Arr(_byteLength(validLen, placeHoldersLen));
 
   let curByte = 0;
 
@@ -61,12 +56,13 @@ export const toByteArray = (b64: string): any[] | Uint8Array => {
   const len = placeHoldersLen > 0 ? validLen - 4 : validLen;
 
   let i;
+  // Missing characters in an unpadded final group contribute zero bits.
   for (i = 0; i < len; i += 4) {
     tmp =
-      (revLookup[b64.charCodeAt(i)] << 18) |
-      (revLookup[b64.charCodeAt(i + 1)] << 12) |
-      (revLookup[b64.charCodeAt(i + 2)] << 6) |
-      revLookup[b64.charCodeAt(i + 3)];
+      ((revLookup[b64.charCodeAt(i)] ?? 0) << 18) |
+      ((revLookup[b64.charCodeAt(i + 1)] ?? 0) << 12) |
+      ((revLookup[b64.charCodeAt(i + 2)] ?? 0) << 6) |
+      (revLookup[b64.charCodeAt(i + 3)] ?? 0);
     arr[curByte] = (tmp >> 16) & 0xff;
     curByte += 1;
     arr[curByte] = (tmp >> 8) & 0xff;
@@ -77,17 +73,17 @@ export const toByteArray = (b64: string): any[] | Uint8Array => {
 
   if (placeHoldersLen === 2) {
     tmp =
-      (revLookup[b64.charCodeAt(i)] << 2) |
-      (revLookup[b64.charCodeAt(i + 1)] >> 4);
+      ((revLookup[b64.charCodeAt(i)] ?? 0) << 2) |
+      ((revLookup[b64.charCodeAt(i + 1)] ?? 0) >> 4);
     arr[curByte] = tmp & 0xff;
     curByte += 1;
   }
 
   if (placeHoldersLen === 1) {
     tmp =
-      (revLookup[b64.charCodeAt(i)] << 10) |
-      (revLookup[b64.charCodeAt(i + 1)] << 4) |
-      (revLookup[b64.charCodeAt(i + 2)] >> 2);
+      ((revLookup[b64.charCodeAt(i)] ?? 0) << 10) |
+      ((revLookup[b64.charCodeAt(i + 1)] ?? 0) << 4) |
+      ((revLookup[b64.charCodeAt(i + 2)] ?? 0) >> 2);
     arr[curByte] = (tmp >> 8) & 0xff;
     curByte += 1;
     arr[curByte] = tmp & 0xff;
@@ -98,10 +94,10 @@ export const toByteArray = (b64: string): any[] | Uint8Array => {
 };
 
 const tripletToBase64 = (num: number) =>
-  lookup[(num >> 18) & 0x3f] +
-  lookup[(num >> 12) & 0x3f] +
-  lookup[(num >> 6) & 0x3f] +
-  lookup[num & 0x3f];
+  lookup.charAt((num >> 18) & 0x3f) +
+  lookup.charAt((num >> 12) & 0x3f) +
+  lookup.charAt((num >> 6) & 0x3f) +
+  lookup.charAt(num & 0x3f);
 
 const encodeChunk = (
   uint8: number[] | Uint8Array,
@@ -110,11 +106,12 @@ const encodeChunk = (
 ) => {
   let tmp;
   const output = [];
+  // The caller passes only complete triplets within the input's bounds.
   for (let i = start; i < end; i += 3) {
     tmp =
-      ((uint8[i] << 16) & 0xff0000) +
-      ((uint8[i + 1] << 8) & 0xff00) +
-      (uint8[i + 2] & 0xff);
+      ((uint8[i]! << 16) & 0xff0000) +
+      ((uint8[i + 1]! << 8) & 0xff00) +
+      (uint8[i + 2]! & 0xff);
     output.push(tripletToBase64(tmp));
   }
   return output.join('');
@@ -140,12 +137,14 @@ export const fromByteArray = (uint8: number[] | Uint8Array): string => {
 
   // pad the end with zeros, but make sure to not forget the extra bytes
   if (extraBytes === 1) {
-    tmp = uint8[len - 1];
-    parts.push(`${lookup[tmp >> 2] + lookup[(tmp << 4) & 0x3f]}==`);
-  } else if (extraBytes === 2) {
-    tmp = (uint8[len - 2] << 8) + uint8[len - 1];
+    tmp = uint8[len - 1]!;
     parts.push(
-      `${lookup[tmp >> 10] + lookup[(tmp >> 4) & 0x3f] + lookup[(tmp << 2) & 0x3f]}=`
+      `${lookup.charAt(tmp >> 2) + lookup.charAt((tmp << 4) & 0x3f)}==`
+    );
+  } else if (extraBytes === 2) {
+    tmp = (uint8[len - 2]! << 8) + uint8[len - 1]!;
+    parts.push(
+      `${lookup.charAt(tmp >> 10) + lookup.charAt((tmp >> 4) & 0x3f) + lookup.charAt((tmp << 2) & 0x3f)}=`
     );
   }
 
