@@ -35,7 +35,9 @@
   ],
   "scripts": {
     "example": "yarn workspace @rocket.chat/mobile-crypto-example",
-    "test": "jest",
+    "test": "yarn example test",
+    "test:smoke": "yarn example test:smoke",
+    "test:profile": "yarn example test:profile",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",

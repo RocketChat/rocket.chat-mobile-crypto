@@ -1,0 +1,417 @@
+{
+  "schemaVersion": 1,
+  "capturedDate": "2026-10-16",
+  "defaultMode": "runtime",
+  "configuration": {
+    "property": "resetEnvironmentBetweenTestFiles",
+    "default": "runtime",
+    "override": "HARNESS_RESET_MODE=process"
+  },
+  "behavior": "One native app process for all six test files. Five JavaScript runtime reloads retain file isolation. Native state and files persist; file tests clean up their own artifacts. Harness may fall back to a process restart after a failed reload or recover from a test timeout.",
+  "environment": {
+    "node": "v20.20.2",
+    "harness": "1.6.0",
+    "reactNative": "0.83.9",
+    "cpu": "Apple M4 Max",
+    "logicalCpus": 14,
+    "hostMemoryBytes": 38654705664,
+    "platform": "darwin",
+    "architecture": "arm64",
+    "kernel": "25.6.0",
+    "runner": {
+      "name": "ios",
+      "device": {
+        "type": "simulator",
+        "name": "Mobile Crypto Harness",
+        "systemVersion": "27.0"
+      },
+      "bundleId": "rocketchat.mobilecrypto.example"
+    },
+    "gitBase": "69a0a250dd7c6ff0808eb659d7202be1cae7fa1c",
+    "sourceFingerprint": "764332066527392d6bfbc67ff4ccdc616a887a543f63f9916e6b0a949aea0aab",
+    "cacheVersion": "baseline-20261016-v1"
+  },
+  "method": {
+    "sampleCountPerMode": 3,
+    "sequence": [
+      "process-1",
+      "runtime-1",
+      "process-2",
+      "runtime-2",
+      "process-3",
+      "runtime-3"
+    ],
+    "aggregate": "Median and range of three cached unrecorded runs per mode. One warmup per mode and the recorded run are excluded.",
+    "conditions": "Same installed iOS app, simulator, Node version, test/source fingerprint, and Metro cache version. No native rebuild between runs. Shared host, varying load, two booted simulators during measured runs.",
+    "verification": "Each run must pass all 106 tests across six files, have five resets in the selected mode, zero reset escalations, and exactly one native launch for runtime or six for process.",
+    "limits": "Small sample on a shared host. Reset spans are already inside the file loop. Test bodies include bridge calls and assertions, exclude setup hooks, and have millisecond resolution. Host CPU/RSS exclude simulator app processes. No isolated native crypto performance or app-memory claims.",
+    "timingInterval": "Harness CLI child process only. Simulator boot, native build/install, video export, and report generation are excluded."
+  },
+  "verification": {
+    "runs": 9,
+    "testsPerRun": 106,
+    "totalPassed": 954,
+    "totalFailed": 0,
+    "runtimeRuns": 5,
+    "nativeLaunchesPerRuntimeRun": 1,
+    "resetEscalations": 0
+  },
+  "comparison": {
+    "process": {
+      "sampleCount": 3,
+      "wallMs": {
+        "median": 36159.608625,
+        "min": 33987.554084,
+        "max": 42591.499625000004
+      },
+      "startupMs": {
+        "median": 3210.2055,
+        "min": 3194.207,
+        "max": 4573.3055
+      },
+      "fileLoopMs": {
+        "median": 28846.884791,
+        "min": 27821.822583,
+        "max": 33762.294542
+      },
+      "testBodiesMs": {
+        "median": 485,
+        "min": 476,
+        "max": 574
+      },
+      "resetMs": {
+        "median": 20623.681082,
+        "min": 19837.474499999997,
+        "max": 22735.414332999997
+      },
+      "nativeLaunchCount": {
+        "median": 6,
+        "min": 6,
+        "max": 6
+      },
+      "userCpuSeconds": {
+        "median": 8.08,
+        "min": 7.55,
+        "max": 9.77
+      },
+      "systemCpuSeconds": {
+        "median": 5.46,
+        "min": 5.15,
+        "max": 7.93
+      },
+      "peakHostRssBytes": {
+        "median": 603504640,
+        "min": 602128384,
+        "max": 786350080
+      },
+      "hostCpuSeconds": {
+        "median": 13.54,
+        "min": 12.7,
+        "max": 17.7
+      }
+    },
+    "runtime": {
+      "sampleCount": 3,
+      "wallMs": {
+        "median": 21973.050875,
+        "min": 15443.329583,
+        "max": 23407.851208
+      },
+      "startupMs": {
+        "median": 4034.58175,
+        "min": 2006.2805,
+        "max": 4720.2095
+      },
+      "fileLoopMs": {
+        "median": 12366.598709000002,
+        "min": 9610.472917,
+        "max": 13149.618875000002
+      },
+      "testBodiesMs": {
+        "median": 343,
+        "min": 285,
+        "max": 351
+      },
+      "resetMs": {
+        "median": 1822.4457499999999,
+        "min": 1777.5827069999978,
+        "max": 2326.92325
+      },
+      "nativeLaunchCount": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "userCpuSeconds": {
+        "median": 7.04,
+        "min": 5.01,
+        "max": 7.13
+      },
+      "systemCpuSeconds": {
+        "median": 4.2,
+        "min": 2.68,
+        "max": 4.28
+      },
+      "peakHostRssBytes": {
+        "median": 923041792,
+        "min": 911310848,
+        "max": 970588160
+      },
+      "hostCpuSeconds": {
+        "median": 11.32,
+        "min": 7.6899999999999995,
+        "max": 11.33
+      }
+    }
+  },
+  "observedChange": {
+    "wallTimeReductionPercent": 39.23316177761866,
+    "resetTimeReductionPercent": 91.16333431091212,
+    "peakHostRssIncreasePercent": 52.94692547848514
+  },
+  "samples": [
+    {
+      "label": "runtime-check",
+      "mode": "runtime",
+      "recorded": false,
+      "includedInComparison": false,
+      "passed": 106,
+      "failed": 0,
+      "skipped": 0,
+      "suiteCount": 6,
+      "startedAt": "2026-10-16T16:21:32.759Z",
+      "finishedAt": "2026-10-16T16:21:51.995Z",
+      "wallMs": 19212.04975,
+      "startupMs": 4859.2165,
+      "fileLoopMs": 10203.705084000001,
+      "testBodiesMs": 288,
+      "resetMs": 1707.6337499999972,
+      "resetCount": 5,
+      "escalationCount": 0,
+      "nativeLaunchCount": 1,
+      "userCpuSeconds": 5.64,
+      "systemCpuSeconds": 3.24,
+      "peakHostRssBytes": 932659200,
+      "loadAverageBefore": [19.58740234375, 7.201171875, 15.2783203125],
+      "loadAverageAfter": [24.57177734375, 9.32568359375, 15.86328125],
+      "bootedSimulatorCount": 2,
+      "artifactDirectory": "example/.harness/performance/2026-10-16-runtime/runtime-check"
+    },
+    {
+      "label": "process-warmup",
+      "mode": "process",
+      "recorded": false,
+      "includedInComparison": false,
+      "passed": 106,
+      "failed": 0,
+      "skipped": 0,
+      "suiteCount": 6,
+      "startedAt": "2026-10-16T16:22:41.041Z",
+      "finishedAt": "2026-10-16T16:23:12.200Z",
+      "wallMs": 31148.315042000002,
+      "startupMs": 2116.412,
+      "fileLoopMs": 26341.827,
+      "testBodiesMs": 377,
+      "resetMs": 16968.4235,
+      "resetCount": 5,
+      "escalationCount": 0,
+      "nativeLaunchCount": 6,
+      "userCpuSeconds": 7.07,
+      "systemCpuSeconds": 4.86,
+      "peakHostRssBytes": 827654144,
+      "loadAverageBefore": [26.87890625, 12.7578125, 16.78515625],
+      "loadAverageAfter": [18.44482421875, 12.07568359375, 16.3984375],
+      "bootedSimulatorCount": 2,
+      "artifactDirectory": "example/.harness/performance/2026-10-16-runtime/process-warmup"
+    },
+    {
+      "label": "process-1",
+      "mode": "process",
+      "recorded": false,
+      "includedInComparison": true,
+      "passed": 106,
+      "failed": 0,
+      "skipped": 0,
+      "suiteCount": 6,
+      "startedAt": "2026-10-16T16:23:12.403Z",
+      "finishedAt": "2026-10-16T16:23:46.402Z",
+      "wallMs": 33987.554084,
+      "startupMs": 3194.207,
+      "fileLoopMs": 27821.822583,
+      "testBodiesMs": 485,
+      "resetMs": 19837.474499999997,
+      "resetCount": 5,
+      "escalationCount": 0,
+      "nativeLaunchCount": 6,
+      "userCpuSeconds": 7.55,
+      "systemCpuSeconds": 5.15,
+      "peakHostRssBytes": 603504640,
+      "loadAverageBefore": [18.44482421875, 12.07568359375, 16.3984375],
+      "loadAverageAfter": [13.61572265625, 11.537109375, 16.0244140625],
+      "bootedSimulatorCount": 2,
+      "artifactDirectory": "example/.harness/performance/2026-10-16-runtime/process-1"
+    },
+    {
+      "label": "runtime-1",
+      "mode": "runtime",
+      "recorded": false,
+      "includedInComparison": true,
+      "passed": 106,
+      "failed": 0,
+      "skipped": 0,
+      "suiteCount": 6,
+      "startedAt": "2026-10-16T16:23:46.605Z",
+      "finishedAt": "2026-10-16T16:24:02.059Z",
+      "wallMs": 15443.329583,
+      "startupMs": 2006.2805,
+      "fileLoopMs": 9610.472917,
+      "testBodiesMs": 351,
+      "resetMs": 1822.4457499999999,
+      "resetCount": 5,
+      "escalationCount": 0,
+      "nativeLaunchCount": 1,
+      "userCpuSeconds": 5.01,
+      "systemCpuSeconds": 2.68,
+      "peakHostRssBytes": 923041792,
+      "loadAverageBefore": [13.61572265625, 11.537109375, 16.0244140625],
+      "loadAverageAfter": [12.18115234375, 11.3154296875, 15.8662109375],
+      "bootedSimulatorCount": 2,
+      "artifactDirectory": "example/.harness/performance/2026-10-16-runtime/runtime-1"
+    },
+    {
+      "label": "process-2",
+      "mode": "process",
+      "recorded": false,
+      "includedInComparison": true,
+      "passed": 106,
+      "failed": 0,
+      "skipped": 0,
+      "suiteCount": 6,
+      "startedAt": "2026-10-16T16:24:02.289Z",
+      "finishedAt": "2026-10-16T16:24:38.463Z",
+      "wallMs": 36159.608625,
+      "startupMs": 3210.2055,
+      "fileLoopMs": 28846.884791,
+      "testBodiesMs": 476,
+      "resetMs": 20623.681082,
+      "resetCount": 5,
+      "escalationCount": 0,
+      "nativeLaunchCount": 6,
+      "userCpuSeconds": 8.08,
+      "systemCpuSeconds": 5.46,
+      "peakHostRssBytes": 602128384,
+      "loadAverageBefore": [12.18115234375, 11.3154296875, 15.8662109375],
+      "loadAverageAfter": [11.24462890625, 11.09423828125, 15.59619140625],
+      "bootedSimulatorCount": 2,
+      "artifactDirectory": "example/.harness/performance/2026-10-16-runtime/process-2"
+    },
+    {
+      "label": "runtime-2",
+      "mode": "runtime",
+      "recorded": false,
+      "includedInComparison": true,
+      "passed": 106,
+      "failed": 0,
+      "skipped": 0,
+      "suiteCount": 6,
+      "startedAt": "2026-10-16T16:24:38.884Z",
+      "finishedAt": "2026-10-16T16:25:02.318Z",
+      "wallMs": 23407.851208,
+      "startupMs": 4034.58175,
+      "fileLoopMs": 13149.618875000002,
+      "testBodiesMs": 343,
+      "resetMs": 2326.92325,
+      "resetCount": 5,
+      "escalationCount": 0,
+      "nativeLaunchCount": 1,
+      "userCpuSeconds": 7.04,
+      "systemCpuSeconds": 4.28,
+      "peakHostRssBytes": 911310848,
+      "loadAverageBefore": [11.24462890625, 11.09423828125, 15.59619140625],
+      "loadAverageAfter": [14.27001953125, 11.81005859375, 15.72265625],
+      "bootedSimulatorCount": 2,
+      "artifactDirectory": "example/.harness/performance/2026-10-16-runtime/runtime-2"
+    },
+    {
+      "label": "process-3",
+      "mode": "process",
+      "recorded": false,
+      "includedInComparison": true,
+      "passed": 106,
+      "failed": 0,
+      "skipped": 0,
+      "suiteCount": 6,
+      "startedAt": "2026-10-16T16:25:02.715Z",
+      "finishedAt": "2026-10-16T16:25:45.329Z",
+      "wallMs": 42591.499625000004,
+      "startupMs": 4573.3055,
+      "fileLoopMs": 33762.294542,
+      "testBodiesMs": 574,
+      "resetMs": 22735.414332999997,
+      "resetCount": 5,
+      "escalationCount": 0,
+      "nativeLaunchCount": 6,
+      "userCpuSeconds": 9.77,
+      "systemCpuSeconds": 7.93,
+      "peakHostRssBytes": 786350080,
+      "loadAverageBefore": [14.27001953125, 11.81005859375, 15.72265625],
+      "loadAverageAfter": [19.580078125, 13.466796875, 16.14697265625],
+      "bootedSimulatorCount": 2,
+      "artifactDirectory": "example/.harness/performance/2026-10-16-runtime/process-3"
+    },
+    {
+      "label": "runtime-3",
+      "mode": "runtime",
+      "recorded": false,
+      "includedInComparison": true,
+      "passed": 106,
+      "failed": 0,
+      "skipped": 0,
+      "suiteCount": 6,
+      "startedAt": "2026-10-16T16:25:46.317Z",
+      "finishedAt": "2026-10-16T16:26:08.311Z",
+      "wallMs": 21973.050875,
+      "startupMs": 4720.2095,
+      "fileLoopMs": 12366.598709000002,
+      "testBodiesMs": 285,
+      "resetMs": 1777.5827069999978,
+      "resetCount": 5,
+      "escalationCount": 0,
+      "nativeLaunchCount": 1,
+      "userCpuSeconds": 7.13,
+      "systemCpuSeconds": 4.2,
+      "peakHostRssBytes": 970588160,
+      "loadAverageBefore": [20.09375, 13.6748046875, 16.20458984375],
+      "loadAverageAfter": [19.40234375, 13.94970703125, 16.2451171875],
+      "bootedSimulatorCount": 2,
+      "artifactDirectory": "example/.harness/performance/2026-10-16-runtime/runtime-3"
+    },
+    {
+      "label": "runtime-recorded",
+      "mode": "runtime",
+      "recorded": true,
+      "includedInComparison": false,
+      "passed": 106,
+      "failed": 0,
+      "skipped": 0,
+      "suiteCount": 6,
+      "startedAt": "2026-10-16T16:26:39.756Z",
+      "finishedAt": "2026-10-16T16:27:02.739Z",
+      "wallMs": 22962.980875,
+      "startupMs": 4719.2365,
+      "fileLoopMs": 12730.666667000001,
+      "testBodiesMs": 339,
+      "resetMs": 1780.7398329999996,
+      "resetCount": 5,
+      "escalationCount": 0,
+      "nativeLaunchCount": 1,
+      "userCpuSeconds": 6.83,
+      "systemCpuSeconds": 4.24,
+      "peakHostRssBytes": 872300544,
+      "loadAverageBefore": [18.31494140625, 14.2197265625, 16.263671875],
+      "loadAverageAfter": [25.49658203125, 16.0849609375, 16.86767578125],
+      "bootedSimulatorCount": 2,
+      "artifactDirectory": "example/.harness/performance/2026-10-16-runtime/runtime-recorded"
+    }
+  ]
+}

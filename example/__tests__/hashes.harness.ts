@@ -1,0 +1,110 @@
+import { describe, expect, test } from 'react-native-harness';
+import {
+  hmac256,
+  pbkdf2Hash,
+  shaBase64,
+  shaUtf8,
+} from '@rocket.chat/mobile-crypto';
+import {
+  binaryHashVector,
+  binaryPbkdf2Vector,
+  hashVectors,
+  hmacVectors,
+  pbkdf2Vectors,
+  unicodeVector,
+} from './__fixtures__/crypto';
+
+describe('SHA known answers', () => {
+  for (const vector of hashVectors) {
+    test(`${vector.algorithm} returns a hexadecimal UTF-8 digest`, async () => {
+      expect(await shaUtf8('hello', vector.algorithm)).toBe(vector.hex);
+    });
+
+    test(`${vector.algorithm} returns a Base64 digest of decoded bytes`, async () => {
+      expect(await shaBase64('aGVsbG8=', vector.algorithm)).toBe(vector.base64);
+    });
+  }
+
+  test('hashes an empty UTF-8 string', async () => {
+    expect(await shaUtf8('', 'SHA-256')).toBe(
+      'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+    );
+  });
+
+  test('hashes empty Base64 input', async () => {
+    expect(await shaBase64('', 'SHA-256')).toBe(
+      '47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    );
+  });
+
+  test('preserves emoji and accented UTF-8 characters', async () => {
+    expect(await shaUtf8(unicodeVector.text, 'SHA-256')).toBe(
+      unicodeVector.hex
+    );
+    expect(await shaBase64(unicodeVector.base64, 'SHA-256')).toBe(
+      unicodeVector.digestBase64
+    );
+  });
+
+  test('hashes binary bytes that are not valid UTF-8', async () => {
+    expect(await shaBase64(binaryHashVector.base64, 'SHA-256')).toBe(
+      binaryHashVector.digestBase64
+    );
+  });
+
+  test('rejects an unsupported UTF-8 hash algorithm', async () => {
+    await expect(shaUtf8('hello', 'unsupported')).rejects.toThrow();
+  });
+
+  test('rejects an unsupported Base64 hash algorithm', async () => {
+    await expect(shaBase64('aGVsbG8=', 'unsupported')).rejects.toThrow();
+  });
+
+  test('rejects malformed Base64 input', async () => {
+    await expect(shaBase64('a===', 'SHA-256')).rejects.toThrow();
+  });
+});
+
+describe('PBKDF2 known answers', () => {
+  for (const vector of pbkdf2Vectors) {
+    test(`derives ${vector.keyLength} bytes with ${vector.algorithm}`, async () => {
+      expect(
+        await pbkdf2Hash(
+          'cGFzc3dvcmQ=',
+          'c2FsdA==',
+          1000,
+          vector.keyLength,
+          vector.algorithm
+        )
+      ).toBe(vector.expected);
+    });
+  }
+
+  test('matches the single-iteration RFC 6070 SHA-1 vector', async () => {
+    expect(await pbkdf2Hash('cGFzc3dvcmQ=', 'c2FsdA==', 1, 20, 'SHA1')).toBe(
+      'DGDID5YfDnHzqbUkr2ASBi/gN6Y='
+    );
+  });
+
+  test('preserves null bytes in the decoded password and salt', async () => {
+    expect(
+      await pbkdf2Hash(
+        binaryPbkdf2Vector.password,
+        binaryPbkdf2Vector.salt,
+        4096,
+        16,
+        'SHA256'
+      )
+    ).toBe(binaryPbkdf2Vector.expected);
+  });
+});
+
+describe('HMAC-SHA256 known answers', () => {
+  for (const vector of hmacVectors) {
+    test(vector.name, async () => {
+      expect(await hmac256(vector.dataHex, vector.keyHex)).toBe(
+        vector.expected
+      );
+    });
+  }
+});
