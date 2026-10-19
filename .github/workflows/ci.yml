@@ -99,6 +99,8 @@ jobs:
         id: boot-emulator
         background: true
         run: |
+          export ANDROID_AVD_HOME="$HOME/.android/avd"
+          mkdir -p "$ANDROID_AVD_HOME"
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           yes | "$SDKMANAGER" --licenses > /dev/null
           "$SDKMANAGER" --install emulator "$HARNESS_ANDROID_SYSTEM_IMAGE" > /dev/null
@@ -107,9 +109,14 @@ jobs:
           nohup "$ANDROID_HOME/emulator/emulator" -avd "$HARNESS_ANDROID_DEVICE" \
             -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect \
             -camera-back none -camera-front none > "$RUNNER_TEMP/emulator.log" 2>&1 &
-          ADB="$ANDROID_HOME/platform-tools/adb"
-          timeout 600 "$ADB" wait-for-device
-          timeout 600 bash -c "until [ \"\$('$ADB' shell getprop sys.boot_completed | tr -d '\r')\" = 1 ]; do sleep 2; done"
+          EMULATOR_PID=$!
+          until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; do
+            if ! kill -0 "$EMULATOR_PID" 2>/dev/null || [ "$SECONDS" -gt 900 ]; then
+              cat "$RUNNER_TEMP/emulator.log"
+              exit 1
+            fi
+            sleep 2
+          done
 
       - parallel:
           - name: Setup
