@@ -73,7 +73,6 @@ android/keystores/debug.keystore
 .expo/
 
 # Turborepo
-.turbo/
 
 # React Native Harness
 .harness/
