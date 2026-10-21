@@ -127,30 +127,7 @@ The default `runtime` reset keeps the native app process open across all test fi
 HARNESS_RESET_MODE=process yarn test --harnessRunner ios
 ```
 
-CI builds and installs the example app on a dedicated iOS simulator before running the same native suite. Its device and runtime overrides are defined in `.github/workflows/ci.yml`.
-
-### Recording a performance baseline
-
-After building and installing the iOS example, `yarn test:profile` runs the full suite with Harness diagnostics and macOS process resource counters. It saves `metrics.json`, the original Jest `results.json`, a Chrome-compatible `trace.json`, the Harness log, machine metadata, and raw `/usr/bin/time -l` output under `example/.harness/performance/`.
-
-Use one new cache version for the first run, then reuse that exact version for at least three warm runs:
-
-```sh
-yarn test:profile --label transform-cold --cache-version baseline-001
-yarn test:profile --label warm-1 --cache-version baseline-001
-yarn test:profile --label warm-2 --cache-version baseline-001
-yarn test:profile --label warm-3 --cache-version baseline-001
-```
-
-A new cache version invalidates Metro transforms; it does not reboot the simulator or clear its existing file-map, OS, or app installation caches. Compare medians and ranges from warm runs with the same Node version, simulator, app build, reset mode, and recording state. The metadata includes the selected reset mode, test/source fingerprint, host load, and other booted simulators so changes in the environment remain visible. Metrics also record each reset's requested and performed mode, including any fallback to a process restart.
-
-For videos, start a device-scope recording before a run and stop/export it after the process exits. With `agent-device`, use `record start <video.mp4> --scope device --hide-touches` and `record stop`, passing the device and session arguments from your environment. Add `--recorded` to `yarn test:profile` to mark that sample. Keep recorded runs separate from the main timing aggregate because encoding can consume host resources.
-
-Test-body durations include JavaScript assertions and native bridge round trips at millisecond resolution; they are not isolated native crypto benchmarks. Suite setup hooks, including RSA key generation, are outside individual test-body timings. Trace phases can overlap and must not be added together as a time budget. CPU time and peak RSS describe the host Harness process and its child processes, not the simulator app's memory or native-only CPU usage. Simulator boot, app compilation, installation, video export, and profile-report generation are outside the measured Harness CLI interval.
-
-The [initial iOS baseline](./performance/harness-ios-baseline.json) preserves the five sample summaries, per-file timings, machine context, source fingerprint, and measurement definitions from before runtime resets were enabled. Raw traces and videos stay in the ignored `example/.harness/performance/2026-10-16-baseline/` artifact directory; its `report.html` provides an interactive comparison.
-
-The [reset-mode comparison](./performance/harness-ios-reset-comparison.json) measures process restarts against runtime reloads with three interleaved, cached, unrecorded runs per mode. Every runtime sample passed all 106 tests with one native app launch and no fallback restarts. Its raw metrics, traces, and new recording are under `example/.harness/performance/2026-10-16-runtime/`. To repeat the comparison, warm each mode first, then alternate samples using `HARNESS_RESET_MODE=process yarn test:profile` for the control and `yarn test:profile` for the default runtime mode, keeping the cache version fixed.
+CI builds and installs the example app on a dedicated iOS simulator and Android emulator before running the same native suite on each. Their device and runtime overrides are defined in `.github/workflows/ci.yml`.
 
 ### Commit message convention
 
@@ -192,7 +169,6 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn lint`: lint files with ESLint.
 - `yarn test:smoke`: run the three native smoke tests on the default iOS simulator.
 - `yarn test`: run all native crypto tests on the default iOS simulator; pass `--harnessRunner android` to select Android.
-- `yarn test:profile`: run the iOS suite with timing traces, per-test durations, and host resource metrics.
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
 - `yarn example ios`: run the example app on iOS.
