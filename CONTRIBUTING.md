@@ -70,11 +70,64 @@ To fix formatting errors, run the following:
 yarn lint --fix
 ```
 
-Remember to add tests for your change if possible. Run the unit tests by:
+The crypto tests use [React Native Harness](https://www.react-native-harness.dev/) to run against the real native module in the example app. Test files live in `example/__tests__/*.harness.ts` and import their test APIs from `react-native-harness`.
+
+Build and install the example app before running tests. Harness starts its own Metro server, so stop any existing Metro process on the test port first.
+
+For iOS, the default runner uses a simulator named `Mobile Crypto Harness` with iOS 27.0. Create it once if needed:
 
 ```sh
-yarn test
+xcrun simctl create 'Mobile Crypto Harness' com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro com.apple.CoreSimulator.SimRuntime.iOS-27-0
 ```
+
+To use another installed simulator, set its name and runtime version in your shell:
+
+```sh
+export HARNESS_IOS_DEVICE='iPhone 17 Pro'
+export HARNESS_IOS_VERSION='26.2'
+```
+
+Install pods from `example/`, then build and install on the selected simulator:
+
+```sh
+(cd example && pod install --project-directory=ios)
+yarn example ios --simulator "${HARNESS_IOS_DEVICE:-Mobile Crypto Harness}" --no-packager
+```
+
+Start with the smoke suite to check native module access, asynchronous hashing, and UUID generation:
+
+```sh
+yarn test:smoke --harnessRunner ios
+```
+
+Run the complete suite after the smoke tests pass:
+
+```sh
+yarn test --harnessRunner ios
+```
+
+The suite covers SHA, PBKDF2, HMAC, AES-CBC, AES-GCM authentication failures, secure random output formats, RSA encryption/signatures, PEM/JWK conversion, file checksums, and AES-CTR file operations. Fixed answers live in `example/__tests__/__fixtures__`; they come from independent crypto vectors rather than the library under test. The public RSA keys and fixed answers live in `example/fixtures/rsa.ts`, shared by the tests and the example app.
+
+File tests use `react-native-file-access` as an example-app development dependency to create and remove real cache files, including binary data, encoded file URIs, empty files, and files spanning multiple native read buffers. Rebuild the example app after changing native dependencies.
+
+An Android runner is also configured. Select an installed AVD and build/install the example app on that emulator before running:
+
+```sh
+export HARNESS_ANDROID_DEVICE='Pixel_API_34_arm64'
+yarn example android --no-packager
+yarn test:smoke --harnessRunner android
+yarn test --harnessRunner android
+```
+
+Use `HARNESS_METRO_PORT` to select a different port (default `8081`). Harness manages its own Metro process and serializes tests on the selected device. Jest flags such as `--testNamePattern` and `--watch` are supported; `--maxWorkers` and `--runInBand` are not Harness options.
+
+The default `runtime` reset keeps the native app process open across all test files and reloads JavaScript between files to isolate module state, globals, and test hooks. Native state and files survive a JavaScript reload; file tests remove their own temporary files. Harness can still restart the app to recover from a failed reload or test timeout. To check a native-state isolation problem, opt into full process restarts:
+
+```sh
+HARNESS_RESET_MODE=process yarn test --harnessRunner ios
+```
+
+CI builds and installs the example app on a dedicated iOS simulator and Android emulator before running the same native suite on each. Their device and runtime overrides are defined in `.github/workflows/ci.yml`.
 
 ### Commit message convention
 
@@ -93,7 +146,7 @@ Our pre-commit hooks verify that your commit message matches this format when co
 
 [ESLint](https://eslint.org/), [Prettier](https://prettier.io/), [TypeScript](https://www.typescriptlang.org/)
 
-We use [TypeScript](https://www.typescriptlang.org/) for type checking, [ESLint](https://eslint.org/) with [Prettier](https://prettier.io/) for linting and formatting the code, and [Jest](https://jestjs.io/) for testing.
+We use [TypeScript](https://www.typescriptlang.org/) for type checking, [ESLint](https://eslint.org/) with [Prettier](https://prettier.io/) for linting and formatting the code, and React Native Harness for native integration tests.
 
 Our pre-commit hooks verify that the linter and tests pass when committing.
 
@@ -114,7 +167,8 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn`: setup project by installing dependencies.
 - `yarn typecheck`: type-check files with TypeScript.
 - `yarn lint`: lint files with ESLint.
-- `yarn test`: run unit tests with Jest.
+- `yarn test:smoke`: run the three native smoke tests on the default iOS simulator.
+- `yarn test`: run all native crypto tests on the default iOS simulator; pass `--harnessRunner android` to select Android.
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
 - `yarn example ios`: run the example app on iOS.

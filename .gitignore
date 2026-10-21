@@ -73,7 +73,10 @@ android/keystores/debug.keystore
 .expo/
 
 # Turborepo
-.turbo/
+
+# React Native Harness
+.harness/
+coverage/
 
 # React Native Codegen
 ios/generated

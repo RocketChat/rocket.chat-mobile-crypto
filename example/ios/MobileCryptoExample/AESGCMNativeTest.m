@@ -1,5 +1,5 @@
 #import "AESGCMNativeTest.h"
-#import "../../../../../../ios/algorithms/AESCrypto.h"
+#import <MobileCrypto/AESCrypto.h>
 
 @implementation AESGCMNativeTest
 

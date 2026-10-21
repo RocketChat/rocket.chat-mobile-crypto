@@ -6,6 +6,8 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
+    "test": "harness --config jest.harness.config.mjs",
+    "test:smoke": "harness --config jest.harness.config.mjs smoke.harness",
     "build:android": "react-native build-android --extra-params \"--no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a\"",
     "build:ios": "react-native build-ios --mode Debug"
   },
@@ -22,11 +24,15 @@
     "@react-native-community/cli": "20.0.0",
     "@react-native-community/cli-platform-android": "20.0.0",
     "@react-native-community/cli-platform-ios": "20.0.0",
+    "@react-native-harness/platform-android": "1.6.0",
+    "@react-native-harness/platform-apple": "1.6.0",
     "@react-native/babel-preset": "0.83.9",
     "@react-native/metro-config": "0.83.9",
     "@react-native/typescript-config": "0.83.9",
     "@types/react": "^19.2.0",
     "react-native-builder-bob": "^0.40.13",
+    "react-native-file-access": "4.0.4",
+    "react-native-harness": "1.6.0",
     "react-native-monorepo-config": "^0.1.9"
   },
   "engines": {
