@@ -36,7 +36,15 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
+  abstract fun shaBase64Sync(data: String, algorithm: String): String
+  
+  @DoNotStrip
+  @Keep
   abstract fun shaUtf8(data: String, algorithm: String): Promise<String>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun shaUtf8Sync(data: String, algorithm: String): String
   
   @DoNotStrip
   @Keep
@@ -48,7 +56,15 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
+  abstract fun hmac256Sync(data: String, key: String): String
+  
+  @DoNotStrip
+  @Keep
   abstract fun aesEncrypt(dataBase64: String, keyHex: String, ivHex: String): Promise<String?>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun aesEncryptSync(dataBase64: String, keyHex: String, ivHex: String): String?
   
   @DoNotStrip
   @Keep
@@ -56,11 +72,23 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
+  abstract fun aesDecryptSync(dataBase64: String, keyHex: String, ivHex: String): String?
+  
+  @DoNotStrip
+  @Keep
   abstract fun aesGcmEncrypt(dataBase64: String, keyHex: String, ivHex: String): Promise<String?>
   
   @DoNotStrip
   @Keep
+  abstract fun aesGcmEncryptSync(dataBase64: String, keyHex: String, ivHex: String): String?
+  
+  @DoNotStrip
+  @Keep
   abstract fun aesGcmDecrypt(dataBase64: String, keyHex: String, ivHex: String): Promise<String?>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun aesGcmDecryptSync(dataBase64: String, keyHex: String, ivHex: String): String?
   
   @DoNotStrip
   @Keep
@@ -72,15 +100,15 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
-  abstract fun randomUuid(): Promise<String>
+  abstract fun randomUuid(): String
   
   @DoNotStrip
   @Keep
-  abstract fun randomKey(length: Double): Promise<String>
+  abstract fun randomKey(length: Double): String
   
   @DoNotStrip
   @Keep
-  abstract fun randomBytes(size: Double): Promise<String>
+  abstract fun randomBytes(size: Double): String
   
   @DoNotStrip
   @Keep
@@ -88,11 +116,11 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
-  abstract fun rsaEncrypt(message: String, publicKey: String): Promise<String>
+  abstract fun rsaEncrypt(message: String, publicKey: String): String
   
   @DoNotStrip
   @Keep
-  abstract fun rsaEncrypt64(message: String, publicKey: String): Promise<String>
+  abstract fun rsaEncrypt64(message: String, publicKey: String): String
   
   @DoNotStrip
   @Keep
@@ -116,7 +144,15 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
+  abstract fun rsaVerifySync(signature: String, message: String, publicKey: String, hash: String?): Boolean
+  
+  @DoNotStrip
+  @Keep
   abstract fun rsaVerify64(signature: String, message: String, publicKey: String, hash: String?): Promise<Boolean>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun rsaVerify64Sync(signature: String, message: String, publicKey: String, hash: String?): Boolean
   
   @DoNotStrip
   @Keep
@@ -124,7 +160,7 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
-  abstract fun getRandomValues(length: Double): Promise<String>
+  abstract fun getRandomValues(length: Double): String
   
   @DoNotStrip
   @Keep

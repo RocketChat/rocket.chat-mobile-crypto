@@ -22,7 +22,7 @@ object AESCrypto {
     private const val GCM_CIPHER_ALGORITHM = "AES/GCM/NoPadding"
     private const val FILE_CIPHER_ALGORITHM = "AES/CTR/NoPadding"
     private const val KEY_ALGORITHM = "AES"
-    private const val BUFFER_SIZE = 4096
+    private const val BUFFER_SIZE = 65536
     private const val GCM_IV_LENGTH = 12 // 96 bits for GCM
     private const val GCM_TAG_LENGTH = 16 // 128 bits for GCM authentication tag
     private val EMPTY_IV_SPEC = IvParameterSpec(ByteArray(16) { 0 })
@@ -90,8 +90,15 @@ object AESCrypto {
         val cipherMode = if (mode == "encrypt") Cipher.ENCRYPT_MODE else Cipher.DECRYPT_MODE
         cipher.init(cipherMode, secretKey, ivParameterSpec)
 
-        // Create a temporary output file in the cache directory
-        val outputFileObj = File(context.cacheDir, "processed_${UUID.randomUUID()}")
+        val targetUri = Uri.parse(inputFile)
+        val isPlainFilePath = targetUri.scheme == null || targetUri.scheme == "file"
+        val targetFile = File(normalizeFilePath(inputFile))
+        val outputDirectory = if (mode == "decrypt" && isPlainFilePath) {
+            targetFile.absoluteFile.parentFile?.takeIf { it.canWrite() } ?: context.cacheDir
+        } else {
+            context.cacheDir
+        }
+        val outputFileObj = File(outputDirectory, "processed_${UUID.randomUUID()}")
 
         try {
             getInputStream(inputFile, context).use { inputStream ->
@@ -114,11 +121,12 @@ object AESCrypto {
         }
 
         return if (mode == "decrypt") {
-            // Overwrite the input file with the decrypted file
-            val targetUri = Uri.parse(inputFile)
+            if (isPlainFilePath && outputFileObj.renameTo(targetFile)) {
+                return inputFile
+            }
             FileInputStream(outputFileObj).use { inputStream ->
-                val outputStream = if (targetUri.scheme == null || targetUri.scheme == "file") {
-                    FileOutputStream(normalizeFilePath(inputFile))
+                val outputStream = if (isPlainFilePath) {
+                    FileOutputStream(targetFile)
                 } else {
                     context.contentResolver.openOutputStream(targetUri)
                         ?: throw IllegalArgumentException("Cannot open output stream for URI: $targetUri")

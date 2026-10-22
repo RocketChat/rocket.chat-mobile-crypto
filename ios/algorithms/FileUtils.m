@@ -1,11 +1,10 @@
 #import "FileUtils.h"
 #import "CryptoUtils.h"
-#import "SHACrypto.h"
 #import <CommonCrypto/CommonDigest.h>
 
 @implementation FileUtils
 
-static const NSUInteger BUFFER_SIZE = 4096;
+static const NSUInteger BUFFER_SIZE = 65536;
 
 + (nullable NSString *)calculateSha256Checksum:(NSString *)filePath {
     return [self calculateChecksum:filePath algorithm:@"SHA-256"];

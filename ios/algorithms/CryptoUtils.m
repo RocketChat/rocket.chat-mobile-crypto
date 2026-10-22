@@ -3,27 +3,30 @@
 @implementation CryptoUtils
 
 + (NSData *)fromHex:(NSString *)string {
-    NSMutableData *data = [[NSMutableData alloc] init];
-    unsigned char whole_byte;
-    char byte_chars[3] = {'\0','\0','\0'};
-    for (int i = 0; i < ([string length] / 2); i++) {
-        byte_chars[0] = [string characterAtIndex:i*2];
-        byte_chars[1] = [string characterAtIndex:i*2+1];
-        whole_byte = strtol(byte_chars, NULL, 16);
-        [data appendBytes:&whole_byte length:1];
+    NSData *hexCharacters = [string dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:YES];
+    const char *characters = hexCharacters.bytes;
+    NSUInteger byteCount = hexCharacters.length / 2;
+    NSMutableData *bytes = [NSMutableData dataWithLength:byteCount];
+    unsigned char *byteBuffer = bytes.mutableBytes;
+    char hexPair[3] = {'\0','\0','\0'};
+    for (NSUInteger index = 0; index < byteCount; index++) {
+        hexPair[0] = characters[index * 2];
+        hexPair[1] = characters[index * 2 + 1];
+        byteBuffer[index] = strtol(hexPair, NULL, 16);
     }
-    return data;
+    return bytes;
 }
 
 + (NSString *)bytesToHex:(NSData *)data {
+    static const char hexDigits[] = "0123456789abcdef";
     const unsigned char *bytes = (const unsigned char *)[data bytes];
-    NSMutableString *hex = [[NSMutableString alloc] init];
-    
-    for (NSInteger i = 0; i < [data length]; i++) {
-        [hex appendFormat:@"%02x", bytes[i]];
+    NSMutableData *hexCharacters = [NSMutableData dataWithLength:data.length * 2];
+    char *hexBuffer = hexCharacters.mutableBytes;
+    for (NSUInteger index = 0; index < data.length; index++) {
+        hexBuffer[index * 2] = hexDigits[bytes[index] >> 4];
+        hexBuffer[index * 2 + 1] = hexDigits[bytes[index] & 0x0F];
     }
-    
-    return [NSString stringWithString:hex];
+    return [[NSString alloc] initWithData:hexCharacters encoding:NSASCIIStringEncoding];
 }
 
 + (NSString *)base64FromBase64URL:(NSString *)base64URL {

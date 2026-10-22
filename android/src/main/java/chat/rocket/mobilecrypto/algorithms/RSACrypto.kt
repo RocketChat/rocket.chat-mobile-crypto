@@ -1,6 +1,7 @@
 package chat.rocket.mobilecrypto.algorithms
 
 import android.util.Base64
+import android.util.LruCache
 import com.margelo.nitro.mobilecrypto.JWK
 import com.margelo.nitro.mobilecrypto.RSAKeyPair
 import java.io.StringReader
@@ -32,6 +33,10 @@ import org.bouncycastle.util.io.pem.PemWriter
  */
 object RSACrypto {
 
+    private const val KEY_CACHE_SIZE = 16
+    private val publicKeyCache = LruCache<String, PublicKey>(KEY_CACHE_SIZE)
+    private val privateKeyCache = LruCache<String, PrivateKey>(KEY_CACHE_SIZE)
+
     /**
      * Generate RSA key pair
      * 
@@ -60,7 +65,7 @@ object RSACrypto {
      * @return Base64-encoded encrypted data
      */
     fun encrypt(message: String, publicKeyPem: String): String {
-        val publicKey = createPublicKeyFromPem(publicKeyPem)
+        val publicKey = cachedPublicKey(publicKeyPem)
         
         val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
         cipher.init(Cipher.ENCRYPT_MODE, publicKey)
@@ -76,7 +81,7 @@ object RSACrypto {
      * @return Base64-encoded encrypted data
      */
     fun encryptBase64(messageBase64: String, publicKeyPem: String): String {
-        val publicKey = createPublicKeyFromPem(publicKeyPem)
+        val publicKey = cachedPublicKey(publicKeyPem)
         
         val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
         cipher.init(Cipher.ENCRYPT_MODE, publicKey)
@@ -93,10 +98,7 @@ object RSACrypto {
      * @return Plain text message
      */
     fun decrypt(encryptedMessage: String, privateKeyPem: String): String {
-        val privateKeyBytes = pemToKey(privateKeyPem)
-        val keySpec = PKCS8EncodedKeySpec(privateKeyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-        val privateKey = keyFactory.generatePrivate(keySpec)
+        val privateKey = cachedPrivateKey(privateKeyPem)
         
         val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
         cipher.init(Cipher.DECRYPT_MODE, privateKey)
@@ -113,10 +115,7 @@ object RSACrypto {
      * @return Base64-encoded decrypted data
      */
     fun decryptToBase64(encryptedMessage: String, privateKeyPem: String): String {
-        val privateKeyBytes = pemToKey(privateKeyPem)
-        val keySpec = PKCS8EncodedKeySpec(privateKeyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-        val privateKey = keyFactory.generatePrivate(keySpec)
+        val privateKey = cachedPrivateKey(privateKeyPem)
         
         val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
         cipher.init(Cipher.DECRYPT_MODE, privateKey)
@@ -134,10 +133,7 @@ object RSACrypto {
      * @return Base64-encoded signature
      */
     fun sign(message: String, privateKeyPem: String, hashAlgorithm: String? = null): String {
-        val privateKeyBytes = pemToKey(privateKeyPem)
-        val keySpec = PKCS8EncodedKeySpec(privateKeyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-        val privateKey = keyFactory.generatePrivate(keySpec)
+        val privateKey = cachedPrivateKey(privateKeyPem)
         
         val signature = Signature.getInstance(getSignatureAlgorithm(hashAlgorithm))
         signature.initSign(privateKey)
@@ -155,10 +151,7 @@ object RSACrypto {
      * @return Base64-encoded signature
      */
     fun signBase64(messageBase64: String, privateKeyPem: String, hashAlgorithm: String? = null): String {
-        val privateKeyBytes = pemToKey(privateKeyPem)
-        val keySpec = PKCS8EncodedKeySpec(privateKeyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-        val privateKey = keyFactory.generatePrivate(keySpec)
+        val privateKey = cachedPrivateKey(privateKeyPem)
         
         val signature = Signature.getInstance(getSignatureAlgorithm(hashAlgorithm))
         signature.initSign(privateKey)
@@ -178,7 +171,7 @@ object RSACrypto {
      * @return True if signature is valid
      */
     fun verify(signatureBase64: String, message: String, publicKeyPem: String, hashAlgorithm: String? = null): Boolean {
-        val publicKey = createPublicKeyFromPem(publicKeyPem)
+        val publicKey = cachedPublicKey(publicKeyPem)
         val signature = Signature.getInstance(getSignatureAlgorithm(hashAlgorithm))
         signature.initVerify(publicKey)
         signature.update(CryptoUtils.stringToUtf8Bytes(message))
@@ -196,7 +189,7 @@ object RSACrypto {
      * @return True if signature is valid
      */
     fun verifyBase64(signatureBase64: String, messageBase64: String, publicKeyPem: String, hashAlgorithm: String? = null): Boolean {
-        val publicKey = createPublicKeyFromPem(publicKeyPem)
+        val publicKey = cachedPublicKey(publicKeyPem)
         val signature = Signature.getInstance(getSignatureAlgorithm(hashAlgorithm))
         signature.initVerify(publicKey)
         val messageBytes = CryptoUtils.decodeBase64(messageBase64)
@@ -288,6 +281,21 @@ object RSACrypto {
         }
         val base64Content = lines.joinToString("")
         return Base64.decode(base64Content, Base64.DEFAULT)
+    }
+
+    private fun cachedPublicKey(publicKeyPem: String): PublicKey {
+        return publicKeyCache.get(publicKeyPem)
+            ?: createPublicKeyFromPem(publicKeyPem).also { publicKeyCache.put(publicKeyPem, it) }
+    }
+
+    private fun cachedPrivateKey(privateKeyPem: String): PrivateKey {
+        return privateKeyCache.get(privateKeyPem)
+            ?: createPrivateKeyFromPem(privateKeyPem).also { privateKeyCache.put(privateKeyPem, it) }
+    }
+
+    private fun createPrivateKeyFromPem(privateKeyPem: String): PrivateKey {
+        val keySpec = PKCS8EncodedKeySpec(pemToKey(privateKeyPem))
+        return KeyFactory.getInstance("RSA").generatePrivate(keySpec)
     }
 
     private fun createPublicKeyFromPem(publicKeyPem: String): PublicKey {

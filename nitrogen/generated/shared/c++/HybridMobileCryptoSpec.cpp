@@ -15,13 +15,20 @@ namespace margelo::nitro::mobilecrypto {
     // load custom methods/properties
     registerHybrids(this, [](Prototype& prototype) {
       prototype.registerHybridMethod("shaBase64", &HybridMobileCryptoSpec::shaBase64);
+      prototype.registerHybridMethod("shaBase64Sync", &HybridMobileCryptoSpec::shaBase64Sync);
       prototype.registerHybridMethod("shaUtf8", &HybridMobileCryptoSpec::shaUtf8);
+      prototype.registerHybridMethod("shaUtf8Sync", &HybridMobileCryptoSpec::shaUtf8Sync);
       prototype.registerHybridMethod("pbkdf2Hash", &HybridMobileCryptoSpec::pbkdf2Hash);
       prototype.registerHybridMethod("hmac256", &HybridMobileCryptoSpec::hmac256);
+      prototype.registerHybridMethod("hmac256Sync", &HybridMobileCryptoSpec::hmac256Sync);
       prototype.registerHybridMethod("aesEncrypt", &HybridMobileCryptoSpec::aesEncrypt);
+      prototype.registerHybridMethod("aesEncryptSync", &HybridMobileCryptoSpec::aesEncryptSync);
       prototype.registerHybridMethod("aesDecrypt", &HybridMobileCryptoSpec::aesDecrypt);
+      prototype.registerHybridMethod("aesDecryptSync", &HybridMobileCryptoSpec::aesDecryptSync);
       prototype.registerHybridMethod("aesGcmEncrypt", &HybridMobileCryptoSpec::aesGcmEncrypt);
+      prototype.registerHybridMethod("aesGcmEncryptSync", &HybridMobileCryptoSpec::aesGcmEncryptSync);
       prototype.registerHybridMethod("aesGcmDecrypt", &HybridMobileCryptoSpec::aesGcmDecrypt);
+      prototype.registerHybridMethod("aesGcmDecryptSync", &HybridMobileCryptoSpec::aesGcmDecryptSync);
       prototype.registerHybridMethod("aesEncryptFile", &HybridMobileCryptoSpec::aesEncryptFile);
       prototype.registerHybridMethod("aesDecryptFile", &HybridMobileCryptoSpec::aesDecryptFile);
       prototype.registerHybridMethod("randomUuid", &HybridMobileCryptoSpec::randomUuid);
@@ -35,7 +42,9 @@ namespace margelo::nitro::mobilecrypto {
       prototype.registerHybridMethod("rsaSign", &HybridMobileCryptoSpec::rsaSign);
       prototype.registerHybridMethod("rsaSign64", &HybridMobileCryptoSpec::rsaSign64);
       prototype.registerHybridMethod("rsaVerify", &HybridMobileCryptoSpec::rsaVerify);
+      prototype.registerHybridMethod("rsaVerifySync", &HybridMobileCryptoSpec::rsaVerifySync);
       prototype.registerHybridMethod("rsaVerify64", &HybridMobileCryptoSpec::rsaVerify64);
+      prototype.registerHybridMethod("rsaVerify64Sync", &HybridMobileCryptoSpec::rsaVerify64Sync);
       prototype.registerHybridMethod("calculateFileChecksum", &HybridMobileCryptoSpec::calculateFileChecksum);
       prototype.registerHybridMethod("getRandomValues", &HybridMobileCryptoSpec::getRandomValues);
       prototype.registerHybridMethod("rsaImportKey", &HybridMobileCryptoSpec::rsaImportKey);

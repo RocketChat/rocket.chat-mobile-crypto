@@ -16,12 +16,12 @@ import org.bouncycastle.crypto.params.KeyParameter
  */
 object PBKDF2Crypto {
 
-    private val algorithmMap = mapOf<String, ExtendedDigest>(
-        "SHA1" to SHA1Digest(),
-        "SHA224" to SHA224Digest(),
-        "SHA256" to SHA256Digest(),
-        "SHA384" to SHA384Digest(),
-        "SHA512" to SHA512Digest()
+    private val digestFactories = mapOf<String, () -> ExtendedDigest>(
+        "SHA1" to ::SHA1Digest,
+        "SHA224" to ::SHA224Digest,
+        "SHA256" to ::SHA256Digest,
+        "SHA384" to ::SHA384Digest,
+        "SHA512" to ::SHA512Digest
     )
 
     /**
@@ -41,7 +41,7 @@ object PBKDF2Crypto {
         keyLength: Int,
         hashAlgorithm: String
     ): ByteArray {
-        val digest = algorithmMap[hashAlgorithm] 
+        val digest = digestFactories[hashAlgorithm]?.invoke()
             ?: throw NoSuchAlgorithmException("Specified hash algorithm '$hashAlgorithm' is not supported")
         
         val generator: PBEParametersGenerator = PKCS5S2ParametersGenerator(digest)
@@ -76,6 +76,6 @@ object PBKDF2Crypto {
      * Get list of supported hash algorithms
      */
     fun getSupportedAlgorithms(): List<String> {
-        return algorithmMap.keys.toList()
+        return digestFactories.keys.toList()
     }
 }

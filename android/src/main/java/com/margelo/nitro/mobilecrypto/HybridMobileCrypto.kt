@@ -12,6 +12,8 @@ import chat.rocket.mobilecrypto.algorithms.SHACrypto
 import com.facebook.proguard.annotations.DoNotStrip
 import com.margelo.nitro.NitroModules
 import com.margelo.nitro.core.Promise
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 @Keep
 @DoNotStrip
@@ -24,10 +26,16 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
   }
 
   override fun shaBase64(data: String, algorithm: String): Promise<String> =
-    Promise.parallel { SHACrypto.hashBase64(data, algorithm) }
+    Promise.async { shaBase64Sync(data, algorithm) }
+
+  override fun shaBase64Sync(data: String, algorithm: String): String =
+    SHACrypto.hashBase64(data, algorithm)
 
   override fun shaUtf8(data: String, algorithm: String): Promise<String> =
-    Promise.parallel { SHACrypto.hashUtf8ToHex(data, algorithm) }
+    Promise.async { shaUtf8Sync(data, algorithm) }
+
+  override fun shaUtf8Sync(data: String, algorithm: String): String =
+    SHACrypto.hashUtf8ToHex(data, algorithm)
 
   override fun pbkdf2Hash(
     pwdBase64: String,
@@ -36,80 +44,102 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
     keyLen: Double,
     hash: String
   ): Promise<String> =
-    Promise.parallel {
+    Promise.async {
       PBKDF2Crypto.deriveKeyBase64(pwdBase64, saltBase64, iterations.toInt(), keyLen.toInt(), hash)
     }
 
   override fun hmac256(data: String, key: String): Promise<String> =
-    Promise.parallel { HMACCrypto.hmacSha256Hex(data, key) }
+    Promise.async { hmac256Sync(data, key) }
+
+  override fun hmac256Sync(data: String, key: String): String =
+    HMACCrypto.hmacSha256Hex(data, key)
 
   override fun aesEncrypt(dataBase64: String, keyHex: String, ivHex: String): Promise<String?> =
-    Promise.parallel { AESCrypto.encryptBase64(dataBase64, keyHex, ivHex) }
+    Promise.async { aesEncryptSync(dataBase64, keyHex, ivHex) }
+
+  override fun aesEncryptSync(dataBase64: String, keyHex: String, ivHex: String): String? =
+    AESCrypto.encryptBase64(dataBase64, keyHex, ivHex)
 
   override fun aesDecrypt(dataBase64: String, keyHex: String, ivHex: String): Promise<String?> =
-    Promise.parallel { AESCrypto.decryptBase64(dataBase64, keyHex, ivHex) }
+    Promise.async { aesDecryptSync(dataBase64, keyHex, ivHex) }
+
+  override fun aesDecryptSync(dataBase64: String, keyHex: String, ivHex: String): String? =
+    AESCrypto.decryptBase64(dataBase64, keyHex, ivHex)
 
   override fun aesGcmEncrypt(dataBase64: String, keyHex: String, ivHex: String): Promise<String?> =
-    Promise.parallel { AESCrypto.encryptGcmBase64(dataBase64, keyHex, ivHex) }
+    Promise.async { aesGcmEncryptSync(dataBase64, keyHex, ivHex) }
+
+  override fun aesGcmEncryptSync(dataBase64: String, keyHex: String, ivHex: String): String? =
+    AESCrypto.encryptGcmBase64(dataBase64, keyHex, ivHex)
 
   override fun aesGcmDecrypt(dataBase64: String, keyHex: String, ivHex: String): Promise<String?> =
-    Promise.parallel { AESCrypto.decryptGcmBase64(dataBase64, keyHex, ivHex) }
+    Promise.async { aesGcmDecryptSync(dataBase64, keyHex, ivHex) }
+
+  override fun aesGcmDecryptSync(dataBase64: String, keyHex: String, ivHex: String): String? =
+    AESCrypto.decryptGcmBase64(dataBase64, keyHex, ivHex)
 
   override fun aesEncryptFile(filePath: String, base64UrlKey: String, base64Iv: String): Promise<String> =
-    Promise.parallel { AESCrypto.encryptFile(filePath, base64UrlKey, base64Iv, context) }
+    Promise.async(fileScope) { AESCrypto.encryptFile(filePath, base64UrlKey, base64Iv, context) }
 
   override fun aesDecryptFile(filePath: String, base64UrlKey: String, base64Iv: String): Promise<String> =
-    Promise.parallel { AESCrypto.decryptFile(filePath, base64UrlKey, base64Iv, context) }
+    Promise.async(fileScope) { AESCrypto.decryptFile(filePath, base64UrlKey, base64Iv, context) }
 
-  override fun randomUuid(): Promise<String> =
-    Promise.parallel { RandomUtils.generateUuid() }
+  override fun randomUuid(): String =
+    RandomUtils.generateUuid()
 
-  override fun randomKey(length: Double): Promise<String> =
-    Promise.parallel { RandomUtils.generateRandomKeyHex(length.toInt()) }
+  override fun randomKey(length: Double): String =
+    RandomUtils.generateRandomKeyHex(length.toInt())
 
-  override fun randomBytes(size: Double): Promise<String> =
-    Promise.parallel { RandomUtils.generateRandomBytesBase64(size.toInt()) }
+  override fun randomBytes(size: Double): String =
+    RandomUtils.generateRandomBytesBase64(size.toInt())
 
   override fun rsaGenerateKeys(keySize: Double?): Promise<RSAKeyPair> =
-    Promise.parallel { RSACrypto.generateKeyPair(keySize?.toInt() ?: DEFAULT_RSA_KEY_SIZE) }
+    Promise.async { RSACrypto.generateKeyPair(keySize?.toInt() ?: DEFAULT_RSA_KEY_SIZE) }
 
-  override fun rsaEncrypt(message: String, publicKey: String): Promise<String> =
-    Promise.parallel { RSACrypto.encrypt(message, publicKey) }
+  override fun rsaEncrypt(message: String, publicKey: String): String =
+    RSACrypto.encrypt(message, publicKey)
 
-  override fun rsaEncrypt64(message: String, publicKey: String): Promise<String> =
-    Promise.parallel { RSACrypto.encryptBase64(message, publicKey) }
+  override fun rsaEncrypt64(message: String, publicKey: String): String =
+    RSACrypto.encryptBase64(message, publicKey)
 
   override fun rsaDecrypt(encodedMessage: String, privateKey: String): Promise<String> =
-    Promise.parallel { RSACrypto.decrypt(encodedMessage, privateKey) }
+    Promise.async { RSACrypto.decrypt(encodedMessage, privateKey) }
 
   override fun rsaDecrypt64(encodedMessage: String, privateKey: String): Promise<String> =
-    Promise.parallel { RSACrypto.decryptToBase64(encodedMessage, privateKey) }
+    Promise.async { RSACrypto.decryptToBase64(encodedMessage, privateKey) }
 
   override fun rsaSign(message: String, privateKey: String, hash: String?): Promise<String> =
-    Promise.parallel { RSACrypto.sign(message, privateKey, hash) }
+    Promise.async { RSACrypto.sign(message, privateKey, hash) }
 
   override fun rsaSign64(message: String, privateKey: String, hash: String?): Promise<String> =
-    Promise.parallel { RSACrypto.signBase64(message, privateKey, hash) }
+    Promise.async { RSACrypto.signBase64(message, privateKey, hash) }
 
   override fun rsaVerify(signature: String, message: String, publicKey: String, hash: String?): Promise<Boolean> =
-    Promise.parallel { RSACrypto.verify(signature, message, publicKey, hash) }
+    Promise.async { rsaVerifySync(signature, message, publicKey, hash) }
+
+  override fun rsaVerifySync(signature: String, message: String, publicKey: String, hash: String?): Boolean =
+    RSACrypto.verify(signature, message, publicKey, hash)
 
   override fun rsaVerify64(signature: String, message: String, publicKey: String, hash: String?): Promise<Boolean> =
-    Promise.parallel { RSACrypto.verifyBase64(signature, message, publicKey, hash) }
+    Promise.async { rsaVerify64Sync(signature, message, publicKey, hash) }
+
+  override fun rsaVerify64Sync(signature: String, message: String, publicKey: String, hash: String?): Boolean =
+    RSACrypto.verifyBase64(signature, message, publicKey, hash)
 
   override fun calculateFileChecksum(filePath: String): Promise<String> =
-    Promise.parallel { FileUtils.calculateSha256Checksum(filePath) }
+    Promise.async(fileScope) { FileUtils.calculateSha256Checksum(filePath) }
 
-  override fun getRandomValues(length: Double): Promise<String> =
-    Promise.parallel { RandomUtils.generateRandomAlphanumeric(length.toInt()) }
+  override fun getRandomValues(length: Double): String =
+    RandomUtils.generateRandomAlphanumeric(length.toInt())
 
   override fun rsaImportKey(jwk: JWK): Promise<String> =
-    Promise.parallel { RSACrypto.importJwkKey(jwk) }
+    Promise.async { RSACrypto.importJwkKey(jwk) }
 
   override fun rsaExportKey(pem: String): Promise<JWK> =
-    Promise.parallel { RSACrypto.exportPemKey(pem) }
+    Promise.async { RSACrypto.exportPemKey(pem) }
 
   private companion object {
     const val DEFAULT_RSA_KEY_SIZE = 2048
+    val fileScope = CoroutineScope(Dispatchers.IO)
   }
 }

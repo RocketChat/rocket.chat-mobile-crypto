@@ -427,7 +427,23 @@
     return [[NSData alloc] initWithBase64EncodedString:pemString options:NSDataBase64DecodingIgnoreUnknownCharacters];
 }
 
++ (NSCache<NSString *, id> *)keyCache {
+    static NSCache<NSString *, id> *keyCache;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        keyCache = [[NSCache alloc] init];
+        keyCache.countLimit = 16;
+    });
+    return keyCache;
+}
+
 + (nullable SecKeyRef)createKeyFromPem:(NSString *)pemString isPublic:(BOOL)isPublic {
+    NSString *cacheKey = [(isPublic ? @"public:" : @"private:") stringByAppendingString:pemString];
+    id cachedKey = [[self keyCache] objectForKey:cacheKey];
+    if (cachedKey) {
+        return (SecKeyRef)CFRetain((__bridge CFTypeRef)cachedKey);
+    }
+
     NSData *keyData = [self pemParse:pemString];
     if (!keyData) {
         return NULL;
@@ -444,7 +460,11 @@
     if (error) {
         CFRelease(error);
     }
-    
+
+    if (key) {
+        [[self keyCache] setObject:(__bridge id)key forKey:cacheKey];
+    }
+
     return key;
 }
 

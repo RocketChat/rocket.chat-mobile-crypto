@@ -56,29 +56,38 @@ namespace margelo::nitro::mobilecrypto {
     public:
       // Methods
       virtual std::shared_ptr<Promise<std::string>> shaBase64(const std::string& data, const std::string& algorithm) = 0;
+      virtual std::string shaBase64Sync(const std::string& data, const std::string& algorithm) = 0;
       virtual std::shared_ptr<Promise<std::string>> shaUtf8(const std::string& data, const std::string& algorithm) = 0;
+      virtual std::string shaUtf8Sync(const std::string& data, const std::string& algorithm) = 0;
       virtual std::shared_ptr<Promise<std::string>> pbkdf2Hash(const std::string& pwdBase64, const std::string& saltBase64, double iterations, double keyLen, const std::string& hash) = 0;
       virtual std::shared_ptr<Promise<std::string>> hmac256(const std::string& data, const std::string& key) = 0;
+      virtual std::string hmac256Sync(const std::string& data, const std::string& key) = 0;
       virtual std::shared_ptr<Promise<std::optional<std::string>>> aesEncrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) = 0;
+      virtual std::optional<std::string> aesEncryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) = 0;
       virtual std::shared_ptr<Promise<std::optional<std::string>>> aesDecrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) = 0;
+      virtual std::optional<std::string> aesDecryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) = 0;
       virtual std::shared_ptr<Promise<std::optional<std::string>>> aesGcmEncrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) = 0;
+      virtual std::optional<std::string> aesGcmEncryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) = 0;
       virtual std::shared_ptr<Promise<std::optional<std::string>>> aesGcmDecrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) = 0;
+      virtual std::optional<std::string> aesGcmDecryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) = 0;
       virtual std::shared_ptr<Promise<std::string>> aesEncryptFile(const std::string& filePath, const std::string& base64UrlKey, const std::string& base64Iv) = 0;
       virtual std::shared_ptr<Promise<std::string>> aesDecryptFile(const std::string& filePath, const std::string& base64UrlKey, const std::string& base64Iv) = 0;
-      virtual std::shared_ptr<Promise<std::string>> randomUuid() = 0;
-      virtual std::shared_ptr<Promise<std::string>> randomKey(double length) = 0;
-      virtual std::shared_ptr<Promise<std::string>> randomBytes(double size) = 0;
+      virtual std::string randomUuid() = 0;
+      virtual std::string randomKey(double length) = 0;
+      virtual std::string randomBytes(double size) = 0;
       virtual std::shared_ptr<Promise<RSAKeyPair>> rsaGenerateKeys(std::optional<double> keySize) = 0;
-      virtual std::shared_ptr<Promise<std::string>> rsaEncrypt(const std::string& message, const std::string& publicKey) = 0;
-      virtual std::shared_ptr<Promise<std::string>> rsaEncrypt64(const std::string& message, const std::string& publicKey) = 0;
+      virtual std::string rsaEncrypt(const std::string& message, const std::string& publicKey) = 0;
+      virtual std::string rsaEncrypt64(const std::string& message, const std::string& publicKey) = 0;
       virtual std::shared_ptr<Promise<std::string>> rsaDecrypt(const std::string& encodedMessage, const std::string& privateKey) = 0;
       virtual std::shared_ptr<Promise<std::string>> rsaDecrypt64(const std::string& encodedMessage, const std::string& privateKey) = 0;
       virtual std::shared_ptr<Promise<std::string>> rsaSign(const std::string& message, const std::string& privateKey, const std::optional<std::string>& hash) = 0;
       virtual std::shared_ptr<Promise<std::string>> rsaSign64(const std::string& message, const std::string& privateKey, const std::optional<std::string>& hash) = 0;
       virtual std::shared_ptr<Promise<bool>> rsaVerify(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) = 0;
+      virtual bool rsaVerifySync(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) = 0;
       virtual std::shared_ptr<Promise<bool>> rsaVerify64(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) = 0;
+      virtual bool rsaVerify64Sync(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) = 0;
       virtual std::shared_ptr<Promise<std::string>> calculateFileChecksum(const std::string& filePath) = 0;
-      virtual std::shared_ptr<Promise<std::string>> getRandomValues(double length) = 0;
+      virtual std::string getRandomValues(double length) = 0;
       virtual std::shared_ptr<Promise<std::string>> rsaImportKey(const JWK& jwk) = 0;
       virtual std::shared_ptr<Promise<JWK>> rsaExportKey(const std::string& pem) = 0;
 

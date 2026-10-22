@@ -112,3 +112,20 @@ describe('AES-256-GCM authenticated encryption', () => {
     expect(await aesGcmDecrypt('', key, iv)).toBeNull();
   });
 });
+
+describe('inputs above the synchronous size limit', () => {
+  const plaintext = 'AAECAwQF'.repeat(6000);
+  const key = '0123456789abcdef'.repeat(4);
+
+  test('round-trips large input with AES-CBC', async () => {
+    const iv = 'fedcba9876543210fedcba9876543210';
+    const encrypted = await aesEncrypt(plaintext, key, iv);
+    expect(await aesDecrypt(encrypted, key, iv)).toBe(plaintext);
+  });
+
+  test('round-trips large input with AES-GCM', async () => {
+    const iv = '00112233445566778899aabb';
+    const encrypted = await aesGcmEncrypt(plaintext, key, iv);
+    expect(await aesGcmDecrypt(encrypted, key, iv)).toBe(plaintext);
+  });
+});

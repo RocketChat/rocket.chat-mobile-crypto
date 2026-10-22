@@ -8,15 +8,32 @@ const MobileCrypto =
 const nullWhenUndefined = (value: string | undefined) =>
   (value ?? null) as string;
 
+const SYNC_INPUT_LIMIT = 32 * 1024;
+
+const isSmall = (...inputs: string[]) =>
+  inputs.reduce((total, input) => total + input.length, 0) <= SYNC_INPUT_LIMIT;
+
+const resolveSync = <T,>(operation: () => T): Promise<T> => {
+  try {
+    return Promise.resolve(operation());
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
 // Export the JWK type for users
 export type { JWK };
 
 export function shaBase64(data: string, algorithm: string): Promise<string> {
-  return MobileCrypto.shaBase64(data, algorithm);
+  return isSmall(data)
+    ? resolveSync(() => MobileCrypto.shaBase64Sync(data, algorithm))
+    : MobileCrypto.shaBase64(data, algorithm);
 }
 
 export function shaUtf8(data: string, algorithm: string): Promise<string> {
-  return MobileCrypto.shaUtf8(data, algorithm);
+  return isSmall(data)
+    ? resolveSync(() => MobileCrypto.shaUtf8Sync(data, algorithm))
+    : MobileCrypto.shaUtf8(data, algorithm);
 }
 
 export function pbkdf2Hash(
@@ -36,7 +53,9 @@ export function pbkdf2Hash(
 }
 
 export function hmac256(data: string, key: string): Promise<string> {
-  return MobileCrypto.hmac256(data, key);
+  return isSmall(data, key)
+    ? resolveSync(() => MobileCrypto.hmac256Sync(data, key))
+    : MobileCrypto.hmac256(data, key);
 }
 
 export function aesEncrypt(
@@ -44,9 +63,10 @@ export function aesEncrypt(
   keyHex: string,
   ivHex: string
 ): Promise<string> {
-  return MobileCrypto.aesEncrypt(dataBase64, keyHex, ivHex).then(
-    nullWhenUndefined
-  );
+  const ciphertext = isSmall(dataBase64)
+    ? resolveSync(() => MobileCrypto.aesEncryptSync(dataBase64, keyHex, ivHex))
+    : MobileCrypto.aesEncrypt(dataBase64, keyHex, ivHex);
+  return ciphertext.then(nullWhenUndefined);
 }
 
 export function aesDecrypt(
@@ -54,9 +74,10 @@ export function aesDecrypt(
   keyHex: string,
   ivHex: string
 ): Promise<string> {
-  return MobileCrypto.aesDecrypt(dataBase64, keyHex, ivHex).then(
-    nullWhenUndefined
-  );
+  const plaintext = isSmall(dataBase64)
+    ? resolveSync(() => MobileCrypto.aesDecryptSync(dataBase64, keyHex, ivHex))
+    : MobileCrypto.aesDecrypt(dataBase64, keyHex, ivHex);
+  return plaintext.then(nullWhenUndefined);
 }
 
 export function aesGcmEncrypt(
@@ -64,9 +85,12 @@ export function aesGcmEncrypt(
   keyHex: string,
   ivHex: string
 ): Promise<string> {
-  return MobileCrypto.aesGcmEncrypt(dataBase64, keyHex, ivHex).then(
-    nullWhenUndefined
-  );
+  const ciphertext = isSmall(dataBase64)
+    ? resolveSync(() =>
+        MobileCrypto.aesGcmEncryptSync(dataBase64, keyHex, ivHex)
+      )
+    : MobileCrypto.aesGcmEncrypt(dataBase64, keyHex, ivHex);
+  return ciphertext.then(nullWhenUndefined);
 }
 
 export function aesGcmDecrypt(
@@ -74,9 +98,12 @@ export function aesGcmDecrypt(
   keyHex: string,
   ivHex: string
 ): Promise<string> {
-  return MobileCrypto.aesGcmDecrypt(dataBase64, keyHex, ivHex).then(
-    nullWhenUndefined
-  );
+  const plaintext = isSmall(dataBase64)
+    ? resolveSync(() =>
+        MobileCrypto.aesGcmDecryptSync(dataBase64, keyHex, ivHex)
+      )
+    : MobileCrypto.aesGcmDecrypt(dataBase64, keyHex, ivHex);
+  return plaintext.then(nullWhenUndefined);
 }
 
 export function aesEncryptFile(
@@ -96,15 +123,15 @@ export function aesDecryptFile(
 }
 
 export function randomUuid(): Promise<string> {
-  return MobileCrypto.randomUuid();
+  return resolveSync(() => MobileCrypto.randomUuid());
 }
 
 export function randomKey(length: number): Promise<string> {
-  return MobileCrypto.randomKey(length);
+  return resolveSync(() => MobileCrypto.randomKey(length));
 }
 
 export function randomBytes(size: number): Promise<string> {
-  return MobileCrypto.randomBytes(size);
+  return resolveSync(() => MobileCrypto.randomBytes(size));
 }
 
 // RSA Functions
@@ -120,14 +147,14 @@ export function rsaEncrypt(
   message: string,
   publicKey: string
 ): Promise<string> {
-  return MobileCrypto.rsaEncrypt(message, publicKey);
+  return resolveSync(() => MobileCrypto.rsaEncrypt(message, publicKey));
 }
 
 export function rsaEncrypt64(
   message: string,
   publicKey: string
 ): Promise<string> {
-  return MobileCrypto.rsaEncrypt64(message, publicKey);
+  return resolveSync(() => MobileCrypto.rsaEncrypt64(message, publicKey));
 }
 
 export function rsaDecrypt(
@@ -166,7 +193,11 @@ export function rsaVerify(
   publicKey: string,
   hash?: string
 ): Promise<boolean> {
-  return MobileCrypto.rsaVerify(signature, message, publicKey, hash);
+  return isSmall(message)
+    ? resolveSync(() =>
+        MobileCrypto.rsaVerifySync(signature, message, publicKey, hash)
+      )
+    : MobileCrypto.rsaVerify(signature, message, publicKey, hash);
 }
 
 export function rsaVerify64(
@@ -175,7 +206,11 @@ export function rsaVerify64(
   publicKey: string,
   hash?: string
 ): Promise<boolean> {
-  return MobileCrypto.rsaVerify64(signature, message, publicKey, hash);
+  return isSmall(message)
+    ? resolveSync(() =>
+        MobileCrypto.rsaVerify64Sync(signature, message, publicKey, hash)
+      )
+    : MobileCrypto.rsaVerify64(signature, message, publicKey, hash);
 }
 
 export function rsaImportKey(jwk: JWK): Promise<string> {
@@ -196,5 +231,5 @@ export function calculateFileChecksum(filePath: string): Promise<string> {
 }
 
 export function getRandomValues(length: number): Promise<string> {
-  return MobileCrypto.getRandomValues(length);
+  return resolveSync(() => MobileCrypto.getRandomValues(length));
 }

@@ -82,8 +82,24 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
+    inline std::string shaBase64Sync(const std::string& data, const std::string& algorithm) override {
+      auto __result = _swiftPart.shaBase64Sync(data, algorithm);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
     inline std::shared_ptr<Promise<std::string>> shaUtf8(const std::string& data, const std::string& algorithm) override {
       auto __result = _swiftPart.shaUtf8(data, algorithm);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::string shaUtf8Sync(const std::string& data, const std::string& algorithm) override {
+      auto __result = _swiftPart.shaUtf8Sync(data, algorithm);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
@@ -106,8 +122,24 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
+    inline std::string hmac256Sync(const std::string& data, const std::string& key) override {
+      auto __result = _swiftPart.hmac256Sync(data, key);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
     inline std::shared_ptr<Promise<std::optional<std::string>>> aesEncrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
       auto __result = _swiftPart.aesEncrypt(dataBase64, keyHex, ivHex);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::optional<std::string> aesEncryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
+      auto __result = _swiftPart.aesEncryptSync(dataBase64, keyHex, ivHex);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
@@ -122,6 +154,14 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
+    inline std::optional<std::string> aesDecryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
+      auto __result = _swiftPart.aesDecryptSync(dataBase64, keyHex, ivHex);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
     inline std::shared_ptr<Promise<std::optional<std::string>>> aesGcmEncrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
       auto __result = _swiftPart.aesGcmEncrypt(dataBase64, keyHex, ivHex);
       if (__result.hasError()) [[unlikely]] {
@@ -130,8 +170,24 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
+    inline std::optional<std::string> aesGcmEncryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
+      auto __result = _swiftPart.aesGcmEncryptSync(dataBase64, keyHex, ivHex);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
     inline std::shared_ptr<Promise<std::optional<std::string>>> aesGcmDecrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
       auto __result = _swiftPart.aesGcmDecrypt(dataBase64, keyHex, ivHex);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::optional<std::string> aesGcmDecryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
+      auto __result = _swiftPart.aesGcmDecryptSync(dataBase64, keyHex, ivHex);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
@@ -154,7 +210,7 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> randomUuid() override {
+    inline std::string randomUuid() override {
       auto __result = _swiftPart.randomUuid();
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
@@ -162,7 +218,7 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> randomKey(double length) override {
+    inline std::string randomKey(double length) override {
       auto __result = _swiftPart.randomKey(std::forward<decltype(length)>(length));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
@@ -170,7 +226,7 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> randomBytes(double size) override {
+    inline std::string randomBytes(double size) override {
       auto __result = _swiftPart.randomBytes(std::forward<decltype(size)>(size));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
@@ -186,7 +242,7 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> rsaEncrypt(const std::string& message, const std::string& publicKey) override {
+    inline std::string rsaEncrypt(const std::string& message, const std::string& publicKey) override {
       auto __result = _swiftPart.rsaEncrypt(message, publicKey);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
@@ -194,7 +250,7 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> rsaEncrypt64(const std::string& message, const std::string& publicKey) override {
+    inline std::string rsaEncrypt64(const std::string& message, const std::string& publicKey) override {
       auto __result = _swiftPart.rsaEncrypt64(message, publicKey);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
@@ -242,8 +298,24 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
+    inline bool rsaVerifySync(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) override {
+      auto __result = _swiftPart.rsaVerifySync(signature, message, publicKey, hash);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
     inline std::shared_ptr<Promise<bool>> rsaVerify64(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) override {
       auto __result = _swiftPart.rsaVerify64(signature, message, publicKey, hash);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline bool rsaVerify64Sync(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) override {
+      auto __result = _swiftPart.rsaVerify64Sync(signature, message, publicKey, hash);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
@@ -258,7 +330,7 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> getRandomValues(double length) override {
+    inline std::string getRandomValues(double length) override {
       auto __result = _swiftPart.getRandomValues(std::forward<decltype(length)>(length));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());

@@ -5,72 +5,12 @@
 
 @implementation AESCrypto
 
-+ (nullable NSString *)encryptBase64:(NSString *)dataBase64 keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex {
-    if (!dataBase64 || dataBase64.length == 0) {
-        return nil;
-    }
-    
-    NSData *clearData = [CryptoUtils decodeBase64:dataBase64];
-    if (!clearData) {
-        return nil;
-    }
-    
-    NSData *result = [self aes128CBC:@"encrypt" data:clearData key:keyHex iv:ivHex];
-    if (result) {
-        return [CryptoUtils encodeBase64:result];
-    }
-    return nil;
-}
-
-+ (nullable NSString *)decryptBase64:(NSString *)dataBase64 keyHex:(NSString *)keyHex ivHex:(NSString *)ivHex {
-    if (!dataBase64 || dataBase64.length == 0) {
-        return nil;
-    }
-    
-    NSData *cipherData = [CryptoUtils decodeBase64:dataBase64];
-    if (!cipherData) {
-        return nil;
-    }
-    
-    NSData *result = [self aes128CBC:@"decrypt" data:cipherData key:keyHex iv:ivHex];
-    if (result) {
-        return [CryptoUtils encodeBase64:result];
-    }
-    return nil;
-}
-
 + (nullable NSString *)encryptFile:(NSString *)filePath base64UrlKey:(NSString *)base64UrlKey base64Iv:(NSString *)base64Iv {
     return [self processFile:filePath operation:kCCEncrypt base64UrlKey:base64UrlKey base64Iv:base64Iv];
 }
 
 + (nullable NSString *)decryptFile:(NSString *)filePath base64UrlKey:(NSString *)base64UrlKey base64Iv:(NSString *)base64Iv {
     return [self processFile:filePath operation:kCCDecrypt base64UrlKey:base64UrlKey base64Iv:base64Iv];
-}
-
-+ (nullable NSData *)aes128CBC:(NSString *)operation data:(NSData *)data key:(NSString *)key iv:(NSString *)iv {
-    NSData *keyData = [CryptoUtils fromHex:key];
-    NSData *ivData = [CryptoUtils fromHex:iv];
-    size_t numBytes = 0;
-    NSMutableData *buffer = [[NSMutableData alloc] initWithLength:[data length] + kCCBlockSizeAES128];
-
-    CCCryptorStatus cryptStatus = CCCrypt(
-        [operation isEqualToString:@"encrypt"] ? kCCEncrypt : kCCDecrypt,
-        kCCAlgorithmAES128,
-        kCCOptionPKCS7Padding,
-        keyData.bytes,
-        keyData.length,
-        ivData.bytes,
-        data.bytes, data.length,
-        buffer.mutableBytes,
-        buffer.length,
-        &numBytes);
-
-    if (cryptStatus == kCCSuccess) {
-        [buffer setLength:numBytes];
-        return buffer;
-    }
-    NSLog(@"AES error, %d", cryptStatus);
-    return nil;
 }
 
 + (nullable NSString *)processFile:(NSString *)filePath operation:(CCOperation)operation base64UrlKey:(NSString *)base64UrlKey base64Iv:(NSString *)base64Iv {
@@ -108,7 +48,7 @@
         return nil;
     }
 
-    size_t bufferSize = 4096;
+    size_t bufferSize = 65536;
     uint8_t buffer[bufferSize];
     CCCryptorRef cryptor = NULL;
     CCCryptorStatus status = CCCryptorCreateWithMode(operation, kCCModeCTR, kCCAlgorithmAES, ccNoPadding, ivData.bytes, keyData.bytes, keyData.length, NULL, 0, 0, kCCModeOptionCTR_BE, &cryptor);

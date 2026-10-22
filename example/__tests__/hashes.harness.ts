@@ -108,3 +108,23 @@ describe('HMAC-SHA256 known answers', () => {
     });
   }
 });
+
+describe('inputs above the synchronous size limit', () => {
+  test('hashes large Base64 input', async () => {
+    expect(await shaBase64('A'.repeat(49152), 'SHA-256')).toBe(
+      'HAJzCVOCmIMz4vK1rkh86kYHN+2b5ly62cXeU3+Vv3U='
+    );
+  });
+
+  test('hashes a large UTF-8 string', async () => {
+    expect(await shaUtf8('a'.repeat(40000), 'SHA-256')).toBe(
+      '72a2f8d2643328a2e03dcb1b66fdc6610b95ba3019d88d8849ce060d0be634ce'
+    );
+  });
+
+  test('computes an HMAC over large input', async () => {
+    expect(
+      await hmac256('00'.repeat(20000), '0123456789abcdef'.repeat(4))
+    ).toBe('6271447fab534de65abf22d387b9d75d635231deb617eec3e8775a1b9d275564');
+  });
+});

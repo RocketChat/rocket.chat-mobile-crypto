@@ -323,6 +323,15 @@ namespace margelo::nitro::mobilecrypto::bridge::swift {
     return Result<std::shared_ptr<Promise<std::string>>>::withError(error);
   }
   
+  // pragma MARK: Result<std::string>
+  using Result_std__string_ = Result<std::string>;
+  inline Result_std__string_ create_Result_std__string_(const std::string& value) noexcept {
+    return Result<std::string>::withValue(value);
+  }
+  inline Result_std__string_ create_Result_std__string_(const std::exception_ptr& error) noexcept {
+    return Result<std::string>::withError(error);
+  }
+  
   // pragma MARK: Result<std::shared_ptr<Promise<std::optional<std::string>>>>
   using Result_std__shared_ptr_Promise_std__optional_std__string____ = Result<std::shared_ptr<Promise<std::optional<std::string>>>>;
   inline Result_std__shared_ptr_Promise_std__optional_std__string____ create_Result_std__shared_ptr_Promise_std__optional_std__string____(const std::shared_ptr<Promise<std::optional<std::string>>>& value) noexcept {
@@ -330,6 +339,15 @@ namespace margelo::nitro::mobilecrypto::bridge::swift {
   }
   inline Result_std__shared_ptr_Promise_std__optional_std__string____ create_Result_std__shared_ptr_Promise_std__optional_std__string____(const std::exception_ptr& error) noexcept {
     return Result<std::shared_ptr<Promise<std::optional<std::string>>>>::withError(error);
+  }
+  
+  // pragma MARK: Result<std::optional<std::string>>
+  using Result_std__optional_std__string__ = Result<std::optional<std::string>>;
+  inline Result_std__optional_std__string__ create_Result_std__optional_std__string__(const std::optional<std::string>& value) noexcept {
+    return Result<std::optional<std::string>>::withValue(value);
+  }
+  inline Result_std__optional_std__string__ create_Result_std__optional_std__string__(const std::exception_ptr& error) noexcept {
+    return Result<std::optional<std::string>>::withError(error);
   }
   
   // pragma MARK: Result<std::shared_ptr<Promise<RSAKeyPair>>>
@@ -348,6 +366,15 @@ namespace margelo::nitro::mobilecrypto::bridge::swift {
   }
   inline Result_std__shared_ptr_Promise_bool___ create_Result_std__shared_ptr_Promise_bool___(const std::exception_ptr& error) noexcept {
     return Result<std::shared_ptr<Promise<bool>>>::withError(error);
+  }
+  
+  // pragma MARK: Result<bool>
+  using Result_bool_ = Result<bool>;
+  inline Result_bool_ create_Result_bool_(bool value) noexcept {
+    return Result<bool>::withValue(std::move(value));
+  }
+  inline Result_bool_ create_Result_bool_(const std::exception_ptr& error) noexcept {
+    return Result<bool>::withError(error);
   }
   
   // pragma MARK: Result<std::shared_ptr<Promise<JWK>>>

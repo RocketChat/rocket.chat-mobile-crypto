@@ -18,7 +18,7 @@ object FileUtils {
         appContext = context.applicationContext
     }
 
-    private const val BUFFER_SIZE = 4096
+    private const val BUFFER_SIZE = 65536
 
     /**
      * Calculate SHA-256 checksum of a file
