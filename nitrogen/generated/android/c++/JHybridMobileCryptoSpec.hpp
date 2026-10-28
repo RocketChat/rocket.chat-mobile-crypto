@@ -54,11 +54,11 @@ namespace margelo::nitro::mobilecrypto {
 
   public:
     // Methods
-    std::shared_ptr<Promise<std::string>> shaBase64(const std::string& data, const std::string& algorithm) override;
-    std::string shaBase64Sync(const std::string& data, const std::string& algorithm) override;
-    std::shared_ptr<Promise<std::string>> shaUtf8(const std::string& data, const std::string& algorithm) override;
-    std::string shaUtf8Sync(const std::string& data, const std::string& algorithm) override;
-    std::shared_ptr<Promise<std::string>> pbkdf2Hash(const std::string& pwdBase64, const std::string& saltBase64, double iterations, double keyLen, const std::string& hash) override;
+    std::shared_ptr<Promise<std::string>> shaBase64(const std::string& data, SHAAlgorithm algorithm) override;
+    std::string shaBase64Sync(const std::string& data, SHAAlgorithm algorithm) override;
+    std::shared_ptr<Promise<std::string>> shaUtf8(const std::string& data, SHAAlgorithm algorithm) override;
+    std::string shaUtf8Sync(const std::string& data, SHAAlgorithm algorithm) override;
+    std::shared_ptr<Promise<std::string>> pbkdf2Hash(const std::string& pwdBase64, const std::string& saltBase64, double iterations, double keyLen, PBKDF2HashAlgorithm hash) override;
     std::shared_ptr<Promise<std::string>> hmac256(const std::string& data, const std::string& key) override;
     std::string hmac256Sync(const std::string& data, const std::string& key) override;
     std::shared_ptr<Promise<std::optional<std::string>>> aesEncrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override;
@@ -79,16 +79,31 @@ namespace margelo::nitro::mobilecrypto {
     std::string rsaEncrypt64(const std::string& message, const std::string& publicKey) override;
     std::shared_ptr<Promise<std::string>> rsaDecrypt(const std::string& encodedMessage, const std::string& privateKey) override;
     std::shared_ptr<Promise<std::string>> rsaDecrypt64(const std::string& encodedMessage, const std::string& privateKey) override;
-    std::shared_ptr<Promise<std::string>> rsaSign(const std::string& message, const std::string& privateKey, const std::optional<std::string>& hash) override;
-    std::shared_ptr<Promise<std::string>> rsaSign64(const std::string& message, const std::string& privateKey, const std::optional<std::string>& hash) override;
-    std::shared_ptr<Promise<bool>> rsaVerify(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) override;
-    bool rsaVerifySync(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) override;
-    std::shared_ptr<Promise<bool>> rsaVerify64(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) override;
-    bool rsaVerify64Sync(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) override;
+    std::shared_ptr<Promise<std::string>> rsaSign(const std::string& message, const std::string& privateKey, std::optional<RSAHashAlgorithm> hash) override;
+    std::shared_ptr<Promise<std::string>> rsaSign64(const std::string& message, const std::string& privateKey, std::optional<RSAHashAlgorithm> hash) override;
+    std::shared_ptr<Promise<bool>> rsaVerify(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) override;
+    bool rsaVerifySync(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) override;
+    std::shared_ptr<Promise<bool>> rsaVerify64(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) override;
+    bool rsaVerify64Sync(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) override;
     std::shared_ptr<Promise<std::string>> calculateFileChecksum(const std::string& filePath) override;
     std::string getRandomValues(double length) override;
     std::shared_ptr<Promise<std::string>> rsaImportKey(const JWK& jwk) override;
     std::shared_ptr<Promise<JWK>> rsaExportKey(const std::string& pem) override;
+    std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>> rsaImportPrivateKey(const std::string& pem) override;
+    std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> rsaImportPublicKey(const std::string& pem) override;
+    std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> shaBuffer(const std::shared_ptr<ArrayBuffer>& data, SHAAlgorithm algorithm) override;
+    std::shared_ptr<ArrayBuffer> shaBufferSync(const std::shared_ptr<ArrayBuffer>& data, SHAAlgorithm algorithm) override;
+    std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> hmac256Buffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key) override;
+    std::shared_ptr<ArrayBuffer> hmac256BufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key) override;
+    std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesEncryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override;
+    std::shared_ptr<ArrayBuffer> aesEncryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override;
+    std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesDecryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override;
+    std::shared_ptr<ArrayBuffer> aesDecryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override;
+    std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesGcmEncryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override;
+    std::shared_ptr<ArrayBuffer> aesGcmEncryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override;
+    std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesGcmDecryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override;
+    std::shared_ptr<ArrayBuffer> aesGcmDecryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override;
+    std::shared_ptr<ArrayBuffer> randomBytesBuffer(double size) override;
 
   private:
     jni::global_ref<JHybridMobileCryptoSpec::JavaPart> _javaPart;

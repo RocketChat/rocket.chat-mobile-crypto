@@ -13,16 +13,33 @@
 #error NitroModules cannot be found! Are you sure you installed NitroModules properly?
 #endif
 
+// Forward declaration of `SHAAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class SHAAlgorithm; }
+// Forward declaration of `PBKDF2HashAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class PBKDF2HashAlgorithm; }
 // Forward declaration of `RSAKeyPair` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { struct RSAKeyPair; }
+// Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
 // Forward declaration of `JWK` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { struct JWK; }
+// Forward declaration of `HybridRSAPrivateKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
+// Forward declaration of `HybridRSAPublicKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPublicKeySpec; }
 
 #include <string>
 #include <NitroModules/Promise.hpp>
+#include "SHAAlgorithm.hpp"
+#include "PBKDF2HashAlgorithm.hpp"
 #include <optional>
 #include "RSAKeyPair.hpp"
+#include "RSAHashAlgorithm.hpp"
 #include "JWK.hpp"
+#include <memory>
+#include "HybridRSAPrivateKeySpec.hpp"
+#include "HybridRSAPublicKeySpec.hpp"
+#include <NitroModules/ArrayBuffer.hpp>
 
 namespace margelo::nitro::mobilecrypto {
 
@@ -55,11 +72,11 @@ namespace margelo::nitro::mobilecrypto {
 
     public:
       // Methods
-      virtual std::shared_ptr<Promise<std::string>> shaBase64(const std::string& data, const std::string& algorithm) = 0;
-      virtual std::string shaBase64Sync(const std::string& data, const std::string& algorithm) = 0;
-      virtual std::shared_ptr<Promise<std::string>> shaUtf8(const std::string& data, const std::string& algorithm) = 0;
-      virtual std::string shaUtf8Sync(const std::string& data, const std::string& algorithm) = 0;
-      virtual std::shared_ptr<Promise<std::string>> pbkdf2Hash(const std::string& pwdBase64, const std::string& saltBase64, double iterations, double keyLen, const std::string& hash) = 0;
+      virtual std::shared_ptr<Promise<std::string>> shaBase64(const std::string& data, SHAAlgorithm algorithm) = 0;
+      virtual std::string shaBase64Sync(const std::string& data, SHAAlgorithm algorithm) = 0;
+      virtual std::shared_ptr<Promise<std::string>> shaUtf8(const std::string& data, SHAAlgorithm algorithm) = 0;
+      virtual std::string shaUtf8Sync(const std::string& data, SHAAlgorithm algorithm) = 0;
+      virtual std::shared_ptr<Promise<std::string>> pbkdf2Hash(const std::string& pwdBase64, const std::string& saltBase64, double iterations, double keyLen, PBKDF2HashAlgorithm hash) = 0;
       virtual std::shared_ptr<Promise<std::string>> hmac256(const std::string& data, const std::string& key) = 0;
       virtual std::string hmac256Sync(const std::string& data, const std::string& key) = 0;
       virtual std::shared_ptr<Promise<std::optional<std::string>>> aesEncrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) = 0;
@@ -80,16 +97,31 @@ namespace margelo::nitro::mobilecrypto {
       virtual std::string rsaEncrypt64(const std::string& message, const std::string& publicKey) = 0;
       virtual std::shared_ptr<Promise<std::string>> rsaDecrypt(const std::string& encodedMessage, const std::string& privateKey) = 0;
       virtual std::shared_ptr<Promise<std::string>> rsaDecrypt64(const std::string& encodedMessage, const std::string& privateKey) = 0;
-      virtual std::shared_ptr<Promise<std::string>> rsaSign(const std::string& message, const std::string& privateKey, const std::optional<std::string>& hash) = 0;
-      virtual std::shared_ptr<Promise<std::string>> rsaSign64(const std::string& message, const std::string& privateKey, const std::optional<std::string>& hash) = 0;
-      virtual std::shared_ptr<Promise<bool>> rsaVerify(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) = 0;
-      virtual bool rsaVerifySync(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) = 0;
-      virtual std::shared_ptr<Promise<bool>> rsaVerify64(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) = 0;
-      virtual bool rsaVerify64Sync(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) = 0;
+      virtual std::shared_ptr<Promise<std::string>> rsaSign(const std::string& message, const std::string& privateKey, std::optional<RSAHashAlgorithm> hash) = 0;
+      virtual std::shared_ptr<Promise<std::string>> rsaSign64(const std::string& message, const std::string& privateKey, std::optional<RSAHashAlgorithm> hash) = 0;
+      virtual std::shared_ptr<Promise<bool>> rsaVerify(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) = 0;
+      virtual bool rsaVerifySync(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) = 0;
+      virtual std::shared_ptr<Promise<bool>> rsaVerify64(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) = 0;
+      virtual bool rsaVerify64Sync(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) = 0;
       virtual std::shared_ptr<Promise<std::string>> calculateFileChecksum(const std::string& filePath) = 0;
       virtual std::string getRandomValues(double length) = 0;
       virtual std::shared_ptr<Promise<std::string>> rsaImportKey(const JWK& jwk) = 0;
       virtual std::shared_ptr<Promise<JWK>> rsaExportKey(const std::string& pem) = 0;
+      virtual std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>> rsaImportPrivateKey(const std::string& pem) = 0;
+      virtual std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> rsaImportPublicKey(const std::string& pem) = 0;
+      virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> shaBuffer(const std::shared_ptr<ArrayBuffer>& data, SHAAlgorithm algorithm) = 0;
+      virtual std::shared_ptr<ArrayBuffer> shaBufferSync(const std::shared_ptr<ArrayBuffer>& data, SHAAlgorithm algorithm) = 0;
+      virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> hmac256Buffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key) = 0;
+      virtual std::shared_ptr<ArrayBuffer> hmac256BufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key) = 0;
+      virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesEncryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) = 0;
+      virtual std::shared_ptr<ArrayBuffer> aesEncryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) = 0;
+      virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesDecryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) = 0;
+      virtual std::shared_ptr<ArrayBuffer> aesDecryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) = 0;
+      virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesGcmEncryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) = 0;
+      virtual std::shared_ptr<ArrayBuffer> aesGcmEncryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) = 0;
+      virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesGcmDecryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) = 0;
+      virtual std::shared_ptr<ArrayBuffer> aesGcmDecryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) = 0;
+      virtual std::shared_ptr<ArrayBuffer> randomBytesBuffer(double size) = 0;
 
     protected:
       // Hybrid Setup

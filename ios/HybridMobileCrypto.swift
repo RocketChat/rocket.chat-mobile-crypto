@@ -4,35 +4,31 @@ import NitroModules
 final class HybridMobileCrypto: HybridMobileCryptoSpec {
   private static let defaultRSAKeySize = 2048.0
 
-  func shaBase64(data: String, algorithm: String) throws -> Promise<String> {
+  func shaBase64(data: String, algorithm: SHAAlgorithm) throws -> Promise<String> {
     return Promise.parallel { try self.shaBase64Sync(data: data, algorithm: algorithm) }
   }
 
-  func shaBase64Sync(data: String, algorithm: String) throws -> String {
+  func shaBase64Sync(data: String, algorithm: SHAAlgorithm) throws -> String {
     try SHACrypto.hashBase64(data, algorithm: algorithm).orThrow("Invalid algorithm or input")
   }
 
-  func shaUtf8(data: String, algorithm: String) throws -> Promise<String> {
+  func shaUtf8(data: String, algorithm: SHAAlgorithm) throws -> Promise<String> {
     return Promise.parallel { try self.shaUtf8Sync(data: data, algorithm: algorithm) }
   }
 
-  func shaUtf8Sync(data: String, algorithm: String) throws -> String {
-    try SHACrypto.hashUtf8ToHex(data, algorithm: algorithm).orThrow("Invalid algorithm")
+  func shaUtf8Sync(data: String, algorithm: SHAAlgorithm) throws -> String {
+    SHACrypto.hashUtf8ToHex(data, algorithm: algorithm)
   }
 
-  func pbkdf2Hash(pwdBase64: String, saltBase64: String, iterations: Double, keyLen: Double, hash: String) throws -> Promise<String> {
+  func pbkdf2Hash(pwdBase64: String, saltBase64: String, iterations: Double, keyLen: Double, hash: PBKDF2HashAlgorithm) throws -> Promise<String> {
     return Promise.parallel {
-      let iterationCount = try iterations.toCount()
-      let keyLength = try keyLen.toCount()
-      return try ObjCExceptionCatcher.catching {
-        PBKDF2Crypto.deriveKeyBase64(
-          pwdBase64,
-          saltBase64: saltBase64,
-          iterations: iterationCount,
-          keyLength: keyLength,
-          hashAlgorithm: hash
-        )
-      }
+      try PBKDF2Crypto.deriveKeyBase64(
+        pwdBase64,
+        saltBase64: saltBase64,
+        iterations: iterations.toCount(),
+        keyLength: keyLen.toCount(),
+        hash: hash
+      )
       .orThrow("PBKDF2 derivation failed")
     }
   }
@@ -72,7 +68,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func aesGcmEncryptSync(dataBase64: String, keyHex: String, ivHex: String) throws -> String? {
-    AESGCMCrypto.encryptGcmBase64(dataBase64, keyHex: keyHex, ivHex: ivHex)
+    AESGCMCrypto.encryptBase64(dataBase64, keyHex: keyHex, ivHex: ivHex)
   }
 
   func aesGcmDecrypt(dataBase64: String, keyHex: String, ivHex: String) throws -> Promise<String?> {
@@ -80,143 +76,204 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func aesGcmDecryptSync(dataBase64: String, keyHex: String, ivHex: String) throws -> String? {
-    AESGCMCrypto.decryptGcmBase64(dataBase64, keyHex: keyHex, ivHex: ivHex)
+    AESGCMCrypto.decryptBase64(dataBase64, keyHex: keyHex, ivHex: ivHex)
   }
 
   func aesEncryptFile(filePath: String, base64UrlKey: String, base64Iv: String) throws -> Promise<String> {
     return Promise.parallel {
-      try ObjCExceptionCatcher.catching {
-        AESCrypto.encryptFile(filePath, base64UrlKey: base64UrlKey, base64Iv: base64Iv)
-      }
-      .orThrow("File encryption failed")
+      try AESCTRFileCrypto.encryptFile(filePath, base64URLKey: base64UrlKey, base64InitializationVector: base64Iv)
+        .orThrow("File encryption failed")
     }
   }
 
   func aesDecryptFile(filePath: String, base64UrlKey: String, base64Iv: String) throws -> Promise<String> {
     return Promise.parallel {
-      try ObjCExceptionCatcher.catching {
-        AESCrypto.decryptFile(filePath, base64UrlKey: base64UrlKey, base64Iv: base64Iv)
-      }
-      .orThrow("File decryption failed")
+      try AESCTRFileCrypto.decryptFile(filePath, base64URLKey: base64UrlKey, base64InitializationVector: base64Iv)
+        .orThrow("File decryption failed")
     }
   }
 
   func randomUuid() throws -> String {
-    try ObjCExceptionCatcher.catching { RandomUtils.generateUuid() }
+    RandomGenerator.uuid()
   }
 
   func randomKey(length: Double) throws -> String {
-    let byteCount = try length.toCount()
-    return try ObjCExceptionCatcher.catching { RandomUtils.generateRandomKeyHex(byteCount) }
-      .orThrow("Failed to generate random key")
+    try RandomGenerator.bytes(count: Int(length.toCount())).orThrow("Failed to generate random key").lowercaseHexString
   }
 
   func randomBytes(size: Double) throws -> String {
-    let byteCount = try size.toCount()
-    return try ObjCExceptionCatcher.catching { RandomUtils.generateRandomBytesBase64(byteCount) }
-      .orThrow("Failed to generate random bytes")
+    try RandomGenerator.bytes(count: Int(size.toCount())).orThrow("Failed to generate random bytes").base64EncodedString()
   }
 
   func rsaGenerateKeys(keySize: Double?) throws -> Promise<RSAKeyPair> {
     return Promise.parallel {
       let bitCount = try (keySize ?? Self.defaultRSAKeySize).toCount()
-      let keyPair = try ObjCExceptionCatcher.catching { RSACrypto.generateKeyPair(Int(bitCount)) }
-        .orThrow("Key generation failed")
-      return try RSAKeyPair.from(dictionary: keyPair)
+      return try RSACrypto.generateKeyPair(bitCount: Int(bitCount)).orThrow("Key generation failed")
     }
   }
 
   func rsaEncrypt(message: String, publicKey: String) throws -> String {
-    try ObjCExceptionCatcher.catching { RSACrypto.encrypt(message, publicKeyPem: publicKey) }
-      .orThrow("Encryption failed")
+    try RSAPemCrypto.encrypt(message, publicKeyPem: publicKey).orThrow("Encryption failed")
   }
 
   func rsaEncrypt64(message: String, publicKey: String) throws -> String {
-    try ObjCExceptionCatcher.catching { RSACrypto.encryptBase64(message, publicKeyPem: publicKey) }
-      .orThrow("Encryption failed")
+    try RSAPemCrypto.encryptBase64(message, publicKeyPem: publicKey).orThrow("Encryption failed")
   }
 
   func rsaDecrypt(encodedMessage: String, privateKey: String) throws -> Promise<String> {
     return Promise.parallel {
-      try ObjCExceptionCatcher.catching { RSACrypto.decrypt(encodedMessage, privateKeyPem: privateKey) }
-        .orThrow("Decryption failed")
+      try RSAPemCrypto.decrypt(encodedMessage, privateKeyPem: privateKey).orThrow("Decryption failed")
     }
   }
 
   func rsaDecrypt64(encodedMessage: String, privateKey: String) throws -> Promise<String> {
     return Promise.parallel {
-      try ObjCExceptionCatcher.catching { RSACrypto.decrypt(toBase64: encodedMessage, privateKeyPem: privateKey) }
-        .orThrow("Decryption failed")
+      try RSAPemCrypto.decryptToBase64(encodedMessage, privateKeyPem: privateKey).orThrow("Decryption failed")
     }
   }
 
-  func rsaSign(message: String, privateKey: String, hash: String?) throws -> Promise<String> {
+  func rsaSign(message: String, privateKey: String, hash: RSAHashAlgorithm?) throws -> Promise<String> {
     return Promise.parallel {
-      try ObjCExceptionCatcher.catching {
-        RSACrypto.sign(message, privateKeyPem: privateKey, hashAlgorithm: hash)
-      }
-      .orThrow("Signing failed")
+      try RSAPemCrypto.sign(message, privateKeyPem: privateKey, hash: hash).orThrow("Signing failed")
     }
   }
 
-  func rsaSign64(message: String, privateKey: String, hash: String?) throws -> Promise<String> {
+  func rsaSign64(message: String, privateKey: String, hash: RSAHashAlgorithm?) throws -> Promise<String> {
     return Promise.parallel {
-      try ObjCExceptionCatcher.catching {
-        RSACrypto.signBase64(message, privateKeyPem: privateKey, hashAlgorithm: hash)
-      }
-      .orThrow("Signing failed")
+      try RSAPemCrypto.signBase64(message, privateKeyPem: privateKey, hash: hash).orThrow("Signing failed")
     }
   }
 
-  func rsaVerify(signature: String, message: String, publicKey: String, hash: String?) throws -> Promise<Bool> {
+  func rsaVerify(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?) throws -> Promise<Bool> {
     return Promise.parallel {
       try self.rsaVerifySync(signature: signature, message: message, publicKey: publicKey, hash: hash)
     }
   }
 
-  func rsaVerifySync(signature: String, message: String, publicKey: String, hash: String?) throws -> Bool {
-    try ObjCExceptionCatcher.catching {
-      RSACrypto.verify(signature, message: message, publicKeyPem: publicKey, hashAlgorithm: hash)
-    }
+  func rsaVerifySync(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?) throws -> Bool {
+    RSAPemCrypto.verify(signature, message: message, publicKeyPem: publicKey, hash: hash)
   }
 
-  func rsaVerify64(signature: String, message: String, publicKey: String, hash: String?) throws -> Promise<Bool> {
+  func rsaVerify64(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?) throws -> Promise<Bool> {
     return Promise.parallel {
       try self.rsaVerify64Sync(signature: signature, message: message, publicKey: publicKey, hash: hash)
     }
   }
 
-  func rsaVerify64Sync(signature: String, message: String, publicKey: String, hash: String?) throws -> Bool {
-    try ObjCExceptionCatcher.catching {
-      RSACrypto.verifyBase64(signature, messageBase64: message, publicKeyPem: publicKey, hashAlgorithm: hash)
-    }
+  func rsaVerify64Sync(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?) throws -> Bool {
+    RSAPemCrypto.verifyBase64(signature, messageBase64: message, publicKeyPem: publicKey, hash: hash)
   }
 
   func calculateFileChecksum(filePath: String) throws -> Promise<String> {
     return Promise.parallel {
-      try ObjCExceptionCatcher.catching { FileUtils.calculateSha256Checksum(filePath) }
-        .orThrow("File checksum calculation failed")
+      try FileChecksum.sha256Hex(ofFileAt: filePath).orThrow("File checksum calculation failed")
     }
   }
 
   func getRandomValues(length: Double) throws -> String {
-    let characterCount = try length.toCount()
-    return try ObjCExceptionCatcher.catching { RandomUtils.generateRandomAlphanumeric(characterCount) }
+    RandomGenerator.alphanumeric(length: Int(try length.toCount()))
   }
 
   func rsaImportKey(jwk: JWK) throws -> Promise<String> {
     return Promise.parallel {
-      let jwkDictionary = jwk.toDictionary()
-      return try ObjCExceptionCatcher.catching { RSACrypto.importJwkKey(jwkDictionary) }
-        .orThrow("Key import failed")
+      try RSAJWKConverter.pem(from: jwk).orThrow("Key import failed")
     }
   }
 
   func rsaExportKey(pem: String) throws -> Promise<JWK> {
     return Promise.parallel {
-      let jwkDictionary = try ObjCExceptionCatcher.catching { RSACrypto.exportPemKey(pem) }
-        .orThrow("Key export failed")
-      return try JWK.from(dictionary: jwkDictionary)
+      try RSAJWKConverter.jwk(fromPem: pem).orThrow("Key export failed")
     }
+  }
+
+  func rsaImportPrivateKey(pem: String) throws -> Promise<(any HybridRSAPrivateKeySpec)> {
+    return Promise.parallel {
+      HybridRSAPrivateKey(key: try RSAKeyLoader.privateKey(fromPem: pem).orThrow("Key import failed"))
+    }
+  }
+
+  func rsaImportPublicKey(pem: String) throws -> Promise<(any HybridRSAPublicKeySpec)> {
+    return Promise.parallel {
+      HybridRSAPublicKey(key: try RSAKeyLoader.publicKey(fromPem: pem).orThrow("Key import failed"))
+    }
+  }
+
+  func shaBuffer(data: ArrayBuffer, algorithm: SHAAlgorithm) throws -> Promise<ArrayBuffer> {
+    let input = data.copiedData()
+    return Promise.parallel { ArrayBuffer.copying(algorithm.digest(of: input)) }
+  }
+
+  func shaBufferSync(data: ArrayBuffer, algorithm: SHAAlgorithm) throws -> ArrayBuffer {
+    ArrayBuffer.copying(algorithm.digest(of: data.copiedData()))
+  }
+
+  func hmac256Buffer(data: ArrayBuffer, key: ArrayBuffer) throws -> Promise<ArrayBuffer> {
+    let content = data.copiedData()
+    let keyData = key.copiedData()
+    return Promise.parallel { ArrayBuffer.copying(HMACCrypto.hmacSha256(content, key: keyData)) }
+  }
+
+  func hmac256BufferSync(data: ArrayBuffer, key: ArrayBuffer) throws -> ArrayBuffer {
+    ArrayBuffer.copying(HMACCrypto.hmacSha256(data.copiedData(), key: key.copiedData()))
+  }
+
+  func aesEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer> {
+    let (input, keyData, initializationVector) = (data.copiedData(), key.copiedData(), iv.copiedData())
+    return Promise.parallel {
+      try Self.aesCBCEncrypt(input, key: keyData, initializationVector: initializationVector)
+    }
+  }
+
+  func aesEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
+    try Self.aesCBCEncrypt(data.copiedData(), key: key.copiedData(), initializationVector: iv.copiedData())
+  }
+
+  func aesDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer> {
+    let (input, keyData, initializationVector) = (data.copiedData(), key.copiedData(), iv.copiedData())
+    return Promise.parallel {
+      try Self.aesCBCDecrypt(input, key: keyData, initializationVector: initializationVector)
+    }
+  }
+
+  func aesDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
+    try Self.aesCBCDecrypt(data.copiedData(), key: key.copiedData(), initializationVector: iv.copiedData())
+  }
+
+  func aesGcmEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer> {
+    let (input, keyData, nonce) = (data.copiedData(), key.copiedData(), iv.copiedData())
+    return Promise.parallel { try Self.aesGCMEncrypt(input, key: keyData, nonce: nonce) }
+  }
+
+  func aesGcmEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
+    try Self.aesGCMEncrypt(data.copiedData(), key: key.copiedData(), nonce: iv.copiedData())
+  }
+
+  func aesGcmDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer> {
+    let (input, keyData, nonce) = (data.copiedData(), key.copiedData(), iv.copiedData())
+    return Promise.parallel { try Self.aesGCMDecrypt(input, key: keyData, nonce: nonce) }
+  }
+
+  func aesGcmDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
+    try Self.aesGCMDecrypt(data.copiedData(), key: key.copiedData(), nonce: iv.copiedData())
+  }
+
+  func randomBytesBuffer(size: Double) throws -> ArrayBuffer {
+    ArrayBuffer.copying(try RandomGenerator.bytes(count: Int(size.toCount())).orThrow("Failed to generate random bytes"))
+  }
+
+  private static func aesCBCEncrypt(_ plaintext: Data, key: Data, initializationVector: Data) throws -> ArrayBuffer {
+    ArrayBuffer.copying(try AESCBCCrypto.encrypt(plaintext, key: key, initializationVector: initializationVector).orThrow("Encryption failed"))
+  }
+
+  private static func aesCBCDecrypt(_ ciphertext: Data, key: Data, initializationVector: Data) throws -> ArrayBuffer {
+    ArrayBuffer.copying(try AESCBCCrypto.decrypt(ciphertext, key: key, initializationVector: initializationVector).orThrow("Decryption failed"))
+  }
+
+  private static func aesGCMEncrypt(_ plaintext: Data, key: Data, nonce: Data) throws -> ArrayBuffer {
+    ArrayBuffer.copying(try AESGCMCrypto.encrypt(plaintext, key: key, nonce: nonce).orThrow("Encryption failed"))
+  }
+
+  private static func aesGCMDecrypt(_ ciphertextAndTag: Data, key: Data, nonce: Data) throws -> ArrayBuffer {
+    ArrayBuffer.copying(try AESGCMCrypto.decrypt(ciphertextAndTag, key: key, nonce: nonce).orThrow("Decryption failed"))
   }
 }

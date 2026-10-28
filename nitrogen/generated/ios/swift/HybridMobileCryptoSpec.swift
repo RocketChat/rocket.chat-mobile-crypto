@@ -13,11 +13,11 @@ public protocol HybridMobileCryptoSpec_protocol: HybridObject {
   
 
   // Methods
-  func shaBase64(data: String, algorithm: String) throws -> Promise<String>
-  func shaBase64Sync(data: String, algorithm: String) throws -> String
-  func shaUtf8(data: String, algorithm: String) throws -> Promise<String>
-  func shaUtf8Sync(data: String, algorithm: String) throws -> String
-  func pbkdf2Hash(pwdBase64: String, saltBase64: String, iterations: Double, keyLen: Double, hash: String) throws -> Promise<String>
+  func shaBase64(data: String, algorithm: SHAAlgorithm) throws -> Promise<String>
+  func shaBase64Sync(data: String, algorithm: SHAAlgorithm) throws -> String
+  func shaUtf8(data: String, algorithm: SHAAlgorithm) throws -> Promise<String>
+  func shaUtf8Sync(data: String, algorithm: SHAAlgorithm) throws -> String
+  func pbkdf2Hash(pwdBase64: String, saltBase64: String, iterations: Double, keyLen: Double, hash: PBKDF2HashAlgorithm) throws -> Promise<String>
   func hmac256(data: String, key: String) throws -> Promise<String>
   func hmac256Sync(data: String, key: String) throws -> String
   func aesEncrypt(dataBase64: String, keyHex: String, ivHex: String) throws -> Promise<String?>
@@ -38,16 +38,31 @@ public protocol HybridMobileCryptoSpec_protocol: HybridObject {
   func rsaEncrypt64(message: String, publicKey: String) throws -> String
   func rsaDecrypt(encodedMessage: String, privateKey: String) throws -> Promise<String>
   func rsaDecrypt64(encodedMessage: String, privateKey: String) throws -> Promise<String>
-  func rsaSign(message: String, privateKey: String, hash: String?) throws -> Promise<String>
-  func rsaSign64(message: String, privateKey: String, hash: String?) throws -> Promise<String>
-  func rsaVerify(signature: String, message: String, publicKey: String, hash: String?) throws -> Promise<Bool>
-  func rsaVerifySync(signature: String, message: String, publicKey: String, hash: String?) throws -> Bool
-  func rsaVerify64(signature: String, message: String, publicKey: String, hash: String?) throws -> Promise<Bool>
-  func rsaVerify64Sync(signature: String, message: String, publicKey: String, hash: String?) throws -> Bool
+  func rsaSign(message: String, privateKey: String, hash: RSAHashAlgorithm?) throws -> Promise<String>
+  func rsaSign64(message: String, privateKey: String, hash: RSAHashAlgorithm?) throws -> Promise<String>
+  func rsaVerify(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?) throws -> Promise<Bool>
+  func rsaVerifySync(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?) throws -> Bool
+  func rsaVerify64(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?) throws -> Promise<Bool>
+  func rsaVerify64Sync(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?) throws -> Bool
   func calculateFileChecksum(filePath: String) throws -> Promise<String>
   func getRandomValues(length: Double) throws -> String
   func rsaImportKey(jwk: JWK) throws -> Promise<String>
   func rsaExportKey(pem: String) throws -> Promise<JWK>
+  func rsaImportPrivateKey(pem: String) throws -> Promise<(any HybridRSAPrivateKeySpec)>
+  func rsaImportPublicKey(pem: String) throws -> Promise<(any HybridRSAPublicKeySpec)>
+  func shaBuffer(data: ArrayBuffer, algorithm: SHAAlgorithm) throws -> Promise<ArrayBuffer>
+  func shaBufferSync(data: ArrayBuffer, algorithm: SHAAlgorithm) throws -> ArrayBuffer
+  func hmac256Buffer(data: ArrayBuffer, key: ArrayBuffer) throws -> Promise<ArrayBuffer>
+  func hmac256BufferSync(data: ArrayBuffer, key: ArrayBuffer) throws -> ArrayBuffer
+  func aesEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer>
+  func aesEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer
+  func aesDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer>
+  func aesDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer
+  func aesGcmEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer>
+  func aesGcmEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer
+  func aesGcmDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer>
+  func aesGcmDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer
+  func randomBytesBuffer(size: Double) throws -> ArrayBuffer
 }
 
 public extension HybridMobileCryptoSpec_protocol {

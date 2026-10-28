@@ -10,15 +10,31 @@
 // Forward declarations of C++ defined types
 // Forward declaration of `HybridMobileCryptoSpec` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { class HybridMobileCryptoSpec; }
+// Forward declaration of `HybridRSAPrivateKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
+// Forward declaration of `HybridRSAPublicKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPublicKeySpec; }
 // Forward declaration of `JWK` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { struct JWK; }
+// Forward declaration of `PBKDF2HashAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class PBKDF2HashAlgorithm; }
+// Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
 // Forward declaration of `RSAKeyPair` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { struct RSAKeyPair; }
+// Forward declaration of `SHAAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class SHAAlgorithm; }
 
 // Include C++ defined types
 #include "HybridMobileCryptoSpec.hpp"
+#include "HybridRSAPrivateKeySpec.hpp"
+#include "HybridRSAPublicKeySpec.hpp"
 #include "JWK.hpp"
+#include "PBKDF2HashAlgorithm.hpp"
+#include "RSAHashAlgorithm.hpp"
 #include "RSAKeyPair.hpp"
+#include "SHAAlgorithm.hpp"
+#include <NitroModules/ArrayBuffer.hpp>
 #include <NitroModules/Promise.hpp>
 #include <NitroModules/Result.hpp>
 #include <exception>
@@ -39,6 +55,10 @@ namespace margelo::nitro::mobilecrypto { struct RSAKeyPair; }
 // Forward declarations of Swift defined types
 // Forward declaration of `HybridMobileCryptoSpec_cxx` to properly resolve imports.
 namespace MobileCrypto { class HybridMobileCryptoSpec_cxx; }
+// Forward declaration of `HybridRSAPrivateKeySpec_cxx` to properly resolve imports.
+namespace MobileCrypto { class HybridRSAPrivateKeySpec_cxx; }
+// Forward declaration of `HybridRSAPublicKeySpec_cxx` to properly resolve imports.
+namespace MobileCrypto { class HybridRSAPublicKeySpec_cxx; }
 
 // Include Swift defined types
 #if __has_include("MobileCrypto-Swift.h")

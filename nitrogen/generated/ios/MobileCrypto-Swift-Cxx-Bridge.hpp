@@ -8,21 +8,38 @@
 #pragma once
 
 // Forward declarations of C++ defined types
+// Forward declaration of `ArrayBufferHolder` to properly resolve imports.
+namespace NitroModules { class ArrayBufferHolder; }
 // Forward declaration of `HybridMobileCryptoSpec` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { class HybridMobileCryptoSpec; }
+// Forward declaration of `HybridRSAPrivateKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
+// Forward declaration of `HybridRSAPublicKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPublicKeySpec; }
 // Forward declaration of `JWK` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { struct JWK; }
+// Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
 // Forward declaration of `RSAKeyPair` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { struct RSAKeyPair; }
 
 // Forward declarations of Swift defined types
 // Forward declaration of `HybridMobileCryptoSpec_cxx` to properly resolve imports.
 namespace MobileCrypto { class HybridMobileCryptoSpec_cxx; }
+// Forward declaration of `HybridRSAPrivateKeySpec_cxx` to properly resolve imports.
+namespace MobileCrypto { class HybridRSAPrivateKeySpec_cxx; }
+// Forward declaration of `HybridRSAPublicKeySpec_cxx` to properly resolve imports.
+namespace MobileCrypto { class HybridRSAPublicKeySpec_cxx; }
 
 // Include C++ defined types
 #include "HybridMobileCryptoSpec.hpp"
+#include "HybridRSAPrivateKeySpec.hpp"
+#include "HybridRSAPublicKeySpec.hpp"
 #include "JWK.hpp"
+#include "RSAHashAlgorithm.hpp"
 #include "RSAKeyPair.hpp"
+#include <NitroModules/ArrayBuffer.hpp>
+#include <NitroModules/ArrayBufferHolder.hpp>
 #include <NitroModules/Promise.hpp>
 #include <NitroModules/PromiseHolder.hpp>
 #include <NitroModules/Result.hpp>
@@ -193,6 +210,21 @@ namespace margelo::nitro::mobilecrypto::bridge::swift {
     return optional.value();
   }
   
+  // pragma MARK: std::optional<RSAHashAlgorithm>
+  /**
+   * Specialized version of `std::optional<RSAHashAlgorithm>`.
+   */
+  using std__optional_RSAHashAlgorithm_ = std::optional<RSAHashAlgorithm>;
+  inline std::optional<RSAHashAlgorithm> create_std__optional_RSAHashAlgorithm_(const RSAHashAlgorithm& value) noexcept {
+    return std::optional<RSAHashAlgorithm>(value);
+  }
+  inline bool has_value_std__optional_RSAHashAlgorithm_(const std::optional<RSAHashAlgorithm>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline RSAHashAlgorithm get_std__optional_RSAHashAlgorithm_(const std::optional<RSAHashAlgorithm>& optional) noexcept {
+    return optional.value();
+  }
+  
   // pragma MARK: std::shared_ptr<Promise<bool>>
   /**
    * Specialized version of `std::shared_ptr<Promise<bool>>`.
@@ -302,6 +334,132 @@ namespace margelo::nitro::mobilecrypto::bridge::swift {
     return Func_void_JWK_Wrapper(std::move(value));
   }
   
+  // pragma MARK: std::shared_ptr<HybridRSAPrivateKeySpec>
+  /**
+   * Specialized version of `std::shared_ptr<HybridRSAPrivateKeySpec>`.
+   */
+  using std__shared_ptr_HybridRSAPrivateKeySpec_ = std::shared_ptr<HybridRSAPrivateKeySpec>;
+  std::shared_ptr<HybridRSAPrivateKeySpec> create_std__shared_ptr_HybridRSAPrivateKeySpec_(void* NON_NULL swiftUnsafePointer) noexcept;
+  void* NON_NULL get_std__shared_ptr_HybridRSAPrivateKeySpec_(std__shared_ptr_HybridRSAPrivateKeySpec_ cppType);
+  
+  // pragma MARK: std::weak_ptr<HybridRSAPrivateKeySpec>
+  using std__weak_ptr_HybridRSAPrivateKeySpec_ = std::weak_ptr<HybridRSAPrivateKeySpec>;
+  inline std__weak_ptr_HybridRSAPrivateKeySpec_ weakify_std__shared_ptr_HybridRSAPrivateKeySpec_(const std::shared_ptr<HybridRSAPrivateKeySpec>& strong) noexcept { return strong; }
+  
+  // pragma MARK: std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>>
+  /**
+   * Specialized version of `std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>>`.
+   */
+  using std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec___ = std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>>;
+  inline std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>> create_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec___() noexcept {
+    return Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>::create();
+  }
+  inline PromiseHolder<std::shared_ptr<HybridRSAPrivateKeySpec>> wrap_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec___(std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>> promise) noexcept {
+    return PromiseHolder<std::shared_ptr<HybridRSAPrivateKeySpec>>(std::move(promise));
+  }
+  
+  // pragma MARK: std::function<void(const std::shared_ptr<HybridRSAPrivateKeySpec>& /* result */)>
+  /**
+   * Specialized version of `std::function<void(const std::shared_ptr<HybridRSAPrivateKeySpec>&)>`.
+   */
+  using Func_void_std__shared_ptr_HybridRSAPrivateKeySpec_ = std::function<void(const std::shared_ptr<HybridRSAPrivateKeySpec>& /* result */)>;
+  /**
+   * Wrapper class for a `std::function<void(const std::shared_ptr<HybridRSAPrivateKeySpec>& / * result * /)>`, this can be used from Swift.
+   */
+  class Func_void_std__shared_ptr_HybridRSAPrivateKeySpec__Wrapper final {
+  public:
+    explicit Func_void_std__shared_ptr_HybridRSAPrivateKeySpec__Wrapper(std::function<void(const std::shared_ptr<HybridRSAPrivateKeySpec>& /* result */)>&& func): _function(std::make_unique<std::function<void(const std::shared_ptr<HybridRSAPrivateKeySpec>& /* result */)>>(std::move(func))) {}
+    inline void call(std::shared_ptr<HybridRSAPrivateKeySpec> result) const noexcept {
+      _function->operator()(result);
+    }
+  private:
+    std::unique_ptr<std::function<void(const std::shared_ptr<HybridRSAPrivateKeySpec>& /* result */)>> _function;
+  } SWIFT_NONCOPYABLE;
+  Func_void_std__shared_ptr_HybridRSAPrivateKeySpec_ create_Func_void_std__shared_ptr_HybridRSAPrivateKeySpec_(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_std__shared_ptr_HybridRSAPrivateKeySpec__Wrapper wrap_Func_void_std__shared_ptr_HybridRSAPrivateKeySpec_(Func_void_std__shared_ptr_HybridRSAPrivateKeySpec_ value) noexcept {
+    return Func_void_std__shared_ptr_HybridRSAPrivateKeySpec__Wrapper(std::move(value));
+  }
+  
+  // pragma MARK: std::shared_ptr<HybridRSAPublicKeySpec>
+  /**
+   * Specialized version of `std::shared_ptr<HybridRSAPublicKeySpec>`.
+   */
+  using std__shared_ptr_HybridRSAPublicKeySpec_ = std::shared_ptr<HybridRSAPublicKeySpec>;
+  std::shared_ptr<HybridRSAPublicKeySpec> create_std__shared_ptr_HybridRSAPublicKeySpec_(void* NON_NULL swiftUnsafePointer) noexcept;
+  void* NON_NULL get_std__shared_ptr_HybridRSAPublicKeySpec_(std__shared_ptr_HybridRSAPublicKeySpec_ cppType);
+  
+  // pragma MARK: std::weak_ptr<HybridRSAPublicKeySpec>
+  using std__weak_ptr_HybridRSAPublicKeySpec_ = std::weak_ptr<HybridRSAPublicKeySpec>;
+  inline std__weak_ptr_HybridRSAPublicKeySpec_ weakify_std__shared_ptr_HybridRSAPublicKeySpec_(const std::shared_ptr<HybridRSAPublicKeySpec>& strong) noexcept { return strong; }
+  
+  // pragma MARK: std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>>
+  /**
+   * Specialized version of `std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>>`.
+   */
+  using std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec___ = std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>>;
+  inline std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> create_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec___() noexcept {
+    return Promise<std::shared_ptr<HybridRSAPublicKeySpec>>::create();
+  }
+  inline PromiseHolder<std::shared_ptr<HybridRSAPublicKeySpec>> wrap_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec___(std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> promise) noexcept {
+    return PromiseHolder<std::shared_ptr<HybridRSAPublicKeySpec>>(std::move(promise));
+  }
+  
+  // pragma MARK: std::function<void(const std::shared_ptr<HybridRSAPublicKeySpec>& /* result */)>
+  /**
+   * Specialized version of `std::function<void(const std::shared_ptr<HybridRSAPublicKeySpec>&)>`.
+   */
+  using Func_void_std__shared_ptr_HybridRSAPublicKeySpec_ = std::function<void(const std::shared_ptr<HybridRSAPublicKeySpec>& /* result */)>;
+  /**
+   * Wrapper class for a `std::function<void(const std::shared_ptr<HybridRSAPublicKeySpec>& / * result * /)>`, this can be used from Swift.
+   */
+  class Func_void_std__shared_ptr_HybridRSAPublicKeySpec__Wrapper final {
+  public:
+    explicit Func_void_std__shared_ptr_HybridRSAPublicKeySpec__Wrapper(std::function<void(const std::shared_ptr<HybridRSAPublicKeySpec>& /* result */)>&& func): _function(std::make_unique<std::function<void(const std::shared_ptr<HybridRSAPublicKeySpec>& /* result */)>>(std::move(func))) {}
+    inline void call(std::shared_ptr<HybridRSAPublicKeySpec> result) const noexcept {
+      _function->operator()(result);
+    }
+  private:
+    std::unique_ptr<std::function<void(const std::shared_ptr<HybridRSAPublicKeySpec>& /* result */)>> _function;
+  } SWIFT_NONCOPYABLE;
+  Func_void_std__shared_ptr_HybridRSAPublicKeySpec_ create_Func_void_std__shared_ptr_HybridRSAPublicKeySpec_(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_std__shared_ptr_HybridRSAPublicKeySpec__Wrapper wrap_Func_void_std__shared_ptr_HybridRSAPublicKeySpec_(Func_void_std__shared_ptr_HybridRSAPublicKeySpec_ value) noexcept {
+    return Func_void_std__shared_ptr_HybridRSAPublicKeySpec__Wrapper(std::move(value));
+  }
+  
+  // pragma MARK: std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>>
+  /**
+   * Specialized version of `std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>>`.
+   */
+  using std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___ = std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>>;
+  inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> create_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___() noexcept {
+    return Promise<std::shared_ptr<ArrayBuffer>>::create();
+  }
+  inline PromiseHolder<std::shared_ptr<ArrayBuffer>> wrap_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___(std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> promise) noexcept {
+    return PromiseHolder<std::shared_ptr<ArrayBuffer>>(std::move(promise));
+  }
+  
+  // pragma MARK: std::function<void(const std::shared_ptr<ArrayBuffer>& /* result */)>
+  /**
+   * Specialized version of `std::function<void(const std::shared_ptr<ArrayBuffer>&)>`.
+   */
+  using Func_void_std__shared_ptr_ArrayBuffer_ = std::function<void(const std::shared_ptr<ArrayBuffer>& /* result */)>;
+  /**
+   * Wrapper class for a `std::function<void(const std::shared_ptr<ArrayBuffer>& / * result * /)>`, this can be used from Swift.
+   */
+  class Func_void_std__shared_ptr_ArrayBuffer__Wrapper final {
+  public:
+    explicit Func_void_std__shared_ptr_ArrayBuffer__Wrapper(std::function<void(const std::shared_ptr<ArrayBuffer>& /* result */)>&& func): _function(std::make_unique<std::function<void(const std::shared_ptr<ArrayBuffer>& /* result */)>>(std::move(func))) {}
+    inline void call(ArrayBufferHolder result) const noexcept {
+      _function->operator()(result.getArrayBuffer());
+    }
+  private:
+    std::unique_ptr<std::function<void(const std::shared_ptr<ArrayBuffer>& /* result */)>> _function;
+  } SWIFT_NONCOPYABLE;
+  Func_void_std__shared_ptr_ArrayBuffer_ create_Func_void_std__shared_ptr_ArrayBuffer_(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_std__shared_ptr_ArrayBuffer__Wrapper wrap_Func_void_std__shared_ptr_ArrayBuffer_(Func_void_std__shared_ptr_ArrayBuffer_ value) noexcept {
+    return Func_void_std__shared_ptr_ArrayBuffer__Wrapper(std::move(value));
+  }
+  
   // pragma MARK: std::shared_ptr<HybridMobileCryptoSpec>
   /**
    * Specialized version of `std::shared_ptr<HybridMobileCryptoSpec>`.
@@ -384,6 +542,42 @@ namespace margelo::nitro::mobilecrypto::bridge::swift {
   }
   inline Result_std__shared_ptr_Promise_JWK___ create_Result_std__shared_ptr_Promise_JWK___(const std::exception_ptr& error) noexcept {
     return Result<std::shared_ptr<Promise<JWK>>>::withError(error);
+  }
+  
+  // pragma MARK: Result<std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>>>
+  using Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec____ = Result<std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>>>;
+  inline Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec____ create_Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec____(const std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>>& value) noexcept {
+    return Result<std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>>>::withValue(value);
+  }
+  inline Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec____ create_Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec____(const std::exception_ptr& error) noexcept {
+    return Result<std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>>>::withError(error);
+  }
+  
+  // pragma MARK: Result<std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>>>
+  using Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec____ = Result<std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>>>;
+  inline Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec____ create_Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec____(const std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>>& value) noexcept {
+    return Result<std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>>>::withValue(value);
+  }
+  inline Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec____ create_Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec____(const std::exception_ptr& error) noexcept {
+    return Result<std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>>>::withError(error);
+  }
+  
+  // pragma MARK: Result<std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>>>
+  using Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____ = Result<std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>>>;
+  inline Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____ create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(const std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>>& value) noexcept {
+    return Result<std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>>>::withValue(value);
+  }
+  inline Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____ create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(const std::exception_ptr& error) noexcept {
+    return Result<std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>>>::withError(error);
+  }
+  
+  // pragma MARK: Result<std::shared_ptr<ArrayBuffer>>
+  using Result_std__shared_ptr_ArrayBuffer__ = Result<std::shared_ptr<ArrayBuffer>>;
+  inline Result_std__shared_ptr_ArrayBuffer__ create_Result_std__shared_ptr_ArrayBuffer__(const std::shared_ptr<ArrayBuffer>& value) noexcept {
+    return Result<std::shared_ptr<ArrayBuffer>>::withValue(value);
+  }
+  inline Result_std__shared_ptr_ArrayBuffer__ create_Result_std__shared_ptr_ArrayBuffer__(const std::exception_ptr& error) noexcept {
+    return Result<std::shared_ptr<ArrayBuffer>>::withError(error);
   }
 
 } // namespace margelo::nitro::mobilecrypto::bridge::swift

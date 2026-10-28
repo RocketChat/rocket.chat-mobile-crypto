@@ -34,8 +34,12 @@ target_sources(
   ../nitrogen/generated/android/MobileCryptoOnLoad.cpp
   # Shared Nitrogen C++ sources
   ../nitrogen/generated/shared/c++/HybridMobileCryptoSpec.cpp
+  ../nitrogen/generated/shared/c++/HybridRSAPrivateKeySpec.cpp
+  ../nitrogen/generated/shared/c++/HybridRSAPublicKeySpec.cpp
   # Android-specific Nitrogen C++ sources
   ../nitrogen/generated/android/c++/JHybridMobileCryptoSpec.cpp
+  ../nitrogen/generated/android/c++/JHybridRSAPrivateKeySpec.cpp
+  ../nitrogen/generated/android/c++/JHybridRSAPublicKeySpec.cpp
 )
 
 # From node_modules/react-native/ReactAndroid/cmake-utils/folly-flags.cmake

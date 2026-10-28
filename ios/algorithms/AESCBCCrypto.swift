@@ -2,21 +2,34 @@ import Foundation
 import CommonCrypto
 
 enum AESCBCCrypto {
+  static func encrypt(_ plaintext: Data, key: Data, initializationVector: Data) -> Data? {
+    crypt(CCOperation(kCCEncrypt), input: plaintext, key: key, initializationVector: initializationVector)
+  }
+
+  static func decrypt(_ ciphertext: Data, key: Data, initializationVector: Data) -> Data? {
+    guard !ciphertext.isEmpty, ciphertext.count % kCCBlockSizeAES128 == 0 else { return nil }
+    return crypt(CCOperation(kCCDecrypt), input: ciphertext, key: key, initializationVector: initializationVector)
+  }
+
   static func encryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    crypt(CCOperation(kCCEncrypt), dataBase64: dataBase64, keyHex: keyHex, ivHex: ivHex)
+    cryptBase64(CCOperation(kCCEncrypt), dataBase64: dataBase64, keyHex: keyHex, ivHex: ivHex)
   }
 
   static func decryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    crypt(CCOperation(kCCDecrypt), dataBase64: dataBase64, keyHex: keyHex, ivHex: ivHex)
+    cryptBase64(CCOperation(kCCDecrypt), dataBase64: dataBase64, keyHex: keyHex, ivHex: ivHex)
   }
 
-  private static func crypt(_ operation: CCOperation, dataBase64: String, keyHex: String, ivHex: String) -> String? {
+  private static func cryptBase64(_ operation: CCOperation, dataBase64: String, keyHex: String, ivHex: String) -> String? {
     guard let input = Data(base64Encoded: dataBase64),
           let key = Data(hexString: keyHex),
-          let initializationVector = Data(hexString: ivHex),
-          initializationVector.count == kCCBlockSizeAES128 else {
+          let initializationVector = Data(hexString: ivHex) else {
       return nil
     }
+    return crypt(operation, input: input, key: key, initializationVector: initializationVector)?.base64EncodedString()
+  }
+
+  private static func crypt(_ operation: CCOperation, input: Data, key: Data, initializationVector: Data) -> Data? {
+    guard initializationVector.count == kCCBlockSizeAES128 else { return nil }
     var output = Data(count: input.count + kCCBlockSizeAES128)
     let outputCapacity = output.count
     var outputLength = 0
@@ -43,6 +56,6 @@ enum AESCBCCrypto {
     }
     guard status == kCCSuccess else { return nil }
     output.count = outputLength
-    return output.base64EncodedString()
+    return output
   }
 }

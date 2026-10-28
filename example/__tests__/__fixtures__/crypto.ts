@@ -24,7 +24,7 @@ export const hashVectors = [
     base64:
       'm3HSJL1i83hdltRq0+o9czGb+8KJDKra4t/3JRlnPKcjI8PZm6XBHXx6zG4UuMXaDEZjR1wuXDre9G9zvN7AQw==',
   },
-];
+] as const;
 
 export const unicodeVector = {
   text: 'Rocket.Chat 🔐 — olá',
@@ -66,7 +66,7 @@ export const pbkdf2Vectors = [
     expected:
       'r+bFUweFtsxrHGRTOEcxvV7kMu5Un9QvtmlXea2KHFv1neacSPd078QAfVKY+QM8AkHVq2kwXntk7O642DTP7A==',
   },
-];
+] as const;
 
 export const binaryPbkdf2Vector = {
   password: 'cGFzcwB3b3Jk',

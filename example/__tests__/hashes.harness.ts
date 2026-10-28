@@ -4,6 +4,7 @@ import {
   pbkdf2Hash,
   shaBase64,
   shaUtf8,
+  type SHAAlgorithm,
 } from '@rocket.chat/mobile-crypto';
 import {
   binaryHashVector,
@@ -52,12 +53,14 @@ describe('SHA known answers', () => {
     );
   });
 
+  const unsupportedAlgorithm = 'unsupported' as SHAAlgorithm;
+
   test('rejects an unsupported UTF-8 hash algorithm', async () => {
-    await expect(shaUtf8('hello', 'unsupported')).rejects.toThrow();
+    await expect(shaUtf8('hello', unsupportedAlgorithm)).rejects.toThrow();
   });
 
   test('rejects an unsupported Base64 hash algorithm', async () => {
-    await expect(shaBase64('aGVsbG8=', 'unsupported')).rejects.toThrow();
+    await expect(shaBase64('aGVsbG8=', unsupportedAlgorithm)).rejects.toThrow();
   });
 
   test('rejects malformed Base64 input', async () => {

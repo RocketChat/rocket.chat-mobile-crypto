@@ -37,6 +37,11 @@ object HMACCrypto {
         return mac.doFinal(data)
     }
 
+    @Throws(NoSuchAlgorithmException::class, InvalidKeyException::class)
+    fun hmacSha256(data: ByteArray, key: ByteArray): ByteArray {
+        return computeHmac(data, key, Algorithm.HMAC_SHA256)
+    }
+
     /**
      * Compute HMAC-SHA256 with hex input/output
      * 
@@ -48,8 +53,7 @@ object HMACCrypto {
     fun hmacSha256Hex(dataHex: String, keyHex: String): String {
         val dataBytes = CryptoUtils.hexToBytes(dataHex)
         val keyBytes = CryptoUtils.hexToBytes(keyHex)
-        val hmacBytes = computeHmac(dataBytes, keyBytes, Algorithm.HMAC_SHA256)
-        return CryptoUtils.bytesToHex(hmacBytes)
+        return CryptoUtils.bytesToHex(hmacSha256(dataBytes, keyBytes))
     }
 
     /**

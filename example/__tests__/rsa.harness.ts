@@ -149,7 +149,13 @@ describe('RSA encryption and signatures', () => {
     ).toBe(true);
   });
 
-  for (const algorithm of ['SHA1', 'SHA224', 'SHA256', 'SHA384']) {
+  for (const algorithm of [
+    'SHA1',
+    'SHA224',
+    'SHA256',
+    'SHA384',
+    'SHA512',
+  ] as const) {
     test(`signs and verifies using ${algorithm}`, async () => {
       const signature = await rsaSign(
         'message',

@@ -125,9 +125,9 @@ open class HybridMobileCryptoSpec_cxx {
 
   // Methods
   @inline(__always)
-  public final func shaBase64(data: std.string, algorithm: std.string) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
+  public final func shaBase64(data: std.string, algorithm: Int32) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
     do {
-      let __result = try self.__implementation.shaBase64(data: String(data), algorithm: String(algorithm))
+      let __result = try self.__implementation.shaBase64(data: String(data), algorithm: margelo.nitro.mobilecrypto.SHAAlgorithm(rawValue: algorithm)!)
       let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__string__ in
         let __promise = bridge.create_std__shared_ptr_Promise_std__string__()
         let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__string__(__promise)
@@ -144,9 +144,9 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func shaBase64Sync(data: std.string, algorithm: std.string) -> bridge.Result_std__string_ {
+  public final func shaBase64Sync(data: std.string, algorithm: Int32) -> bridge.Result_std__string_ {
     do {
-      let __result = try self.__implementation.shaBase64Sync(data: String(data), algorithm: String(algorithm))
+      let __result = try self.__implementation.shaBase64Sync(data: String(data), algorithm: margelo.nitro.mobilecrypto.SHAAlgorithm(rawValue: algorithm)!)
       let __resultCpp = std.string(__result)
       return bridge.create_Result_std__string_(__resultCpp)
     } catch (let __error) {
@@ -156,9 +156,9 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func shaUtf8(data: std.string, algorithm: std.string) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
+  public final func shaUtf8(data: std.string, algorithm: Int32) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
     do {
-      let __result = try self.__implementation.shaUtf8(data: String(data), algorithm: String(algorithm))
+      let __result = try self.__implementation.shaUtf8(data: String(data), algorithm: margelo.nitro.mobilecrypto.SHAAlgorithm(rawValue: algorithm)!)
       let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__string__ in
         let __promise = bridge.create_std__shared_ptr_Promise_std__string__()
         let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__string__(__promise)
@@ -175,9 +175,9 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func shaUtf8Sync(data: std.string, algorithm: std.string) -> bridge.Result_std__string_ {
+  public final func shaUtf8Sync(data: std.string, algorithm: Int32) -> bridge.Result_std__string_ {
     do {
-      let __result = try self.__implementation.shaUtf8Sync(data: String(data), algorithm: String(algorithm))
+      let __result = try self.__implementation.shaUtf8Sync(data: String(data), algorithm: margelo.nitro.mobilecrypto.SHAAlgorithm(rawValue: algorithm)!)
       let __resultCpp = std.string(__result)
       return bridge.create_Result_std__string_(__resultCpp)
     } catch (let __error) {
@@ -187,9 +187,9 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func pbkdf2Hash(pwdBase64: std.string, saltBase64: std.string, iterations: Double, keyLen: Double, hash: std.string) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
+  public final func pbkdf2Hash(pwdBase64: std.string, saltBase64: std.string, iterations: Double, keyLen: Double, hash: Int32) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
     do {
-      let __result = try self.__implementation.pbkdf2Hash(pwdBase64: String(pwdBase64), saltBase64: String(saltBase64), iterations: iterations, keyLen: keyLen, hash: String(hash))
+      let __result = try self.__implementation.pbkdf2Hash(pwdBase64: String(pwdBase64), saltBase64: String(saltBase64), iterations: iterations, keyLen: keyLen, hash: margelo.nitro.mobilecrypto.PBKDF2HashAlgorithm(rawValue: hash)!)
       let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__string__ in
         let __promise = bridge.create_std__shared_ptr_Promise_std__string__()
         let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__string__(__promise)
@@ -571,16 +571,9 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func rsaSign(message: std.string, privateKey: std.string, hash: bridge.std__optional_std__string_) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
+  public final func rsaSign(message: std.string, privateKey: std.string, hash: bridge.std__optional_RSAHashAlgorithm_) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
     do {
-      let __result = try self.__implementation.rsaSign(message: String(message), privateKey: String(privateKey), hash: { () -> String? in
-        if bridge.has_value_std__optional_std__string_(hash) {
-          let __unwrapped = bridge.get_std__optional_std__string_(hash)
-          return String(__unwrapped)
-        } else {
-          return nil
-        }
-      }())
+      let __result = try self.__implementation.rsaSign(message: String(message), privateKey: String(privateKey), hash: hash.value)
       let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__string__ in
         let __promise = bridge.create_std__shared_ptr_Promise_std__string__()
         let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__string__(__promise)
@@ -597,16 +590,9 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func rsaSign64(message: std.string, privateKey: std.string, hash: bridge.std__optional_std__string_) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
+  public final func rsaSign64(message: std.string, privateKey: std.string, hash: bridge.std__optional_RSAHashAlgorithm_) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
     do {
-      let __result = try self.__implementation.rsaSign64(message: String(message), privateKey: String(privateKey), hash: { () -> String? in
-        if bridge.has_value_std__optional_std__string_(hash) {
-          let __unwrapped = bridge.get_std__optional_std__string_(hash)
-          return String(__unwrapped)
-        } else {
-          return nil
-        }
-      }())
+      let __result = try self.__implementation.rsaSign64(message: String(message), privateKey: String(privateKey), hash: hash.value)
       let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__string__ in
         let __promise = bridge.create_std__shared_ptr_Promise_std__string__()
         let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__string__(__promise)
@@ -623,16 +609,9 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func rsaVerify(signature: std.string, message: std.string, publicKey: std.string, hash: bridge.std__optional_std__string_) -> bridge.Result_std__shared_ptr_Promise_bool___ {
+  public final func rsaVerify(signature: std.string, message: std.string, publicKey: std.string, hash: bridge.std__optional_RSAHashAlgorithm_) -> bridge.Result_std__shared_ptr_Promise_bool___ {
     do {
-      let __result = try self.__implementation.rsaVerify(signature: String(signature), message: String(message), publicKey: String(publicKey), hash: { () -> String? in
-        if bridge.has_value_std__optional_std__string_(hash) {
-          let __unwrapped = bridge.get_std__optional_std__string_(hash)
-          return String(__unwrapped)
-        } else {
-          return nil
-        }
-      }())
+      let __result = try self.__implementation.rsaVerify(signature: String(signature), message: String(message), publicKey: String(publicKey), hash: hash.value)
       let __resultCpp = { () -> bridge.std__shared_ptr_Promise_bool__ in
         let __promise = bridge.create_std__shared_ptr_Promise_bool__()
         let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_bool__(__promise)
@@ -649,16 +628,9 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func rsaVerifySync(signature: std.string, message: std.string, publicKey: std.string, hash: bridge.std__optional_std__string_) -> bridge.Result_bool_ {
+  public final func rsaVerifySync(signature: std.string, message: std.string, publicKey: std.string, hash: bridge.std__optional_RSAHashAlgorithm_) -> bridge.Result_bool_ {
     do {
-      let __result = try self.__implementation.rsaVerifySync(signature: String(signature), message: String(message), publicKey: String(publicKey), hash: { () -> String? in
-        if bridge.has_value_std__optional_std__string_(hash) {
-          let __unwrapped = bridge.get_std__optional_std__string_(hash)
-          return String(__unwrapped)
-        } else {
-          return nil
-        }
-      }())
+      let __result = try self.__implementation.rsaVerifySync(signature: String(signature), message: String(message), publicKey: String(publicKey), hash: hash.value)
       let __resultCpp = __result
       return bridge.create_Result_bool_(__resultCpp)
     } catch (let __error) {
@@ -668,16 +640,9 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func rsaVerify64(signature: std.string, message: std.string, publicKey: std.string, hash: bridge.std__optional_std__string_) -> bridge.Result_std__shared_ptr_Promise_bool___ {
+  public final func rsaVerify64(signature: std.string, message: std.string, publicKey: std.string, hash: bridge.std__optional_RSAHashAlgorithm_) -> bridge.Result_std__shared_ptr_Promise_bool___ {
     do {
-      let __result = try self.__implementation.rsaVerify64(signature: String(signature), message: String(message), publicKey: String(publicKey), hash: { () -> String? in
-        if bridge.has_value_std__optional_std__string_(hash) {
-          let __unwrapped = bridge.get_std__optional_std__string_(hash)
-          return String(__unwrapped)
-        } else {
-          return nil
-        }
-      }())
+      let __result = try self.__implementation.rsaVerify64(signature: String(signature), message: String(message), publicKey: String(publicKey), hash: hash.value)
       let __resultCpp = { () -> bridge.std__shared_ptr_Promise_bool__ in
         let __promise = bridge.create_std__shared_ptr_Promise_bool__()
         let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_bool__(__promise)
@@ -694,16 +659,9 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func rsaVerify64Sync(signature: std.string, message: std.string, publicKey: std.string, hash: bridge.std__optional_std__string_) -> bridge.Result_bool_ {
+  public final func rsaVerify64Sync(signature: std.string, message: std.string, publicKey: std.string, hash: bridge.std__optional_RSAHashAlgorithm_) -> bridge.Result_bool_ {
     do {
-      let __result = try self.__implementation.rsaVerify64Sync(signature: String(signature), message: String(message), publicKey: String(publicKey), hash: { () -> String? in
-        if bridge.has_value_std__optional_std__string_(hash) {
-          let __unwrapped = bridge.get_std__optional_std__string_(hash)
-          return String(__unwrapped)
-        } else {
-          return nil
-        }
-      }())
+      let __result = try self.__implementation.rsaVerify64Sync(signature: String(signature), message: String(message), publicKey: String(publicKey), hash: hash.value)
       let __resultCpp = __result
       return bridge.create_Result_bool_(__resultCpp)
     } catch (let __error) {
@@ -778,6 +736,248 @@ open class HybridMobileCryptoSpec_cxx {
     } catch (let __error) {
       let __exceptionPtr = __error.toCpp()
       return bridge.create_Result_std__shared_ptr_Promise_JWK___(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func rsaImportPrivateKey(pem: std.string) -> bridge.Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec____ {
+    do {
+      let __result = try self.__implementation.rsaImportPrivateKey(pem: String(pem))
+      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec___ in
+        let __promise = bridge.create_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec___()
+        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec___(__promise)
+        __result
+          .then({ __result in __promiseHolder.resolve({ () -> bridge.std__shared_ptr_HybridRSAPrivateKeySpec_ in
+              let __cxxWrapped = __result.getCxxWrapper()
+              return __cxxWrapped.getCxxPart()
+            }()) })
+          .catch({ __error in __promiseHolder.reject(__error.toCpp()) })
+        return __promise
+      }()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec____(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPrivateKeySpec____(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func rsaImportPublicKey(pem: std.string) -> bridge.Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec____ {
+    do {
+      let __result = try self.__implementation.rsaImportPublicKey(pem: String(pem))
+      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec___ in
+        let __promise = bridge.create_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec___()
+        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec___(__promise)
+        __result
+          .then({ __result in __promiseHolder.resolve({ () -> bridge.std__shared_ptr_HybridRSAPublicKeySpec_ in
+              let __cxxWrapped = __result.getCxxWrapper()
+              return __cxxWrapped.getCxxPart()
+            }()) })
+          .catch({ __error in __promiseHolder.reject(__error.toCpp()) })
+        return __promise
+      }()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec____(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_HybridRSAPublicKeySpec____(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func shaBuffer(data: ArrayBuffer, algorithm: Int32) -> bridge.Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____ {
+    do {
+      let __result = try self.__implementation.shaBuffer(data: data, algorithm: margelo.nitro.mobilecrypto.SHAAlgorithm(rawValue: algorithm)!)
+      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___ in
+        let __promise = bridge.create_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___()
+        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___(__promise)
+        __result
+          .then({ __result in __promiseHolder.resolve(__result.getArrayBuffer()) })
+          .catch({ __error in __promiseHolder.reject(__error.toCpp()) })
+        return __promise
+      }()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func shaBufferSync(data: ArrayBuffer, algorithm: Int32) -> bridge.Result_std__shared_ptr_ArrayBuffer__ {
+    do {
+      let __result = try self.__implementation.shaBufferSync(data: data, algorithm: margelo.nitro.mobilecrypto.SHAAlgorithm(rawValue: algorithm)!)
+      let __resultCpp = __result.getArrayBuffer()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func hmac256Buffer(data: ArrayBuffer, key: ArrayBuffer) -> bridge.Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____ {
+    do {
+      let __result = try self.__implementation.hmac256Buffer(data: data, key: key)
+      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___ in
+        let __promise = bridge.create_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___()
+        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___(__promise)
+        __result
+          .then({ __result in __promiseHolder.resolve(__result.getArrayBuffer()) })
+          .catch({ __error in __promiseHolder.reject(__error.toCpp()) })
+        return __promise
+      }()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func hmac256BufferSync(data: ArrayBuffer, key: ArrayBuffer) -> bridge.Result_std__shared_ptr_ArrayBuffer__ {
+    do {
+      let __result = try self.__implementation.hmac256BufferSync(data: data, key: key)
+      let __resultCpp = __result.getArrayBuffer()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func aesEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) -> bridge.Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____ {
+    do {
+      let __result = try self.__implementation.aesEncryptBuffer(data: data, key: key, iv: iv)
+      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___ in
+        let __promise = bridge.create_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___()
+        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___(__promise)
+        __result
+          .then({ __result in __promiseHolder.resolve(__result.getArrayBuffer()) })
+          .catch({ __error in __promiseHolder.reject(__error.toCpp()) })
+        return __promise
+      }()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func aesEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) -> bridge.Result_std__shared_ptr_ArrayBuffer__ {
+    do {
+      let __result = try self.__implementation.aesEncryptBufferSync(data: data, key: key, iv: iv)
+      let __resultCpp = __result.getArrayBuffer()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func aesDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) -> bridge.Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____ {
+    do {
+      let __result = try self.__implementation.aesDecryptBuffer(data: data, key: key, iv: iv)
+      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___ in
+        let __promise = bridge.create_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___()
+        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___(__promise)
+        __result
+          .then({ __result in __promiseHolder.resolve(__result.getArrayBuffer()) })
+          .catch({ __error in __promiseHolder.reject(__error.toCpp()) })
+        return __promise
+      }()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func aesDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) -> bridge.Result_std__shared_ptr_ArrayBuffer__ {
+    do {
+      let __result = try self.__implementation.aesDecryptBufferSync(data: data, key: key, iv: iv)
+      let __resultCpp = __result.getArrayBuffer()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func aesGcmEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) -> bridge.Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____ {
+    do {
+      let __result = try self.__implementation.aesGcmEncryptBuffer(data: data, key: key, iv: iv)
+      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___ in
+        let __promise = bridge.create_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___()
+        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___(__promise)
+        __result
+          .then({ __result in __promiseHolder.resolve(__result.getArrayBuffer()) })
+          .catch({ __error in __promiseHolder.reject(__error.toCpp()) })
+        return __promise
+      }()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func aesGcmEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) -> bridge.Result_std__shared_ptr_ArrayBuffer__ {
+    do {
+      let __result = try self.__implementation.aesGcmEncryptBufferSync(data: data, key: key, iv: iv)
+      let __resultCpp = __result.getArrayBuffer()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func aesGcmDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) -> bridge.Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____ {
+    do {
+      let __result = try self.__implementation.aesGcmDecryptBuffer(data: data, key: key, iv: iv)
+      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___ in
+        let __promise = bridge.create_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___()
+        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___(__promise)
+        __result
+          .then({ __result in __promiseHolder.resolve(__result.getArrayBuffer()) })
+          .catch({ __error in __promiseHolder.reject(__error.toCpp()) })
+        return __promise
+      }()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func aesGcmDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) -> bridge.Result_std__shared_ptr_ArrayBuffer__ {
+    do {
+      let __result = try self.__implementation.aesGcmDecryptBufferSync(data: data, key: key, iv: iv)
+      let __resultCpp = __result.getArrayBuffer()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func randomBytesBuffer(size: Double) -> bridge.Result_std__shared_ptr_ArrayBuffer__ {
+    do {
+      let __result = try self.__implementation.randomBytesBuffer(size: size)
+      let __resultCpp = __result.getArrayBuffer()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__exceptionPtr)
     }
   }
 }

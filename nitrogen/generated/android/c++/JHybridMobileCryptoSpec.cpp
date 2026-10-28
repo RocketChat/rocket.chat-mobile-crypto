@@ -11,6 +11,16 @@
 namespace margelo::nitro::mobilecrypto { struct RSAKeyPair; }
 // Forward declaration of `JWK` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { struct JWK; }
+// Forward declaration of `HybridRSAPrivateKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
+// Forward declaration of `HybridRSAPublicKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPublicKeySpec; }
+// Forward declaration of `SHAAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class SHAAlgorithm; }
+// Forward declaration of `PBKDF2HashAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class PBKDF2HashAlgorithm; }
+// Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
 
 #include <string>
 #include <NitroModules/Promise.hpp>
@@ -21,6 +31,19 @@ namespace margelo::nitro::mobilecrypto { struct JWK; }
 #include "JWK.hpp"
 #include "JJWK.hpp"
 #include <vector>
+#include <memory>
+#include "HybridRSAPrivateKeySpec.hpp"
+#include "JHybridRSAPrivateKeySpec.hpp"
+#include "HybridRSAPublicKeySpec.hpp"
+#include "JHybridRSAPublicKeySpec.hpp"
+#include <NitroModules/ArrayBuffer.hpp>
+#include <NitroModules/JArrayBuffer.hpp>
+#include "SHAAlgorithm.hpp"
+#include "JSHAAlgorithm.hpp"
+#include "PBKDF2HashAlgorithm.hpp"
+#include "JPBKDF2HashAlgorithm.hpp"
+#include "RSAHashAlgorithm.hpp"
+#include "JRSAHashAlgorithm.hpp"
 
 namespace margelo::nitro::mobilecrypto {
 
@@ -55,9 +78,9 @@ namespace margelo::nitro::mobilecrypto {
   
 
   // Methods
-  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::shaBase64(const std::string& data, const std::string& algorithm) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* data */, jni::alias_ref<jni::JString> /* algorithm */)>("shaBase64");
-    auto __result = method(_javaPart, jni::make_jstring(data), jni::make_jstring(algorithm));
+  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::shaBase64(const std::string& data, SHAAlgorithm algorithm) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* data */, jni::alias_ref<JSHAAlgorithm> /* algorithm */)>("shaBase64");
+    auto __result = method(_javaPart, jni::make_jstring(data), JSHAAlgorithm::fromCpp(algorithm));
     return [&]() {
       auto __promise = Promise<std::string>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
@@ -71,14 +94,14 @@ namespace margelo::nitro::mobilecrypto {
       return __promise;
     }();
   }
-  std::string JHybridMobileCryptoSpec::shaBase64Sync(const std::string& data, const std::string& algorithm) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>(jni::alias_ref<jni::JString> /* data */, jni::alias_ref<jni::JString> /* algorithm */)>("shaBase64Sync");
-    auto __result = method(_javaPart, jni::make_jstring(data), jni::make_jstring(algorithm));
+  std::string JHybridMobileCryptoSpec::shaBase64Sync(const std::string& data, SHAAlgorithm algorithm) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>(jni::alias_ref<jni::JString> /* data */, jni::alias_ref<JSHAAlgorithm> /* algorithm */)>("shaBase64Sync");
+    auto __result = method(_javaPart, jni::make_jstring(data), JSHAAlgorithm::fromCpp(algorithm));
     return __result->toStdString();
   }
-  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::shaUtf8(const std::string& data, const std::string& algorithm) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* data */, jni::alias_ref<jni::JString> /* algorithm */)>("shaUtf8");
-    auto __result = method(_javaPart, jni::make_jstring(data), jni::make_jstring(algorithm));
+  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::shaUtf8(const std::string& data, SHAAlgorithm algorithm) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* data */, jni::alias_ref<JSHAAlgorithm> /* algorithm */)>("shaUtf8");
+    auto __result = method(_javaPart, jni::make_jstring(data), JSHAAlgorithm::fromCpp(algorithm));
     return [&]() {
       auto __promise = Promise<std::string>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
@@ -92,14 +115,14 @@ namespace margelo::nitro::mobilecrypto {
       return __promise;
     }();
   }
-  std::string JHybridMobileCryptoSpec::shaUtf8Sync(const std::string& data, const std::string& algorithm) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>(jni::alias_ref<jni::JString> /* data */, jni::alias_ref<jni::JString> /* algorithm */)>("shaUtf8Sync");
-    auto __result = method(_javaPart, jni::make_jstring(data), jni::make_jstring(algorithm));
+  std::string JHybridMobileCryptoSpec::shaUtf8Sync(const std::string& data, SHAAlgorithm algorithm) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>(jni::alias_ref<jni::JString> /* data */, jni::alias_ref<JSHAAlgorithm> /* algorithm */)>("shaUtf8Sync");
+    auto __result = method(_javaPart, jni::make_jstring(data), JSHAAlgorithm::fromCpp(algorithm));
     return __result->toStdString();
   }
-  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::pbkdf2Hash(const std::string& pwdBase64, const std::string& saltBase64, double iterations, double keyLen, const std::string& hash) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* pwdBase64 */, jni::alias_ref<jni::JString> /* saltBase64 */, double /* iterations */, double /* keyLen */, jni::alias_ref<jni::JString> /* hash */)>("pbkdf2Hash");
-    auto __result = method(_javaPart, jni::make_jstring(pwdBase64), jni::make_jstring(saltBase64), iterations, keyLen, jni::make_jstring(hash));
+  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::pbkdf2Hash(const std::string& pwdBase64, const std::string& saltBase64, double iterations, double keyLen, PBKDF2HashAlgorithm hash) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* pwdBase64 */, jni::alias_ref<jni::JString> /* saltBase64 */, double /* iterations */, double /* keyLen */, jni::alias_ref<JPBKDF2HashAlgorithm> /* hash */)>("pbkdf2Hash");
+    auto __result = method(_javaPart, jni::make_jstring(pwdBase64), jni::make_jstring(saltBase64), iterations, keyLen, JPBKDF2HashAlgorithm::fromCpp(hash));
     return [&]() {
       auto __promise = Promise<std::string>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
@@ -323,9 +346,9 @@ namespace margelo::nitro::mobilecrypto {
       return __promise;
     }();
   }
-  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::rsaSign(const std::string& message, const std::string& privateKey, const std::optional<std::string>& hash) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* privateKey */, jni::alias_ref<jni::JString> /* hash */)>("rsaSign");
-    auto __result = method(_javaPart, jni::make_jstring(message), jni::make_jstring(privateKey), hash.has_value() ? jni::make_jstring(hash.value()) : nullptr);
+  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::rsaSign(const std::string& message, const std::string& privateKey, std::optional<RSAHashAlgorithm> hash) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* privateKey */, jni::alias_ref<JRSAHashAlgorithm> /* hash */)>("rsaSign");
+    auto __result = method(_javaPart, jni::make_jstring(message), jni::make_jstring(privateKey), hash.has_value() ? JRSAHashAlgorithm::fromCpp(hash.value()) : nullptr);
     return [&]() {
       auto __promise = Promise<std::string>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
@@ -339,9 +362,9 @@ namespace margelo::nitro::mobilecrypto {
       return __promise;
     }();
   }
-  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::rsaSign64(const std::string& message, const std::string& privateKey, const std::optional<std::string>& hash) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* privateKey */, jni::alias_ref<jni::JString> /* hash */)>("rsaSign64");
-    auto __result = method(_javaPart, jni::make_jstring(message), jni::make_jstring(privateKey), hash.has_value() ? jni::make_jstring(hash.value()) : nullptr);
+  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::rsaSign64(const std::string& message, const std::string& privateKey, std::optional<RSAHashAlgorithm> hash) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* privateKey */, jni::alias_ref<JRSAHashAlgorithm> /* hash */)>("rsaSign64");
+    auto __result = method(_javaPart, jni::make_jstring(message), jni::make_jstring(privateKey), hash.has_value() ? JRSAHashAlgorithm::fromCpp(hash.value()) : nullptr);
     return [&]() {
       auto __promise = Promise<std::string>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
@@ -355,9 +378,9 @@ namespace margelo::nitro::mobilecrypto {
       return __promise;
     }();
   }
-  std::shared_ptr<Promise<bool>> JHybridMobileCryptoSpec::rsaVerify(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* signature */, jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* publicKey */, jni::alias_ref<jni::JString> /* hash */)>("rsaVerify");
-    auto __result = method(_javaPart, jni::make_jstring(signature), jni::make_jstring(message), jni::make_jstring(publicKey), hash.has_value() ? jni::make_jstring(hash.value()) : nullptr);
+  std::shared_ptr<Promise<bool>> JHybridMobileCryptoSpec::rsaVerify(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* signature */, jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* publicKey */, jni::alias_ref<JRSAHashAlgorithm> /* hash */)>("rsaVerify");
+    auto __result = method(_javaPart, jni::make_jstring(signature), jni::make_jstring(message), jni::make_jstring(publicKey), hash.has_value() ? JRSAHashAlgorithm::fromCpp(hash.value()) : nullptr);
     return [&]() {
       auto __promise = Promise<bool>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
@@ -371,14 +394,14 @@ namespace margelo::nitro::mobilecrypto {
       return __promise;
     }();
   }
-  bool JHybridMobileCryptoSpec::rsaVerifySync(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jboolean(jni::alias_ref<jni::JString> /* signature */, jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* publicKey */, jni::alias_ref<jni::JString> /* hash */)>("rsaVerifySync");
-    auto __result = method(_javaPart, jni::make_jstring(signature), jni::make_jstring(message), jni::make_jstring(publicKey), hash.has_value() ? jni::make_jstring(hash.value()) : nullptr);
+  bool JHybridMobileCryptoSpec::rsaVerifySync(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jboolean(jni::alias_ref<jni::JString> /* signature */, jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* publicKey */, jni::alias_ref<JRSAHashAlgorithm> /* hash */)>("rsaVerifySync");
+    auto __result = method(_javaPart, jni::make_jstring(signature), jni::make_jstring(message), jni::make_jstring(publicKey), hash.has_value() ? JRSAHashAlgorithm::fromCpp(hash.value()) : nullptr);
     return static_cast<bool>(__result);
   }
-  std::shared_ptr<Promise<bool>> JHybridMobileCryptoSpec::rsaVerify64(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* signature */, jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* publicKey */, jni::alias_ref<jni::JString> /* hash */)>("rsaVerify64");
-    auto __result = method(_javaPart, jni::make_jstring(signature), jni::make_jstring(message), jni::make_jstring(publicKey), hash.has_value() ? jni::make_jstring(hash.value()) : nullptr);
+  std::shared_ptr<Promise<bool>> JHybridMobileCryptoSpec::rsaVerify64(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* signature */, jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* publicKey */, jni::alias_ref<JRSAHashAlgorithm> /* hash */)>("rsaVerify64");
+    auto __result = method(_javaPart, jni::make_jstring(signature), jni::make_jstring(message), jni::make_jstring(publicKey), hash.has_value() ? JRSAHashAlgorithm::fromCpp(hash.value()) : nullptr);
     return [&]() {
       auto __promise = Promise<bool>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
@@ -392,9 +415,9 @@ namespace margelo::nitro::mobilecrypto {
       return __promise;
     }();
   }
-  bool JHybridMobileCryptoSpec::rsaVerify64Sync(const std::string& signature, const std::string& message, const std::string& publicKey, const std::optional<std::string>& hash) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jboolean(jni::alias_ref<jni::JString> /* signature */, jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* publicKey */, jni::alias_ref<jni::JString> /* hash */)>("rsaVerify64Sync");
-    auto __result = method(_javaPart, jni::make_jstring(signature), jni::make_jstring(message), jni::make_jstring(publicKey), hash.has_value() ? jni::make_jstring(hash.value()) : nullptr);
+  bool JHybridMobileCryptoSpec::rsaVerify64Sync(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jboolean(jni::alias_ref<jni::JString> /* signature */, jni::alias_ref<jni::JString> /* message */, jni::alias_ref<jni::JString> /* publicKey */, jni::alias_ref<JRSAHashAlgorithm> /* hash */)>("rsaVerify64Sync");
+    auto __result = method(_javaPart, jni::make_jstring(signature), jni::make_jstring(message), jni::make_jstring(publicKey), hash.has_value() ? JRSAHashAlgorithm::fromCpp(hash.value()) : nullptr);
     return static_cast<bool>(__result);
   }
   std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::calculateFileChecksum(const std::string& filePath) {
@@ -449,6 +472,169 @@ namespace margelo::nitro::mobilecrypto {
       });
       return __promise;
     }();
+  }
+  std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>> JHybridMobileCryptoSpec::rsaImportPrivateKey(const std::string& pem) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* pem */)>("rsaImportPrivateKey");
+    auto __result = method(_javaPart, jni::make_jstring(pem));
+    return [&]() {
+      auto __promise = Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
+        auto __result = jni::static_ref_cast<JHybridRSAPrivateKeySpec::JavaPart>(__boxedResult);
+        __promise->resolve(__result->getJHybridRSAPrivateKeySpec());
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
+  std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> JHybridMobileCryptoSpec::rsaImportPublicKey(const std::string& pem) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* pem */)>("rsaImportPublicKey");
+    auto __result = method(_javaPart, jni::make_jstring(pem));
+    return [&]() {
+      auto __promise = Promise<std::shared_ptr<HybridRSAPublicKeySpec>>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
+        auto __result = jni::static_ref_cast<JHybridRSAPublicKeySpec::JavaPart>(__boxedResult);
+        __promise->resolve(__result->getJHybridRSAPublicKeySpec());
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
+  std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> JHybridMobileCryptoSpec::shaBuffer(const std::shared_ptr<ArrayBuffer>& data, SHAAlgorithm algorithm) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JSHAAlgorithm> /* algorithm */)>("shaBuffer");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JSHAAlgorithm::fromCpp(algorithm));
+    return [&]() {
+      auto __promise = Promise<std::shared_ptr<ArrayBuffer>>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
+        auto __result = jni::static_ref_cast<JArrayBuffer::javaobject>(__boxedResult);
+        __promise->resolve(__result->cthis()->getArrayBuffer());
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
+  std::shared_ptr<ArrayBuffer> JHybridMobileCryptoSpec::shaBufferSync(const std::shared_ptr<ArrayBuffer>& data, SHAAlgorithm algorithm) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JArrayBuffer::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JSHAAlgorithm> /* algorithm */)>("shaBufferSync");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JSHAAlgorithm::fromCpp(algorithm));
+    return __result->cthis()->getArrayBuffer();
+  }
+  std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> JHybridMobileCryptoSpec::hmac256Buffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JArrayBuffer::javaobject> /* key */)>("hmac256Buffer");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JArrayBuffer::wrap(key));
+    return [&]() {
+      auto __promise = Promise<std::shared_ptr<ArrayBuffer>>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
+        auto __result = jni::static_ref_cast<JArrayBuffer::javaobject>(__boxedResult);
+        __promise->resolve(__result->cthis()->getArrayBuffer());
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
+  std::shared_ptr<ArrayBuffer> JHybridMobileCryptoSpec::hmac256BufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JArrayBuffer::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JArrayBuffer::javaobject> /* key */)>("hmac256BufferSync");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JArrayBuffer::wrap(key));
+    return __result->cthis()->getArrayBuffer();
+  }
+  std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> JHybridMobileCryptoSpec::aesEncryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JArrayBuffer::javaobject> /* key */, jni::alias_ref<JArrayBuffer::javaobject> /* iv */)>("aesEncryptBuffer");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JArrayBuffer::wrap(key), JArrayBuffer::wrap(iv));
+    return [&]() {
+      auto __promise = Promise<std::shared_ptr<ArrayBuffer>>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
+        auto __result = jni::static_ref_cast<JArrayBuffer::javaobject>(__boxedResult);
+        __promise->resolve(__result->cthis()->getArrayBuffer());
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
+  std::shared_ptr<ArrayBuffer> JHybridMobileCryptoSpec::aesEncryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JArrayBuffer::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JArrayBuffer::javaobject> /* key */, jni::alias_ref<JArrayBuffer::javaobject> /* iv */)>("aesEncryptBufferSync");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JArrayBuffer::wrap(key), JArrayBuffer::wrap(iv));
+    return __result->cthis()->getArrayBuffer();
+  }
+  std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> JHybridMobileCryptoSpec::aesDecryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JArrayBuffer::javaobject> /* key */, jni::alias_ref<JArrayBuffer::javaobject> /* iv */)>("aesDecryptBuffer");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JArrayBuffer::wrap(key), JArrayBuffer::wrap(iv));
+    return [&]() {
+      auto __promise = Promise<std::shared_ptr<ArrayBuffer>>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
+        auto __result = jni::static_ref_cast<JArrayBuffer::javaobject>(__boxedResult);
+        __promise->resolve(__result->cthis()->getArrayBuffer());
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
+  std::shared_ptr<ArrayBuffer> JHybridMobileCryptoSpec::aesDecryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JArrayBuffer::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JArrayBuffer::javaobject> /* key */, jni::alias_ref<JArrayBuffer::javaobject> /* iv */)>("aesDecryptBufferSync");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JArrayBuffer::wrap(key), JArrayBuffer::wrap(iv));
+    return __result->cthis()->getArrayBuffer();
+  }
+  std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> JHybridMobileCryptoSpec::aesGcmEncryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JArrayBuffer::javaobject> /* key */, jni::alias_ref<JArrayBuffer::javaobject> /* iv */)>("aesGcmEncryptBuffer");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JArrayBuffer::wrap(key), JArrayBuffer::wrap(iv));
+    return [&]() {
+      auto __promise = Promise<std::shared_ptr<ArrayBuffer>>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
+        auto __result = jni::static_ref_cast<JArrayBuffer::javaobject>(__boxedResult);
+        __promise->resolve(__result->cthis()->getArrayBuffer());
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
+  std::shared_ptr<ArrayBuffer> JHybridMobileCryptoSpec::aesGcmEncryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JArrayBuffer::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JArrayBuffer::javaobject> /* key */, jni::alias_ref<JArrayBuffer::javaobject> /* iv */)>("aesGcmEncryptBufferSync");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JArrayBuffer::wrap(key), JArrayBuffer::wrap(iv));
+    return __result->cthis()->getArrayBuffer();
+  }
+  std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> JHybridMobileCryptoSpec::aesGcmDecryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JArrayBuffer::javaobject> /* key */, jni::alias_ref<JArrayBuffer::javaobject> /* iv */)>("aesGcmDecryptBuffer");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JArrayBuffer::wrap(key), JArrayBuffer::wrap(iv));
+    return [&]() {
+      auto __promise = Promise<std::shared_ptr<ArrayBuffer>>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
+        auto __result = jni::static_ref_cast<JArrayBuffer::javaobject>(__boxedResult);
+        __promise->resolve(__result->cthis()->getArrayBuffer());
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
+  std::shared_ptr<ArrayBuffer> JHybridMobileCryptoSpec::aesGcmDecryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JArrayBuffer::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* data */, jni::alias_ref<JArrayBuffer::javaobject> /* key */, jni::alias_ref<JArrayBuffer::javaobject> /* iv */)>("aesGcmDecryptBufferSync");
+    auto __result = method(_javaPart, JArrayBuffer::wrap(data), JArrayBuffer::wrap(key), JArrayBuffer::wrap(iv));
+    return __result->cthis()->getArrayBuffer();
+  }
+  std::shared_ptr<ArrayBuffer> JHybridMobileCryptoSpec::randomBytesBuffer(double size) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JArrayBuffer::javaobject>(double /* size */)>("randomBytesBuffer");
+    auto __result = method(_javaPart, size);
+    return __result->cthis()->getArrayBuffer();
   }
 
 } // namespace margelo::nitro::mobilecrypto

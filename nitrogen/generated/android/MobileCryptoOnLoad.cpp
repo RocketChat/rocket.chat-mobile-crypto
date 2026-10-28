@@ -16,6 +16,8 @@
 #include <NitroModules/HybridObjectRegistry.hpp>
 
 #include "JHybridMobileCryptoSpec.hpp"
+#include "JHybridRSAPrivateKeySpec.hpp"
+#include "JHybridRSAPublicKeySpec.hpp"
 #include <NitroModules/DefaultConstructableObject.hpp>
 
 namespace margelo::nitro::mobilecrypto {
@@ -41,6 +43,8 @@ void registerAllNatives() {
 
   // Register native JNI methods
   margelo::nitro::mobilecrypto::JHybridMobileCryptoSpec::CxxPart::registerNatives();
+  margelo::nitro::mobilecrypto::JHybridRSAPrivateKeySpec::CxxPart::registerNatives();
+  margelo::nitro::mobilecrypto::JHybridRSAPublicKeySpec::CxxPart::registerNatives();
 
   // Register Nitro Hybrid Objects
   HybridObjectRegistry::registerHybridObjectConstructor(

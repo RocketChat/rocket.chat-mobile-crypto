@@ -12,6 +12,7 @@ import com.facebook.jni.HybridData
 import com.facebook.proguard.annotations.DoNotStrip
 import dalvik.annotation.optimization.FastNative
 import com.margelo.nitro.core.Promise
+import com.margelo.nitro.core.ArrayBuffer
 import com.margelo.nitro.core.HybridObject
 
 /**
@@ -32,23 +33,23 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   // Methods
   @DoNotStrip
   @Keep
-  abstract fun shaBase64(data: String, algorithm: String): Promise<String>
+  abstract fun shaBase64(data: String, algorithm: SHAAlgorithm): Promise<String>
   
   @DoNotStrip
   @Keep
-  abstract fun shaBase64Sync(data: String, algorithm: String): String
+  abstract fun shaBase64Sync(data: String, algorithm: SHAAlgorithm): String
   
   @DoNotStrip
   @Keep
-  abstract fun shaUtf8(data: String, algorithm: String): Promise<String>
+  abstract fun shaUtf8(data: String, algorithm: SHAAlgorithm): Promise<String>
   
   @DoNotStrip
   @Keep
-  abstract fun shaUtf8Sync(data: String, algorithm: String): String
+  abstract fun shaUtf8Sync(data: String, algorithm: SHAAlgorithm): String
   
   @DoNotStrip
   @Keep
-  abstract fun pbkdf2Hash(pwdBase64: String, saltBase64: String, iterations: Double, keyLen: Double, hash: String): Promise<String>
+  abstract fun pbkdf2Hash(pwdBase64: String, saltBase64: String, iterations: Double, keyLen: Double, hash: PBKDF2HashAlgorithm): Promise<String>
   
   @DoNotStrip
   @Keep
@@ -132,27 +133,27 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
-  abstract fun rsaSign(message: String, privateKey: String, hash: String?): Promise<String>
+  abstract fun rsaSign(message: String, privateKey: String, hash: RSAHashAlgorithm?): Promise<String>
   
   @DoNotStrip
   @Keep
-  abstract fun rsaSign64(message: String, privateKey: String, hash: String?): Promise<String>
+  abstract fun rsaSign64(message: String, privateKey: String, hash: RSAHashAlgorithm?): Promise<String>
   
   @DoNotStrip
   @Keep
-  abstract fun rsaVerify(signature: String, message: String, publicKey: String, hash: String?): Promise<Boolean>
+  abstract fun rsaVerify(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?): Promise<Boolean>
   
   @DoNotStrip
   @Keep
-  abstract fun rsaVerifySync(signature: String, message: String, publicKey: String, hash: String?): Boolean
+  abstract fun rsaVerifySync(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?): Boolean
   
   @DoNotStrip
   @Keep
-  abstract fun rsaVerify64(signature: String, message: String, publicKey: String, hash: String?): Promise<Boolean>
+  abstract fun rsaVerify64(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?): Promise<Boolean>
   
   @DoNotStrip
   @Keep
-  abstract fun rsaVerify64Sync(signature: String, message: String, publicKey: String, hash: String?): Boolean
+  abstract fun rsaVerify64Sync(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?): Boolean
   
   @DoNotStrip
   @Keep
@@ -169,6 +170,66 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   @DoNotStrip
   @Keep
   abstract fun rsaExportKey(pem: String): Promise<JWK>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun rsaImportPrivateKey(pem: String): Promise<HybridRSAPrivateKeySpec>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun rsaImportPublicKey(pem: String): Promise<HybridRSAPublicKeySpec>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun shaBuffer(data: ArrayBuffer, algorithm: SHAAlgorithm): Promise<ArrayBuffer>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun shaBufferSync(data: ArrayBuffer, algorithm: SHAAlgorithm): ArrayBuffer
+  
+  @DoNotStrip
+  @Keep
+  abstract fun hmac256Buffer(data: ArrayBuffer, key: ArrayBuffer): Promise<ArrayBuffer>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun hmac256BufferSync(data: ArrayBuffer, key: ArrayBuffer): ArrayBuffer
+  
+  @DoNotStrip
+  @Keep
+  abstract fun aesEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun aesEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): ArrayBuffer
+  
+  @DoNotStrip
+  @Keep
+  abstract fun aesDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun aesDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): ArrayBuffer
+  
+  @DoNotStrip
+  @Keep
+  abstract fun aesGcmEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun aesGcmEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): ArrayBuffer
+  
+  @DoNotStrip
+  @Keep
+  abstract fun aesGcmDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun aesGcmDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): ArrayBuffer
+  
+  @DoNotStrip
+  @Keep
+  abstract fun randomBytesBuffer(size: Double): ArrayBuffer
 
   // Default implementation of `HybridObject.toString()`
   override fun toString(): String {

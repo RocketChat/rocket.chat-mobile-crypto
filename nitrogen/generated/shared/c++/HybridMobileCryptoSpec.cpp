@@ -49,6 +49,21 @@ namespace margelo::nitro::mobilecrypto {
       prototype.registerHybridMethod("getRandomValues", &HybridMobileCryptoSpec::getRandomValues);
       prototype.registerHybridMethod("rsaImportKey", &HybridMobileCryptoSpec::rsaImportKey);
       prototype.registerHybridMethod("rsaExportKey", &HybridMobileCryptoSpec::rsaExportKey);
+      prototype.registerHybridMethod("rsaImportPrivateKey", &HybridMobileCryptoSpec::rsaImportPrivateKey);
+      prototype.registerHybridMethod("rsaImportPublicKey", &HybridMobileCryptoSpec::rsaImportPublicKey);
+      prototype.registerHybridMethod("shaBuffer", &HybridMobileCryptoSpec::shaBuffer);
+      prototype.registerHybridMethod("shaBufferSync", &HybridMobileCryptoSpec::shaBufferSync);
+      prototype.registerHybridMethod("hmac256Buffer", &HybridMobileCryptoSpec::hmac256Buffer);
+      prototype.registerHybridMethod("hmac256BufferSync", &HybridMobileCryptoSpec::hmac256BufferSync);
+      prototype.registerHybridMethod("aesEncryptBuffer", &HybridMobileCryptoSpec::aesEncryptBuffer);
+      prototype.registerHybridMethod("aesEncryptBufferSync", &HybridMobileCryptoSpec::aesEncryptBufferSync);
+      prototype.registerHybridMethod("aesDecryptBuffer", &HybridMobileCryptoSpec::aesDecryptBuffer);
+      prototype.registerHybridMethod("aesDecryptBufferSync", &HybridMobileCryptoSpec::aesDecryptBufferSync);
+      prototype.registerHybridMethod("aesGcmEncryptBuffer", &HybridMobileCryptoSpec::aesGcmEncryptBuffer);
+      prototype.registerHybridMethod("aesGcmEncryptBufferSync", &HybridMobileCryptoSpec::aesGcmEncryptBufferSync);
+      prototype.registerHybridMethod("aesGcmDecryptBuffer", &HybridMobileCryptoSpec::aesGcmDecryptBuffer);
+      prototype.registerHybridMethod("aesGcmDecryptBufferSync", &HybridMobileCryptoSpec::aesGcmDecryptBufferSync);
+      prototype.registerHybridMethod("randomBytesBuffer", &HybridMobileCryptoSpec::randomBytesBuffer);
     });
   }
 

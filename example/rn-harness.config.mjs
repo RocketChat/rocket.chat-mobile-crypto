@@ -10,6 +10,7 @@ import {
 export default {
   entryPoint: './index.js',
   appRegistryComponentName: 'MobileCryptoExample',
+  testTimeout: 600000,
   metroPort: Number(process.env.HARNESS_METRO_PORT || 8081),
   resetEnvironmentBetweenTestFiles: process.env.HARNESS_RESET_MODE || 'runtime',
   cache: {

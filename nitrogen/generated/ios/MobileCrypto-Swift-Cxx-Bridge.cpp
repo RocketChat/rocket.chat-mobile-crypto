@@ -9,6 +9,8 @@
 
 // Include C++ implementation defined types
 #include "HybridMobileCryptoSpecSwift.hpp"
+#include "HybridRSAPrivateKeySpecSwift.hpp"
+#include "HybridRSAPublicKeySpecSwift.hpp"
 #include "MobileCrypto-Swift-Cxx-Umbrella.hpp"
 #include <NitroModules/NitroDefines.hpp>
 
@@ -59,6 +61,62 @@ namespace margelo::nitro::mobilecrypto::bridge::swift {
     auto swiftClosure = MobileCrypto::Func_void_JWK::fromUnsafe(swiftClosureWrapper);
     return [swiftClosure = std::move(swiftClosure)](const JWK& result) mutable -> void {
       swiftClosure.call(result);
+    };
+  }
+  
+  // pragma MARK: std::shared_ptr<HybridRSAPrivateKeySpec>
+  std::shared_ptr<HybridRSAPrivateKeySpec> create_std__shared_ptr_HybridRSAPrivateKeySpec_(void* NON_NULL swiftUnsafePointer) noexcept {
+    MobileCrypto::HybridRSAPrivateKeySpec_cxx swiftPart = MobileCrypto::HybridRSAPrivateKeySpec_cxx::fromUnsafe(swiftUnsafePointer);
+    return std::make_shared<margelo::nitro::mobilecrypto::HybridRSAPrivateKeySpecSwift>(swiftPart);
+  }
+  void* NON_NULL get_std__shared_ptr_HybridRSAPrivateKeySpec_(std__shared_ptr_HybridRSAPrivateKeySpec_ cppType) {
+    std::shared_ptr<margelo::nitro::mobilecrypto::HybridRSAPrivateKeySpecSwift> swiftWrapper = std::dynamic_pointer_cast<margelo::nitro::mobilecrypto::HybridRSAPrivateKeySpecSwift>(cppType);
+    #ifdef NITRO_DEBUG
+    if (swiftWrapper == nullptr) [[unlikely]] {
+      throw std::runtime_error("Class \"HybridRSAPrivateKeySpec\" is not implemented in Swift!");
+    }
+    #endif
+    MobileCrypto::HybridRSAPrivateKeySpec_cxx& swiftPart = swiftWrapper->getSwiftPart();
+    return swiftPart.toUnsafe();
+  }
+  
+  // pragma MARK: std::function<void(const std::shared_ptr<HybridRSAPrivateKeySpec>& /* result */)>
+  Func_void_std__shared_ptr_HybridRSAPrivateKeySpec_ create_Func_void_std__shared_ptr_HybridRSAPrivateKeySpec_(void* NON_NULL swiftClosureWrapper) noexcept {
+    auto swiftClosure = MobileCrypto::Func_void_std__shared_ptr_HybridRSAPrivateKeySpec_::fromUnsafe(swiftClosureWrapper);
+    return [swiftClosure = std::move(swiftClosure)](const std::shared_ptr<HybridRSAPrivateKeySpec>& result) mutable -> void {
+      swiftClosure.call(result);
+    };
+  }
+  
+  // pragma MARK: std::shared_ptr<HybridRSAPublicKeySpec>
+  std::shared_ptr<HybridRSAPublicKeySpec> create_std__shared_ptr_HybridRSAPublicKeySpec_(void* NON_NULL swiftUnsafePointer) noexcept {
+    MobileCrypto::HybridRSAPublicKeySpec_cxx swiftPart = MobileCrypto::HybridRSAPublicKeySpec_cxx::fromUnsafe(swiftUnsafePointer);
+    return std::make_shared<margelo::nitro::mobilecrypto::HybridRSAPublicKeySpecSwift>(swiftPart);
+  }
+  void* NON_NULL get_std__shared_ptr_HybridRSAPublicKeySpec_(std__shared_ptr_HybridRSAPublicKeySpec_ cppType) {
+    std::shared_ptr<margelo::nitro::mobilecrypto::HybridRSAPublicKeySpecSwift> swiftWrapper = std::dynamic_pointer_cast<margelo::nitro::mobilecrypto::HybridRSAPublicKeySpecSwift>(cppType);
+    #ifdef NITRO_DEBUG
+    if (swiftWrapper == nullptr) [[unlikely]] {
+      throw std::runtime_error("Class \"HybridRSAPublicKeySpec\" is not implemented in Swift!");
+    }
+    #endif
+    MobileCrypto::HybridRSAPublicKeySpec_cxx& swiftPart = swiftWrapper->getSwiftPart();
+    return swiftPart.toUnsafe();
+  }
+  
+  // pragma MARK: std::function<void(const std::shared_ptr<HybridRSAPublicKeySpec>& /* result */)>
+  Func_void_std__shared_ptr_HybridRSAPublicKeySpec_ create_Func_void_std__shared_ptr_HybridRSAPublicKeySpec_(void* NON_NULL swiftClosureWrapper) noexcept {
+    auto swiftClosure = MobileCrypto::Func_void_std__shared_ptr_HybridRSAPublicKeySpec_::fromUnsafe(swiftClosureWrapper);
+    return [swiftClosure = std::move(swiftClosure)](const std::shared_ptr<HybridRSAPublicKeySpec>& result) mutable -> void {
+      swiftClosure.call(result);
+    };
+  }
+  
+  // pragma MARK: std::function<void(const std::shared_ptr<ArrayBuffer>& /* result */)>
+  Func_void_std__shared_ptr_ArrayBuffer_ create_Func_void_std__shared_ptr_ArrayBuffer_(void* NON_NULL swiftClosureWrapper) noexcept {
+    auto swiftClosure = MobileCrypto::Func_void_std__shared_ptr_ArrayBuffer_::fromUnsafe(swiftClosureWrapper);
+    return [swiftClosure = std::move(swiftClosure)](const std::shared_ptr<ArrayBuffer>& result) mutable -> void {
+      swiftClosure.call(ArrayBufferHolder(result));
     };
   }
   

@@ -1,6 +1,11 @@
 import { NitroModules } from 'react-native-nitro-modules';
 import type { JWK } from './specs/JWK';
 import type { MobileCrypto as MobileCryptoSpec } from './specs/MobileCrypto.nitro';
+import type { PBKDF2HashAlgorithm } from './specs/PBKDF2HashAlgorithm';
+import type { RSAHashAlgorithm } from './specs/RSAHashAlgorithm';
+import type { RSAPrivateKey } from './specs/RSAPrivateKey.nitro';
+import type { RSAPublicKey } from './specs/RSAPublicKey.nitro';
+import type { SHAAlgorithm } from './specs/SHAAlgorithm';
 
 const MobileCrypto =
   NitroModules.createHybridObject<MobileCryptoSpec>('MobileCrypto');
@@ -13,6 +18,10 @@ const SYNC_INPUT_LIMIT = 32 * 1024;
 const isSmall = (...inputs: string[]) =>
   inputs.reduce((total, input) => total + input.length, 0) <= SYNC_INPUT_LIMIT;
 
+const isSmallBuffer = (...inputs: ArrayBuffer[]) =>
+  inputs.reduce((total, input) => total + input.byteLength, 0) <=
+  SYNC_INPUT_LIMIT;
+
 const resolveSync = <T,>(operation: () => T): Promise<T> => {
   try {
     return Promise.resolve(operation());
@@ -21,16 +30,28 @@ const resolveSync = <T,>(operation: () => T): Promise<T> => {
   }
 };
 
-// Export the JWK type for users
-export type { JWK };
+export type {
+  JWK,
+  PBKDF2HashAlgorithm,
+  RSAHashAlgorithm,
+  RSAPrivateKey,
+  RSAPublicKey,
+  SHAAlgorithm,
+};
 
-export function shaBase64(data: string, algorithm: string): Promise<string> {
+export function shaBase64(
+  data: string,
+  algorithm: SHAAlgorithm
+): Promise<string> {
   return isSmall(data)
     ? resolveSync(() => MobileCrypto.shaBase64Sync(data, algorithm))
     : MobileCrypto.shaBase64(data, algorithm);
 }
 
-export function shaUtf8(data: string, algorithm: string): Promise<string> {
+export function shaUtf8(
+  data: string,
+  algorithm: SHAAlgorithm
+): Promise<string> {
   return isSmall(data)
     ? resolveSync(() => MobileCrypto.shaUtf8Sync(data, algorithm))
     : MobileCrypto.shaUtf8(data, algorithm);
@@ -41,7 +62,7 @@ export function pbkdf2Hash(
   saltBase64: string,
   iterations: number,
   keyLen: number,
-  hash: string
+  hash: PBKDF2HashAlgorithm
 ): Promise<string> {
   return MobileCrypto.pbkdf2Hash(
     pwdBase64,
@@ -174,7 +195,7 @@ export function rsaDecrypt64(
 export function rsaSign(
   message: string,
   privateKey: string,
-  hash?: string
+  hash?: RSAHashAlgorithm
 ): Promise<string> {
   return MobileCrypto.rsaSign(message, privateKey, hash);
 }
@@ -182,7 +203,7 @@ export function rsaSign(
 export function rsaSign64(
   message: string,
   privateKey: string,
-  hash?: string
+  hash?: RSAHashAlgorithm
 ): Promise<string> {
   return MobileCrypto.rsaSign64(message, privateKey, hash);
 }
@@ -191,7 +212,7 @@ export function rsaVerify(
   signature: string,
   message: string,
   publicKey: string,
-  hash?: string
+  hash?: RSAHashAlgorithm
 ): Promise<boolean> {
   return isSmall(message)
     ? resolveSync(() =>
@@ -204,7 +225,7 @@ export function rsaVerify64(
   signature: string,
   message: string,
   publicKey: string,
-  hash?: string
+  hash?: RSAHashAlgorithm
 ): Promise<boolean> {
   return isSmall(message)
     ? resolveSync(() =>
@@ -232,4 +253,75 @@ export function calculateFileChecksum(filePath: string): Promise<string> {
 
 export function getRandomValues(length: number): Promise<string> {
   return resolveSync(() => MobileCrypto.getRandomValues(length));
+}
+
+export function rsaImportPrivateKey(pem: string): Promise<RSAPrivateKey> {
+  return MobileCrypto.rsaImportPrivateKey(pem);
+}
+
+export function rsaImportPublicKey(pem: string): Promise<RSAPublicKey> {
+  return MobileCrypto.rsaImportPublicKey(pem);
+}
+
+// ArrayBuffer Functions
+export function shaBuffer(
+  data: ArrayBuffer,
+  algorithm: SHAAlgorithm
+): Promise<ArrayBuffer> {
+  return isSmallBuffer(data)
+    ? resolveSync(() => MobileCrypto.shaBufferSync(data, algorithm))
+    : MobileCrypto.shaBuffer(data, algorithm);
+}
+
+export function hmac256Buffer(
+  data: ArrayBuffer,
+  key: ArrayBuffer
+): Promise<ArrayBuffer> {
+  return isSmallBuffer(data, key)
+    ? resolveSync(() => MobileCrypto.hmac256BufferSync(data, key))
+    : MobileCrypto.hmac256Buffer(data, key);
+}
+
+export function aesEncryptBuffer(
+  data: ArrayBuffer,
+  key: ArrayBuffer,
+  iv: ArrayBuffer
+): Promise<ArrayBuffer> {
+  return isSmallBuffer(data)
+    ? resolveSync(() => MobileCrypto.aesEncryptBufferSync(data, key, iv))
+    : MobileCrypto.aesEncryptBuffer(data, key, iv);
+}
+
+export function aesDecryptBuffer(
+  data: ArrayBuffer,
+  key: ArrayBuffer,
+  iv: ArrayBuffer
+): Promise<ArrayBuffer> {
+  return isSmallBuffer(data)
+    ? resolveSync(() => MobileCrypto.aesDecryptBufferSync(data, key, iv))
+    : MobileCrypto.aesDecryptBuffer(data, key, iv);
+}
+
+export function aesGcmEncryptBuffer(
+  data: ArrayBuffer,
+  key: ArrayBuffer,
+  iv: ArrayBuffer
+): Promise<ArrayBuffer> {
+  return isSmallBuffer(data)
+    ? resolveSync(() => MobileCrypto.aesGcmEncryptBufferSync(data, key, iv))
+    : MobileCrypto.aesGcmEncryptBuffer(data, key, iv);
+}
+
+export function aesGcmDecryptBuffer(
+  data: ArrayBuffer,
+  key: ArrayBuffer,
+  iv: ArrayBuffer
+): Promise<ArrayBuffer> {
+  return isSmallBuffer(data)
+    ? resolveSync(() => MobileCrypto.aesGcmDecryptBufferSync(data, key, iv))
+    : MobileCrypto.aesGcmDecryptBuffer(data, key, iv);
+}
+
+export function randomBytesBuffer(size: number): Promise<ArrayBuffer> {
+  return resolveSync(() => MobileCrypto.randomBytesBuffer(size));
 }
