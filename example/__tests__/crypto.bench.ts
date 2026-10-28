@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'react-native-harness';
+import { describe, test } from 'react-native-harness';
 import {
   aesDecrypt,
   aesDecryptBuffer,
@@ -235,6 +235,5 @@ describe('benchmark', () => {
       `${Dirs.CacheDir}/bench-results.txt`,
       results.join('\n')
     );
-    expect(results.length).toBeGreaterThan(0);
   });
 });

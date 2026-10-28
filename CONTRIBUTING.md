@@ -127,6 +127,8 @@ The default `runtime` reset keeps the native app process open across all test fi
 HARNESS_RESET_MODE=process yarn test --harnessRunner ios
 ```
 
+The crypto call latency benchmark in `example/__tests__/crypto.bench.ts` is outside the default suite. Run it on demand with `yarn bench --harnessRunner ios`; it writes one JSON line per measured operation to `bench-results.txt` in the app's cache directory.
+
 CI builds and installs the example app on a dedicated iOS simulator before running the same native suite. Its device and runtime overrides are defined in `.github/workflows/ci.yml`.
 
 ### Recording a performance baseline
@@ -192,6 +194,7 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn lint`: lint files with ESLint.
 - `yarn test:smoke`: run the three native smoke tests on the default iOS simulator.
 - `yarn test`: run all native crypto tests on the default iOS simulator; pass `--harnessRunner android` to select Android.
+- `yarn bench`: run the crypto call latency benchmark, which `yarn test` excludes.
 - `yarn test:profile`: run the iOS suite with timing traces, per-test durations, and host resource metrics.
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
