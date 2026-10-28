@@ -31,20 +31,20 @@ object AESCrypto {
     /**
      * Encrypt Base64-encoded data using AES-CBC with PKCS7 padding
      */
-    fun encryptBase64(textBase64: String?, hexKey: String, hexIv: String?): String? {
-        if (textBase64.isNullOrEmpty()) return null
+    fun encryptBase64(textBase64: String, hexKey: String, hexIv: String): String? {
+        if (textBase64.isEmpty()) return null
 
-        val encrypted = runCbc(Cipher.ENCRYPT_MODE, CryptoUtils.decodeBase64(textBase64), CryptoUtils.hexToBytes(hexKey), cbcIv(hexIv))
+        val encrypted = runCbc(Cipher.ENCRYPT_MODE, CryptoUtils.decodeBase64(textBase64), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
         return CryptoUtils.encodeBase64NoWrap(encrypted)
     }
 
     /**
      * Decrypt Base64-encoded data using AES-CBC with PKCS7 padding
      */
-    fun decryptBase64(ciphertext: String?, hexKey: String, hexIv: String?): String? {
-        if (ciphertext.isNullOrEmpty()) return null
+    fun decryptBase64(ciphertext: String, hexKey: String, hexIv: String): String? {
+        if (ciphertext.isEmpty()) return null
 
-        val decrypted = runCbc(Cipher.DECRYPT_MODE, CryptoUtils.decodeBase64(ciphertext), CryptoUtils.hexToBytes(hexKey), cbcIv(hexIv))
+        val decrypted = runCbc(Cipher.DECRYPT_MODE, CryptoUtils.decodeBase64(ciphertext), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
         return CryptoUtils.encodeBase64NoWrap(decrypted)
     }
 
@@ -86,9 +86,6 @@ object AESCrypto {
         cipher.init(mode, SecretKeySpec(key, KEY_ALGORITHM), GCMParameterSpec(GCM_TAG_LENGTH * 8, iv))
         return cipher.doFinal(input)
     }
-
-    private fun cbcIv(hexIv: String?): ByteArray =
-        if (hexIv == null) ByteArray(CBC_IV_LENGTH) else CryptoUtils.hexToBytes(hexIv)
 
     private fun requireKeyLength(key: ByteArray) {
         require(key.size in AES_KEY_LENGTHS) { "AES key must be 16, 24 or 32 bytes, got ${key.size}" }
@@ -187,14 +184,14 @@ object AESCrypto {
      * Encrypt Base64-encoded data using AES-256-GCM
      * @param textBase64 The Base64-encoded plaintext to encrypt
      * @param hexKey The 256-bit (32 bytes) key in hexadecimal format
-     * @param hexIv The 96-bit (12 bytes) IV in hexadecimal format, or null to use zero IV
+     * @param hexIv The 96-bit (12 bytes) IV in hexadecimal format
      * @return Base64-encoded encrypted data with authentication tag, or null on error
      */
-    fun encryptGcmBase64(textBase64: String?, hexKey: String, hexIv: String?): String? {
-        if (textBase64.isNullOrEmpty()) return null
+    fun encryptGcmBase64(textBase64: String, hexKey: String, hexIv: String): String? {
+        if (textBase64.isEmpty()) return null
 
         return try {
-            val encrypted = runGcm(Cipher.ENCRYPT_MODE, CryptoUtils.decodeBase64(textBase64), CryptoUtils.hexToBytes(hexKey), gcmIv(hexIv))
+            val encrypted = runGcm(Cipher.ENCRYPT_MODE, CryptoUtils.decodeBase64(textBase64), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
             CryptoUtils.encodeBase64NoWrap(encrypted)
         } catch (e: Exception) {
             null
@@ -205,22 +202,19 @@ object AESCrypto {
      * Decrypt Base64-encoded data using AES-256-GCM
      * @param ciphertext The Base64-encoded ciphertext with authentication tag to decrypt
      * @param hexKey The 256-bit (32 bytes) key in hexadecimal format
-     * @param hexIv The 96-bit (12 bytes) IV in hexadecimal format, or null to use zero IV
+     * @param hexIv The 96-bit (12 bytes) IV in hexadecimal format
      * @return Base64-encoded decrypted data, or null on error or authentication failure
      */
-    fun decryptGcmBase64(ciphertext: String?, hexKey: String, hexIv: String?): String? {
-        if (ciphertext.isNullOrEmpty()) return null
+    fun decryptGcmBase64(ciphertext: String, hexKey: String, hexIv: String): String? {
+        if (ciphertext.isEmpty()) return null
 
         return try {
-            val decrypted = runGcm(Cipher.DECRYPT_MODE, CryptoUtils.decodeBase64(ciphertext), CryptoUtils.hexToBytes(hexKey), gcmIv(hexIv))
+            val decrypted = runGcm(Cipher.DECRYPT_MODE, CryptoUtils.decodeBase64(ciphertext), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
             CryptoUtils.encodeBase64NoWrap(decrypted)
         } catch (e: Exception) {
             null
         }
     }
-
-    private fun gcmIv(hexIv: String?): ByteArray =
-        if (hexIv == null) ByteArray(GCM_IV_LENGTH) else CryptoUtils.hexToBytes(hexIv)
 
     /**
      * Get input stream for a file path with better error handling
