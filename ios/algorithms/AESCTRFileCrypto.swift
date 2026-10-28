@@ -29,7 +29,7 @@ enum AESCTRFileCrypto {
     }
     let inputPathString = inputPath as NSString
     let outputPath = (inputPathString.deletingLastPathComponent as NSString)
-      .appendingPathComponent(outputFilePrefix + inputPathString.lastPathComponent)
+      .appendingPathComponent("\(outputFilePrefix)\(UUID().uuidString)_\(inputPathString.lastPathComponent)")
 
     guard transform(inputPath: inputPath, outputPath: outputPath, operation: operation, key: key, initializationVector: initializationVector) else {
       try? fileManager.removeItem(atPath: outputPath)

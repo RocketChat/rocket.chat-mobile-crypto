@@ -139,6 +139,28 @@ describe('Native file encryption and checksums', () => {
     expect(await FileSystem.readFile(encryptedPath)).toBe('');
   });
 
+  test('encrypts one file concurrently with different keys to separate outputs', async () => {
+    const otherKey = 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8';
+    const otherIv = 'AAECAwQFBgcICQoLDA0ODw==';
+    const plaintext = '0123456789abcdef'.repeat(60000);
+    await FileSystem.writeFile(inputPath, plaintext);
+
+    const [encrypted, otherEncrypted] = await Promise.all([
+      aesEncryptFile(inputPath, fileVector.key, fileVector.iv),
+      aesEncryptFile(inputPath, otherKey, otherIv),
+    ]);
+    const encryptedPath = pathFromUri(encrypted);
+    const otherEncryptedPath = pathFromUri(otherEncrypted);
+    encryptedPaths.add(encryptedPath);
+    encryptedPaths.add(otherEncryptedPath);
+
+    expect(encryptedPath).not.toBe(otherEncryptedPath);
+    await aesDecryptFile(encrypted, fileVector.key, fileVector.iv);
+    await aesDecryptFile(otherEncrypted, otherKey, otherIv);
+    expect(await FileSystem.readFile(encryptedPath)).toBe(plaintext);
+    expect(await FileSystem.readFile(otherEncryptedPath)).toBe(plaintext);
+  });
+
   test('rejects a missing file when calculating a checksum', async () => {
     await expect(
       calculateFileChecksum(`${directory}/missing.bin`)
