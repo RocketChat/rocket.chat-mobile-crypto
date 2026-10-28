@@ -259,4 +259,13 @@ describe('RSA JWK conversions', () => {
   test('rejects an invalid PEM export', async () => {
     await expect(rsaExportKey('invalid PEM')).rejects.toThrow();
   });
+
+  test('rejects a PKCS#1 public key with an overflowing length', async () => {
+    const pem = [
+      '-----BEGIN RSA PUBLIC KEY-----',
+      'MA0CiIAAAAAAAAAAAgEB',
+      '-----END RSA PUBLIC KEY-----',
+    ].join('\n');
+    await expect(rsaExportKey(pem)).rejects.toThrow();
+  });
 });

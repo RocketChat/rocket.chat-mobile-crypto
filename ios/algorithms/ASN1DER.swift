@@ -50,7 +50,7 @@ enum ASN1DER {
     var length = Int(firstLengthByte)
     if firstLengthByte & longFormLengthFlag != 0 {
       let lengthByteCount = Int(firstLengthByte & ~longFormLengthFlag)
-      guard lengthByteCount > 0, lengthByteCount <= MemoryLayout<Int>.size, offset + lengthByteCount <= bytes.count else { return nil }
+      guard lengthByteCount > 0, lengthByteCount < MemoryLayout<Int>.size, offset + lengthByteCount <= bytes.count else { return nil }
       length = bytes[offset..<offset + lengthByteCount].reduce(0) { $0 << 8 | Int($1) }
       offset += lengthByteCount
     }
