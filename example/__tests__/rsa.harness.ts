@@ -258,6 +258,18 @@ describe('RSA JWK conversions', () => {
     }
   });
 
+  test('omits private components from public exports', async () => {
+    const privateFields = ['d', 'p', 'q', 'dp', 'dq', 'qi'];
+    const publicJwk = await rsaExportKey(RSA_FIXED_PUBLIC_KEY);
+    const aliasJwk = await rsaPemToJwk(RSA_FIXED_PUBLIC_KEY);
+    const privateJwk = await rsaExportKey(RSA_FIXED_PRIVATE_KEY);
+    for (const field of privateFields) {
+      expect(field in publicJwk).toBe(false);
+      expect(field in aliasJwk).toBe(false);
+      expect(field in privateJwk).toBe(true);
+    }
+  });
+
   test('round-trips all private JWK components through PEM', async () => {
     const original = await rsaExportKey(RSA_FIXED_PRIVATE_KEY);
     const pem = await rsaImportKey(original);

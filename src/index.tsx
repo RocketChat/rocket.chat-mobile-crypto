@@ -262,12 +262,19 @@ export function rsaImportKey(jwk: JWK): Promise<string> {
   return rejectOnThrow(() => MobileCrypto.rsaImportKey(jwk));
 }
 
+const withoutUndefinedFields = (jwk: JWK): JWK =>
+  Object.fromEntries(
+    Object.entries(jwk).filter(([, value]) => value !== undefined)
+  ) as JWK;
+
 export function rsaExportKey(pem: string): Promise<JWK> {
-  return rejectOnThrow(() => MobileCrypto.rsaExportKey(pem));
+  return rejectOnThrow(() => MobileCrypto.rsaExportKey(pem)).then(
+    withoutUndefinedFields
+  );
 }
 
 export function rsaPemToJwk(pemKey: string): Promise<JWK> {
-  return rejectOnThrow(() => MobileCrypto.rsaExportKey(pemKey));
+  return rsaExportKey(pemKey);
 }
 
 // Utility Functions
