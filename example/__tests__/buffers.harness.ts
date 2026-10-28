@@ -57,7 +57,7 @@ describe('SHA over ArrayBuffer', () => {
   test('rejects an unsupported algorithm', async () => {
     await expect(
       shaBuffer(bufferFromAscii('hello'), 'unsupported' as SHAAlgorithm)
-    ).rejects.toThrow();
+    ).rejects.toThrow(/"unsupported"/);
   });
 });
 

@@ -56,11 +56,15 @@ describe('SHA known answers', () => {
   const unsupportedAlgorithm = 'unsupported' as SHAAlgorithm;
 
   test('rejects an unsupported UTF-8 hash algorithm', async () => {
-    await expect(shaUtf8('hello', unsupportedAlgorithm)).rejects.toThrow();
+    await expect(shaUtf8('hello', unsupportedAlgorithm)).rejects.toThrow(
+      /"unsupported"/
+    );
   });
 
   test('rejects an unsupported Base64 hash algorithm', async () => {
-    await expect(shaBase64('aGVsbG8=', unsupportedAlgorithm)).rejects.toThrow();
+    await expect(shaBase64('aGVsbG8=', unsupportedAlgorithm)).rejects.toThrow(
+      /"unsupported"/
+    );
   });
 
   test('rejects malformed Base64 input', async () => {
