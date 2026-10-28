@@ -157,34 +157,14 @@ object RSACrypto {
      * @return JWK key data
      */
     fun exportPemKey(pemKey: String): JWK {
-        val keyData = pemToData(pemKey)
-        val isPublic = pemKey.contains("PUBLIC")
-        val isRsaPkcs1 = pemKey.contains("RSA")
+        val pemObject = readPem(pemKey)
+        val keyData = pemObject.content
 
-        return if (isPublic) {
-            if (isRsaPkcs1) {
-                // PKCS#1 RSA PUBLIC KEY format
-                val inputStream = ASN1InputStream(keyData)
-                val obj = inputStream.readObject()
-                pkcs1ToPublicKey(obj)
-            } else {
-                // X.509 SubjectPublicKeyInfo format
-                val spkInfo = SubjectPublicKeyInfo.getInstance(keyData)
-                val primitive = spkInfo.parsePublicKey()
-                pkcs1ToPublicKey(primitive)
-            }
-        } else {
-            if (isRsaPkcs1) {
-                // PKCS#1 RSA PRIVATE KEY format
-                val inputStream = ASN1InputStream(keyData)
-                val obj = inputStream.readObject()
-                pkcs1ToPrivateKey(obj)
-            } else {
-                // PKCS#8 PrivateKeyInfo format
-                val pkInfo = PrivateKeyInfo.getInstance(keyData)
-                val primitive = pkInfo.parsePrivateKey().toASN1Primitive()
-                pkcs1ToPrivateKey(primitive)
-            }
+        return when (pemObject.type) {
+            "RSA PUBLIC KEY" -> pkcs1ToPublicKey(ASN1InputStream(keyData).readObject())
+            "PUBLIC KEY" -> pkcs1ToPublicKey(SubjectPublicKeyInfo.getInstance(keyData).parsePublicKey())
+            "RSA PRIVATE KEY" -> pkcs1ToPrivateKey(ASN1InputStream(keyData).readObject())
+            else -> pkcs1ToPrivateKey(PrivateKeyInfo.getInstance(keyData).parsePrivateKey().toASN1Primitive())
         }
     }
 
@@ -227,8 +207,9 @@ object RSACrypto {
     }
 
     fun createPublicKeyFromPem(publicKeyPem: String): RSAPublicKey {
-        val keyData = pemToData(publicKeyPem)
-        val isRsaPkcs1 = publicKeyPem.contains("RSA")
+        val pemObject = readPem(publicKeyPem)
+        val keyData = pemObject.content
+        val isRsaPkcs1 = pemObject.type == "RSA PUBLIC KEY"
         val keyFactory = KeyFactory.getInstance("RSA")
         
         return if (isRsaPkcs1) {
@@ -246,11 +227,10 @@ object RSACrypto {
         }
     }
 
-    private fun pemToData(pemKey: String): ByteArray {
+    private fun readPem(pemKey: String): PemObject {
         val keyReader = StringReader(pemKey)
         val pemReader = PemReader(keyReader)
-        val pemObject = pemReader.readPemObject()
-        return pemObject.content
+        return pemReader.readPemObject()
     }
 
     private fun jwkToPublicPkcs1(jwk: JWK): String {

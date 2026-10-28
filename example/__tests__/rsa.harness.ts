@@ -23,6 +23,8 @@ import {
   RSA_FIXED_PUBLIC_KEY,
   RSA_FIXED_SIGNATURE_B64,
   RSA_FIXED_SIGN_MESSAGE,
+  RSA_SPKI_WITH_RSA_IN_BODY,
+  RSA_SPKI_WITH_RSA_IN_BODY_JWK,
 } from '../fixtures/rsa';
 
 describe('RSA encryption and signatures', () => {
@@ -219,6 +221,17 @@ describe('RSA JWK conversions', () => {
     expect(await rsaExportKey(RSA_FIXED_PUBLIC_KEY)).toMatchObject(
       RSA_FIXED_JWK
     );
+  });
+
+  test('exports an SPKI public key whose body contains RSA', async () => {
+    expect(await rsaExportKey(RSA_SPKI_WITH_RSA_IN_BODY)).toMatchObject(
+      RSA_SPKI_WITH_RSA_IN_BODY_JWK
+    );
+  });
+
+  test('encrypts with an SPKI public key whose body contains RSA', async () => {
+    const ciphertext = await rsaEncrypt('hello', RSA_SPKI_WITH_RSA_IN_BODY);
+    expect(atob(ciphertext)).toHaveLength(256);
   });
 
   test('supports the rsaPemToJwk public alias', async () => {

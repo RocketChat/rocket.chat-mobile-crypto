@@ -89,6 +89,28 @@ export const RSA_FIXED_PUBLIC_KEY = Platform.select({
   default: RSA_FIXED_PUBLIC_SPKI,
 });
 
+export const RSA_SPKI_WITH_RSA_IN_BODY = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAouECcU5i0vIgqdsGVVnn
+QtjWleEweyZBCtFofTQIlN5qcFv3tut3Aj3xTI1+qxqwLZw1/pngNH6fOfikLzNT
+bJqsk+17aWlqXpqTBb7xZ8diLcZgQ9A0SxkLfeFAXmJX40wdEQdOhyBGnFpsU+Vc
++7dmeFn7TdoOZKnkONuooqGhR2z21dfXFqKZNCA3O+amVjdmNwzhFGHQszWvNQYh
+Xi1ZuDLyFai/qi/4Yf5GIxcgaeknJqT7xYzlLkEYMByM601MpmQUp4PQ7b9ngMt0
+lDVrakqRSASzuQRPtllY3+bIFWUst3Yy6AtLK8ZnYdnNgm3k7JPvHVqoG+UdYRQR
+EQIDAQAB
+-----END PUBLIC KEY-----`;
+
+export const RSA_SPKI_WITH_RSA_IN_BODY_JWK: JWK = {
+  kty: 'RSA',
+  n:
+    'ouECcU5i0vIgqdsGVVnnQtjWleEweyZBCtFofTQIlN5qcFv3tut3Aj3xTI1-qxqw' +
+    'LZw1_pngNH6fOfikLzNTbJqsk-17aWlqXpqTBb7xZ8diLcZgQ9A0SxkLfeFAXmJX' +
+    '40wdEQdOhyBGnFpsU-Vc-7dmeFn7TdoOZKnkONuooqGhR2z21dfXFqKZNCA3O-am' +
+    'VjdmNwzhFGHQszWvNQYhXi1ZuDLyFai_qi_4Yf5GIxcgaeknJqT7xYzlLkEYMByM' +
+    '601MpmQUp4PQ7b9ngMt0lDVrakqRSASzuQRPtllY3-bIFWUst3Yy6AtLK8ZnYdnN' +
+    'gm3k7JPvHVqoG-UdYRQREQ',
+  e: 'AQAB',
+};
+
 export const RSA_FIXED_PLAINTEXT = 'Hello RSA fixed vector!';
 export const RSA_FIXED_SIGN_MESSAGE = 'Hello RSA signature fixed vector!';
 

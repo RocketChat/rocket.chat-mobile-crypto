@@ -17,8 +17,8 @@ enum RSACrypto {
       return nil
     }
     return RSAKeyPair(
-      publicKey: RSAPem.format(publicKeyData, tag: "PUBLIC"),
-      privateKey: RSAPem.format(privateKeyData, tag: "PRIVATE")
+      publicKey: RSAPem.format(publicKeyData, tag: .publicKey),
+      privateKey: RSAPem.format(privateKeyData, tag: .privateKey)
     )
   }
 

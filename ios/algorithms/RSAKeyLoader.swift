@@ -21,13 +21,17 @@ enum RSAKeyLoader {
     if let cachedKey = cache.object(forKey: cacheKey) {
       return cachedKey
     }
-    guard let keyData = RSAPem.parse(pem) else { return nil }
+    guard let keyData = RSAPem.parse(pem)?.data,
+          let key = key(from: keyData, keyClass: keyClass) else { return nil }
+    cache.setObject(key, forKey: cacheKey)
+    return key
+  }
+
+  static func key(from keyData: Data, keyClass: CFString) -> SecKey? {
     let attributes: [CFString: Any] = [
       kSecAttrKeyType: kSecAttrKeyTypeRSA,
       kSecAttrKeyClass: keyClass,
     ]
-    guard let key = SecKeyCreateWithData(keyData as CFData, attributes as CFDictionary, nil) else { return nil }
-    cache.setObject(key, forKey: cacheKey)
-    return key
+    return SecKeyCreateWithData(keyData as CFData, attributes as CFDictionary, nil)
   }
 }
