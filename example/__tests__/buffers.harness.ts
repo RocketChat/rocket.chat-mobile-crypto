@@ -264,6 +264,24 @@ describe('AES-GCM over ArrayBuffer', () => {
       )
     ).rejects.toThrow();
   });
+
+  test('ignores changes to native-owned inputs made while encrypting', async () => {
+    const plaintext = await randomBytesBuffer(16 * 1024 * 1024);
+    const key = await randomBytesBuffer(32);
+    const iv = bufferFromHex('00'.repeat(12));
+    const untouchedPlaintext = plaintext.slice(0);
+    const untouchedKey = key.slice(0);
+
+    const pendingCiphertext = aesGcmEncryptBuffer(plaintext, key, iv);
+    new Uint8Array(plaintext).fill(0);
+    new Uint8Array(key).fill(0);
+
+    const digest = async (ciphertext: Promise<ArrayBuffer>) =>
+      hexFromBuffer(await shaBuffer(await ciphertext, 'SHA-256'));
+    expect(await digest(pendingCiphertext)).toBe(
+      await digest(aesGcmEncryptBuffer(untouchedPlaintext, untouchedKey, iv))
+    );
+  });
 });
 
 describe('Random bytes as ArrayBuffer', () => {

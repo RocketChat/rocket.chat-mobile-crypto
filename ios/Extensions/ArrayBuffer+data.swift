@@ -12,6 +12,6 @@ extension ArrayBuffer {
   }
 
   func copiedData() -> Data {
-    size == 0 ? Data() : toData(copyIfNeeded: true)
+    size == 0 ? Data() : Data(bytes: data, count: size)
   }
 }
