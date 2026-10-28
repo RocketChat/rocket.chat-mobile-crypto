@@ -294,7 +294,6 @@ export function rsaImportPublicKey(pem: string): Promise<RSAPublicKey> {
   return rejectOnThrow(() => MobileCrypto.rsaImportPublicKey(pem));
 }
 
-// ArrayBuffer Functions
 export function shaBuffer(
   data: ArrayBuffer,
   algorithm: SHAAlgorithm

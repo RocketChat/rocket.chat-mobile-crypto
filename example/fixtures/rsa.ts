@@ -1,5 +1,3 @@
-// Public test-only keys and fixed answers shared by the app and native tests.
-// The PKCS#1 and PKCS#8/SPKI encodings represent the same 2048-bit RSA key.
 import { Platform } from 'react-native';
 import type { JWK } from '@rocket.chat/mobile-crypto';
 
@@ -79,7 +77,6 @@ EXBvqP5998oDOz1/HFnu9U29RVBqjwBgVii4J3WPzS5HsKxhPrbB7mk4gw7YqWi0
 eXX3OUTWyqlQnTh6339eobtEyq8/QACztQIDAQAB
 -----END RSA PUBLIC KEY-----`;
 
-// Platform-branched key material (same modulus, encoding the native layer parses).
 export const RSA_FIXED_PRIVATE_KEY = Platform.select({
   ios: RSA_FIXED_PRIVATE_PKCS1,
   default: RSA_FIXED_PRIVATE_PKCS8,

@@ -56,7 +56,6 @@ export const toByteArray = (b64: string): any[] | Uint8Array => {
   const len = placeHoldersLen > 0 ? validLen - 4 : validLen;
 
   let i;
-  // Missing characters in an unpadded final group contribute zero bits.
   for (i = 0; i < len; i += 4) {
     tmp =
       ((revLookup[b64.charCodeAt(i)] ?? 0) << 18) |
@@ -106,7 +105,6 @@ const encodeChunk = (
 ) => {
   let tmp;
   const output = [];
-  // The caller passes only complete triplets within the input's bounds.
   for (let i = start; i < end; i += 3) {
     tmp =
       ((uint8[i]! << 16) & 0xff0000) +
