@@ -102,20 +102,20 @@ object AESCrypto {
      * Encrypt a file using AES-CTR mode
      */
     fun encryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, context: Context): String {
-        return processFile(inputFile, base64UrlKey, base64Iv, "encrypt", context)
+        return processFile(inputFile, base64UrlKey, base64Iv, Cipher.ENCRYPT_MODE, context)
     }
 
     /**
      * Decrypt a file using AES-CTR mode
      */
     fun decryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, context: Context): String {
-        return processFile(inputFile, base64UrlKey, base64Iv, "decrypt", context)
+        return processFile(inputFile, base64UrlKey, base64Iv, Cipher.DECRYPT_MODE, context)
     }
 
     /**
      * Process file encryption/decryption using AES-CTR mode
      */
-    private fun processFile(inputFile: String, base64UrlKey: String, base64Iv: String, mode: String, context: Context): String {
+    private fun processFile(inputFile: String, base64UrlKey: String, base64Iv: String, cipherMode: Int, context: Context): String {
         // Decode the key and IV
         val key = Base64.decode(base64UrlKey, Base64.URL_SAFE or Base64.NO_WRAP)
         val iv = CryptoUtils.decodeBase64NoWrap(base64Iv)
@@ -124,13 +124,12 @@ object AESCrypto {
         // Initialize the cipher
         val cipher = Cipher.getInstance(FILE_CIPHER_ALGORITHM)
         val ivParameterSpec = IvParameterSpec(iv)
-        val cipherMode = if (mode == "encrypt") Cipher.ENCRYPT_MODE else Cipher.DECRYPT_MODE
         cipher.init(cipherMode, secretKey, ivParameterSpec)
 
         val targetUri = Uri.parse(inputFile)
         val isPlainFilePath = targetUri.scheme == null || targetUri.scheme == "file"
         val targetFile = File(normalizeFilePath(inputFile))
-        val outputDirectory = if (mode == "decrypt" && isPlainFilePath) {
+        val outputDirectory = if (cipherMode == Cipher.DECRYPT_MODE && isPlainFilePath) {
             targetFile.absoluteFile.parentFile?.takeIf { it.canWrite() } ?: context.cacheDir
         } else {
             context.cacheDir
@@ -157,7 +156,7 @@ object AESCrypto {
             throw ex
         }
 
-        return if (mode == "decrypt") {
+        return if (cipherMode == Cipher.DECRYPT_MODE) {
             if (isPlainFilePath && outputFileObj.renameTo(targetFile)) {
                 return inputFile
             }
