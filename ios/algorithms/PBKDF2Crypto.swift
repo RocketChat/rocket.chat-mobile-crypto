@@ -5,8 +5,8 @@ enum PBKDF2Crypto {
   static func deriveKeyBase64(
     _ passwordBase64: String,
     saltBase64: String,
-    iterations: UInt,
-    keyLength: UInt,
+    iterations: Int,
+    keyLength: Int,
     hash: PBKDF2HashAlgorithm
   ) -> String? {
     guard let password = Data(base64Encoded: passwordBase64),
@@ -15,7 +15,7 @@ enum PBKDF2Crypto {
           iterations > 0 else {
       return nil
     }
-    var derivedKey = Data(count: Int(keyLength))
+    var derivedKey = Data(count: keyLength)
     let derivedKeyLength = derivedKey.count
     let status = derivedKey.withUnsafeMutableBytes { derivedKeyBytes in
       password.withUnsafeBytes { passwordBytes in

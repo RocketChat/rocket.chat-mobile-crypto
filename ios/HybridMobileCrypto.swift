@@ -98,17 +98,17 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func randomKey(length: Double) throws -> String {
-    try RandomGenerator.bytes(count: Int(length.toCount())).orThrow("Failed to generate random key").lowercaseHexString
+    try RandomGenerator.bytes(count: length.toCount()).orThrow("Failed to generate random key").lowercaseHexString
   }
 
   func randomBytes(size: Double) throws -> String {
-    try RandomGenerator.bytes(count: Int(size.toCount())).orThrow("Failed to generate random bytes").base64EncodedString()
+    try RandomGenerator.bytes(count: size.toCount()).orThrow("Failed to generate random bytes").base64EncodedString()
   }
 
   func rsaGenerateKeys(keySize: Double?) throws -> Promise<RSAKeyPair> {
     return Promise.parallel {
       let bitCount = try (keySize ?? Self.defaultRSAKeySize).toCount()
-      return try RSACrypto.generateKeyPair(bitCount: Int(bitCount)).orThrow("Key generation failed")
+      return try RSACrypto.generateKeyPair(bitCount: bitCount).orThrow("Key generation failed")
     }
   }
 
@@ -171,7 +171,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func getRandomValues(length: Double) throws -> String {
-    RandomGenerator.alphanumeric(length: Int(try length.toCount()))
+    RandomGenerator.alphanumeric(length: try length.toCount())
   }
 
   func rsaImportKey(jwk: JWK) throws -> Promise<String> {
@@ -258,7 +258,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func randomBytesBuffer(size: Double) throws -> ArrayBuffer {
-    ArrayBuffer.copying(try RandomGenerator.bytes(count: Int(size.toCount())).orThrow("Failed to generate random bytes"))
+    ArrayBuffer.copying(try RandomGenerator.bytes(count: size.toCount()).orThrow("Failed to generate random bytes"))
   }
 
   private static func aesCBCEncrypt(_ plaintext: Data, key: Data, initializationVector: Data) throws -> ArrayBuffer {
