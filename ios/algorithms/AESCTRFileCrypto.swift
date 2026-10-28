@@ -6,25 +6,38 @@ enum AESCTRFileCrypto {
   private static let outputFilePrefix = "processed_"
 
   static func encryptFile(_ filePath: String, base64URLKey: String, base64InitializationVector: String) -> String? {
-    processFile(filePath, operation: CCOperation(kCCEncrypt), base64URLKey: base64URLKey, base64InitializationVector: base64InitializationVector)
+    processFile(filePath.normalizedFilePath, operation: CCOperation(kCCEncrypt), base64URLKey: base64URLKey, base64InitializationVector: base64InitializationVector)
+      .map { "file://\($0)" }
   }
 
   static func decryptFile(_ filePath: String, base64URLKey: String, base64InitializationVector: String) -> String? {
-    processFile(filePath, operation: CCOperation(kCCDecrypt), base64URLKey: base64URLKey, base64InitializationVector: base64InitializationVector)
+    let inputPath = filePath.normalizedFilePath
+    guard let outputPath = processFile(inputPath, operation: CCOperation(kCCDecrypt), base64URLKey: base64URLKey, base64InitializationVector: base64InitializationVector) else {
+      return nil
+    }
+    do {
+      _ = try FileManager.default.replaceItemAt(
+        URL(fileURLWithPath: inputPath),
+        withItemAt: URL(fileURLWithPath: outputPath),
+        backupItemName: nil,
+        options: .usingNewMetadataOnly
+      )
+    } catch {
+      try? FileManager.default.removeItem(atPath: outputPath)
+      return nil
+    }
+    return "file://\(inputPath)"
   }
 
   private static func processFile(
-    _ filePath: String,
+    _ inputPath: String,
     operation: CCOperation,
     base64URLKey: String,
     base64InitializationVector: String
   ) -> String? {
-    let inputPath = filePath.normalizedFilePath
-    let fileManager = FileManager.default
     guard let key = Data(base64URLEncoded: base64URLKey),
           let initializationVector = Data(base64Encoded: base64InitializationVector),
-          initializationVector.count == kCCBlockSizeAES128,
-          fileManager.fileExists(atPath: inputPath) else {
+          initializationVector.count == kCCBlockSizeAES128 else {
       return nil
     }
     let inputPathString = inputPath as NSString
@@ -32,24 +45,10 @@ enum AESCTRFileCrypto {
       .appendingPathComponent("\(outputFilePrefix)\(UUID().uuidString)_\(inputPathString.lastPathComponent)")
 
     guard transform(inputPath: inputPath, outputPath: outputPath, operation: operation, key: key, initializationVector: initializationVector) else {
-      try? fileManager.removeItem(atPath: outputPath)
+      try? FileManager.default.removeItem(atPath: outputPath)
       return nil
     }
-    guard operation == CCOperation(kCCDecrypt) else {
-      return "file://\(outputPath)"
-    }
-    do {
-      _ = try fileManager.replaceItemAt(
-        URL(fileURLWithPath: inputPath),
-        withItemAt: URL(fileURLWithPath: outputPath),
-        backupItemName: nil,
-        options: .usingNewMetadataOnly
-      )
-    } catch {
-      try? fileManager.removeItem(atPath: outputPath)
-      return nil
-    }
-    return "file://\(inputPath)"
+    return outputPath
   }
 
   private static func transform(
