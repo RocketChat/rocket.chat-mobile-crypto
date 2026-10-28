@@ -12,6 +12,8 @@ import {
   rsaSign64,
   rsaVerify,
   rsaVerify64,
+  type JWK,
+  type RSAHashAlgorithm,
 } from '@rocket.chat/mobile-crypto';
 import {
   RSA_FIXED_JWK,
@@ -117,6 +119,26 @@ describe('RSA encryption and signatures', () => {
         'SHA256'
       )
     ).toBe(RSA_FIXED_SIGNATURE_B64);
+  });
+
+  test('rejects an unsupported signature hash', async () => {
+    await expect(
+      rsaSign(
+        RSA_FIXED_SIGN_MESSAGE,
+        RSA_FIXED_PRIVATE_KEY,
+        'unsupported' as RSAHashAlgorithm
+      )
+    ).rejects.toThrow(/"unsupported"/);
+  });
+
+  test('rejects an unsupported signature hash for Base64-decoded bytes', async () => {
+    await expect(
+      rsaSign64(
+        'SGVsbG8gUlNBIHNpZ25hdHVyZSBmaXhlZCB2ZWN0b3Ih',
+        RSA_FIXED_PRIVATE_KEY,
+        'unsupported' as RSAHashAlgorithm
+      )
+    ).rejects.toThrow(/"unsupported"/);
   });
 
   test('verifies the fixed signature against Base64-decoded bytes', async () => {
@@ -228,6 +250,10 @@ describe('RSA JWK conversions', () => {
     const pem = await rsaImportKey(original);
     expect(pem).toContain('-----BEGIN RSA PRIVATE KEY-----');
     expect(await rsaExportKey(pem)).toEqual(original);
+  });
+
+  test('rejects a JWK without key components', async () => {
+    await expect(rsaImportKey({} as JWK)).rejects.toThrow();
   });
 
   test('rejects an invalid PEM export', async () => {

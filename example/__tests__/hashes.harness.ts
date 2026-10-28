@@ -4,6 +4,7 @@ import {
   pbkdf2Hash,
   shaBase64,
   shaUtf8,
+  type PBKDF2HashAlgorithm,
   type SHAAlgorithm,
 } from '@rocket.chat/mobile-crypto';
 import {
@@ -104,6 +105,18 @@ describe('PBKDF2 known answers', () => {
       )
     ).toBe(binaryPbkdf2Vector.expected);
   });
+
+  test('rejects an unsupported hash algorithm', async () => {
+    await expect(
+      pbkdf2Hash(
+        'cGFzc3dvcmQ=',
+        'c2FsdA==',
+        1000,
+        32,
+        'unsupported' as PBKDF2HashAlgorithm
+      )
+    ).rejects.toThrow(/"unsupported"/);
+  });
 });
 
 describe('HMAC-SHA256 known answers', () => {
@@ -133,5 +146,17 @@ describe('inputs above the synchronous size limit', () => {
     expect(
       await hmac256('00'.repeat(20000), '0123456789abcdef'.repeat(4))
     ).toBe('6271447fab534de65abf22d387b9d75d635231deb617eec3e8775a1b9d275564');
+  });
+
+  test('rejects an unsupported Base64 hash algorithm', async () => {
+    await expect(
+      shaBase64('A'.repeat(49152), 'unsupported' as SHAAlgorithm)
+    ).rejects.toThrow(/"unsupported"/);
+  });
+
+  test('rejects an unsupported UTF-8 hash algorithm', async () => {
+    await expect(
+      shaUtf8('a'.repeat(40000), 'unsupported' as SHAAlgorithm)
+    ).rejects.toThrow(/"unsupported"/);
   });
 });

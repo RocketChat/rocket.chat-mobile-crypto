@@ -59,6 +59,15 @@ describe('SHA over ArrayBuffer', () => {
       shaBuffer(bufferFromAscii('hello'), 'unsupported' as SHAAlgorithm)
     ).rejects.toThrow(/"unsupported"/);
   });
+
+  test('rejects an unsupported algorithm above the synchronous size limit', async () => {
+    await expect(
+      shaBuffer(
+        bufferFromBase64('A'.repeat(49152)),
+        'unsupported' as SHAAlgorithm
+      )
+    ).rejects.toThrow(/"unsupported"/);
+  });
 });
 
 describe('HMAC-SHA256 over ArrayBuffer', () => {
