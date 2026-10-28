@@ -43,17 +43,21 @@ const traceFiles = () =>
     : [];
 const previousTraces = new Set(traceFiles());
 const filesIn = (directory) =>
-  fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const file = path.join(directory, entry.name);
-    return entry.isDirectory() ? filesIn(file) : [file];
-  });
+  fs
+    .readdirSync(directory, { withFileTypes: true })
+    .filter((entry) => !(entry.isDirectory() && entry.name === 'build'))
+    .flatMap((entry) => {
+      const file = path.join(directory, entry.name);
+      return entry.isDirectory() ? filesIn(file) : [file];
+    });
 const fingerprint = createHash('sha256');
 for (const file of [
   ...filesIn(path.join(repositoryRoot, 'src')),
-  ...filesIn(path.join(repositoryRoot, 'ios/algorithms')),
+  ...filesIn(path.join(repositoryRoot, 'ios')),
+  ...filesIn(path.join(repositoryRoot, 'android/src')),
+  ...filesIn(path.join(repositoryRoot, 'nitrogen')),
   ...filesIn(path.join(projectRoot, '__tests__')),
   ...filesIn(path.join(projectRoot, 'fixtures')),
-  path.join(repositoryRoot, 'ios/MobileCrypto.mm'),
   path.join(repositoryRoot, 'yarn.lock'),
   path.join(projectRoot, 'rn-harness.config.mjs'),
   path.join(projectRoot, 'jest.harness.config.mjs'),
