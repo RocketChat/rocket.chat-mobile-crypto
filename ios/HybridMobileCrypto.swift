@@ -172,7 +172,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func getRandomValues(length: Double) throws -> String {
-    RandomGenerator.alphanumeric(length: try length.toCount())
+    try RandomGenerator.alphanumeric(length: length.toCount()).orThrow("Failed to generate random values")
   }
 
   func rsaImportKey(jwk: JWK) throws -> Promise<String> {

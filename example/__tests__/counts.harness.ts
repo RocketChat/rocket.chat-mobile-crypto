@@ -46,3 +46,31 @@ describeOnIOS('Counts beyond the native integer range', () => {
     });
   }
 });
+
+describeOnIOS('Counts above the 32-bit integer range', () => {
+  test('randomBytes rejects 2^31 bytes', async () => {
+    await expect(randomBytes(2 ** 31)).rejects.toThrow();
+  });
+
+  test('randomKey rejects 1e15 bytes', async () => {
+    await expect(randomKey(1e15)).rejects.toThrow();
+  });
+
+  test('randomBytes rejects 1e15 bytes', async () => {
+    await expect(randomBytes(1e15)).rejects.toThrow();
+  });
+
+  test('randomBytesBuffer rejects 1e15 bytes', async () => {
+    await expect(randomBytesBuffer(1e15)).rejects.toThrow();
+  });
+
+  test('getRandomValues rejects 1e12 characters', async () => {
+    await expect(getRandomValues(1e12)).rejects.toThrow();
+  });
+
+  test('pbkdf2Hash rejects a 1e15-byte key length', async () => {
+    await expect(
+      pbkdf2Hash('cGFzc3dvcmQ=', 'c2FsdA==', 1, 1e15, 'SHA256')
+    ).rejects.toThrow();
+  });
+});
