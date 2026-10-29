@@ -5,8 +5,6 @@ package enum AESCTRFileCrypto {
   private static let chunkSize = 65536
   private static let outputFilePrefix = "processed_"
 
-  private struct CryptorUpdateError: Error {}
-
   package static func encryptFile(_ filePath: String, base64URLKey: String, base64InitializationVector: String) -> String? {
     processFile(filePath.normalizedFilePath, operation: CCOperation(kCCEncrypt), base64URLKey: base64URLKey, base64InitializationVector: base64InitializationVector)
       .map { "file://\($0)" }
@@ -94,18 +92,13 @@ package enum AESCTRFileCrypto {
 
     var outputBuffer = [UInt8](repeating: 0, count: chunkSize)
     do {
-      var reachedEnd = false
-      while !reachedEnd {
-        reachedEnd = try autoreleasepool {
-          guard let chunk = try input.read(upToCount: chunkSize), !chunk.isEmpty else { return true }
-          var bytesMoved = 0
-          let updateStatus = chunk.withUnsafeBytes { chunkBytes in
-            CCCryptorUpdate(cryptor, chunkBytes.baseAddress, chunk.count, &outputBuffer, chunkSize, &bytesMoved)
-          }
-          guard updateStatus == kCCSuccess else { throw CryptorUpdateError() }
-          try output.write(contentsOf: outputBuffer[..<bytesMoved])
-          return false
+      while let chunk = try autoreleasepool(invoking: { try input.read(upToCount: chunkSize) }), !chunk.isEmpty {
+        var bytesMoved = 0
+        let updateStatus = chunk.withUnsafeBytes { chunkBytes in
+          CCCryptorUpdate(cryptor, chunkBytes.baseAddress, chunk.count, &outputBuffer, chunkSize, &bytesMoved)
         }
+        guard updateStatus == kCCSuccess else { return false }
+        try output.write(contentsOf: outputBuffer[..<bytesMoved])
       }
       var finalBytesMoved = 0
       guard CCCryptorFinal(cryptor, &outputBuffer, chunkSize, &finalBytesMoved) == kCCSuccess else { return false }
