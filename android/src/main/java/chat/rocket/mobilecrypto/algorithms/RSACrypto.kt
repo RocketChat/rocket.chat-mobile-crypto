@@ -8,12 +8,14 @@ import com.margelo.nitro.mobilecrypto.RSAKeyPair
 import java.io.StringReader
 import java.io.StringWriter
 import java.math.BigInteger
+import java.security.Key
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.Signature
+import java.security.interfaces.RSAPrivateCrtKey
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.PKCS8EncodedKeySpec
@@ -22,8 +24,6 @@ import java.security.spec.RSAPublicKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.Arrays
 import javax.crypto.Cipher
-import org.bouncycastle.asn1.ASN1InputStream
-import org.bouncycastle.asn1.ASN1Primitive
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.util.io.pem.PemObject
@@ -160,14 +160,11 @@ object RSACrypto {
      * @return JWK key data
      */
     fun exportPemKey(pemKey: String): JWK {
-        val pemObject = readPem(pemKey)
-        val keyData = pemObject.content
-
-        return when (pemObject.type) {
-            "RSA PUBLIC KEY" -> pkcs1ToPublicKey(ASN1InputStream(keyData).readObject())
-            "PUBLIC KEY" -> pkcs1ToPublicKey(SubjectPublicKeyInfo.getInstance(keyData).parsePublicKey())
-            "RSA PRIVATE KEY" -> pkcs1ToPrivateKey(ASN1InputStream(keyData).readObject())
-            else -> pkcs1ToPrivateKey(PrivateKeyInfo.getInstance(keyData).parsePrivateKey().toASN1Primitive())
+        val pemObject = readPem(pemKey) ?: throw IllegalArgumentException("Invalid PEM")
+        return when (val key = pemObject.toKey()) {
+            is RSAPublicKey -> publicKeyToJwk(key)
+            is RSAPrivateCrtKey -> privateKeyToJwk(key)
+            else -> throw IllegalArgumentException("Unsupported RSA key")
         }
     }
 
@@ -186,14 +183,6 @@ object RSACrypto {
         }
     }
 
-    private fun pemToKey(pem: String): ByteArray {
-        val lines = pem.lines().filter { 
-            !it.startsWith("-----") && it.isNotBlank() 
-        }
-        val base64Content = lines.joinToString("")
-        return Base64.decode(base64Content, Base64.DEFAULT)
-    }
-
     private fun cachedPublicKey(publicKeyPem: String): PublicKey {
         return publicKeyCache.get(publicKeyPem)
             ?: createPublicKeyFromPem(publicKeyPem).also { publicKeyCache.put(publicKeyPem, it) }
@@ -205,28 +194,40 @@ object RSACrypto {
     }
 
     fun createPrivateKeyFromPem(privateKeyPem: String): RSAPrivateKey {
-        val keySpec = PKCS8EncodedKeySpec(pemToKey(privateKeyPem))
-        return KeyFactory.getInstance("RSA").generatePrivate(keySpec) as RSAPrivateKey
+        val pemObject = readPem(privateKeyPem)
+            ?: PemObject("PRIVATE KEY", Base64.decode(privateKeyPem, Base64.DEFAULT))
+        require(pemObject.type == "PRIVATE KEY") { "Expected a PKCS#8 private key PEM" }
+        return pemObject.toKey() as RSAPrivateKey
     }
 
     fun createPublicKeyFromPem(publicKeyPem: String): RSAPublicKey {
-        val pemObject = readPem(publicKeyPem)
-        val keyData = pemObject.content
-        val isRsaPkcs1 = pemObject.type == "RSA PUBLIC KEY"
+        return readPem(publicKeyPem)?.toKey() as? RSAPublicKey
+            ?: throw IllegalArgumentException("Expected an RSA public key PEM")
+    }
+
+    private fun PemObject.toKey(): Key {
         val keyFactory = KeyFactory.getInstance("RSA")
-        
-        return if (isRsaPkcs1) {
-            // PKCS#1 RSA PUBLIC KEY format - need to convert to X.509
-            val inputStream = ASN1InputStream(keyData)
-            val obj = inputStream.readObject()
-            val rsaPublicKey = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(obj)
-            
-            val keySpec = RSAPublicKeySpec(rsaPublicKey.modulus, rsaPublicKey.publicExponent)
-            keyFactory.generatePublic(keySpec) as RSAPublicKey
-        } else {
-            // X.509 SubjectPublicKeyInfo format
-            val keySpec = X509EncodedKeySpec(keyData)
-            keyFactory.generatePublic(keySpec) as RSAPublicKey
+        return when (type) {
+            "RSA PUBLIC KEY" -> {
+                val key = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(content)
+                keyFactory.generatePublic(RSAPublicKeySpec(key.modulus, key.publicExponent))
+            }
+            "PUBLIC KEY" -> keyFactory.generatePublic(X509EncodedKeySpec(content))
+            "RSA PRIVATE KEY" -> {
+                val key = org.bouncycastle.asn1.pkcs.RSAPrivateKey.getInstance(content)
+                keyFactory.generatePrivate(RSAPrivateCrtKeySpec(
+                    key.modulus,
+                    key.publicExponent,
+                    key.privateExponent,
+                    key.prime1,
+                    key.prime2,
+                    key.exponent1,
+                    key.exponent2,
+                    key.coefficient
+                ))
+            }
+            "PRIVATE KEY" -> keyFactory.generatePrivate(PKCS8EncodedKeySpec(content))
+            else -> throw IllegalArgumentException("Unsupported PEM type: $type")
         }
     }
 
@@ -248,7 +249,7 @@ object RSACrypto {
         )
     }
 
-    private fun readPem(pemKey: String): PemObject {
+    private fun readPem(pemKey: String): PemObject? {
         val keyReader = StringReader(pemKey)
         val pemReader = PemReader(keyReader)
         return pemReader.readPemObject()
@@ -329,16 +330,14 @@ object RSACrypto {
         return stringWriter.toString()
     }
 
-    private fun pkcs1ToPublicKey(obj: ASN1Primitive): JWK {
-        val keyStruct = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(obj)
-
+    private fun publicKeyToJwk(key: RSAPublicKey): JWK {
         return JWK(
             kty = "RSA",
             alg = "RSA-OAEP-256",
             ext = true,
             key_ops = arrayOf("encrypt"),
-            n = toBase64String(keyStruct.modulus, true),
-            e = toBase64String(keyStruct.publicExponent, false),
+            n = toBase64String(key.modulus, true),
+            e = toBase64String(key.publicExponent, false),
             d = null,
             p = null,
             q = null,
@@ -348,22 +347,20 @@ object RSACrypto {
         )
     }
 
-    private fun pkcs1ToPrivateKey(obj: ASN1Primitive): JWK {
-        val keyStruct = org.bouncycastle.asn1.pkcs.RSAPrivateKey.getInstance(obj)
-
+    private fun privateKeyToJwk(key: RSAPrivateCrtKey): JWK {
         return JWK(
             kty = "RSA",
             alg = "RSA-OAEP-256",
             ext = true,
             key_ops = arrayOf("decrypt"),
-            n = toBase64String(keyStruct.modulus, true),
-            e = toBase64String(keyStruct.publicExponent, true),
-            d = toBase64String(keyStruct.privateExponent, true),
-            p = toBase64String(keyStruct.prime1, true),
-            q = toBase64String(keyStruct.prime2, true),
-            dp = toBase64String(keyStruct.exponent1, true),
-            dq = toBase64String(keyStruct.exponent2, true),
-            qi = toBase64String(keyStruct.coefficient, true)
+            n = toBase64String(key.modulus, true),
+            e = toBase64String(key.publicExponent, true),
+            d = toBase64String(key.privateExponent, true),
+            p = toBase64String(key.primeP, true),
+            q = toBase64String(key.primeQ, true),
+            dp = toBase64String(key.primeExponentP, true),
+            dq = toBase64String(key.primeExponentQ, true),
+            qi = toBase64String(key.crtCoefficient, true)
         )
     }
 
