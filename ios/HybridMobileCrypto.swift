@@ -205,7 +205,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func shaBufferSync(data: ArrayBuffer, algorithm: SHAAlgorithm) throws -> ArrayBuffer {
-    ArrayBuffer.copying(algorithm.coreAlgorithm.digest(of: data.copiedData()))
+    ArrayBuffer.copying(algorithm.coreAlgorithm.digest(of: data.toData(copyIfNeeded: true)))
   }
 
   func hmac256Buffer(data: ArrayBuffer, key: ArrayBuffer) throws -> Promise<ArrayBuffer> {
@@ -214,7 +214,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func hmac256BufferSync(data: ArrayBuffer, key: ArrayBuffer) throws -> ArrayBuffer {
-    ArrayBuffer.copying(HMACCrypto.hmacSha256(data.copiedData(), key: key.copiedData()))
+    ArrayBuffer.copying(HMACCrypto.hmacSha256(data.toData(copyIfNeeded: true), key: key.toData(copyIfNeeded: true)))
   }
 
   func aesEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer> {
@@ -224,7 +224,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
 
   func aesEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
     ArrayBuffer.copying(
-      try AESCBCCrypto.encrypt(data.copiedData(), key: key.copiedData(), initializationVector: iv.copiedData())
+      try AESCBCCrypto.encrypt(data.toData(copyIfNeeded: true), key: key.toData(copyIfNeeded: true), initializationVector: iv.toData(copyIfNeeded: true))
         .orThrow("Encryption failed")
     )
   }
@@ -236,7 +236,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
 
   func aesDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
     ArrayBuffer.copying(
-      try AESCBCCrypto.decrypt(data.copiedData(), key: key.copiedData(), initializationVector: iv.copiedData())
+      try AESCBCCrypto.decrypt(data.toData(copyIfNeeded: true), key: key.toData(copyIfNeeded: true), initializationVector: iv.toData(copyIfNeeded: true))
         .orThrow("Decryption failed")
     )
   }
@@ -248,7 +248,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
 
   func aesGcmEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
     ArrayBuffer.copying(
-      try AESGCMCrypto.encrypt(data.copiedData(), key: key.copiedData(), nonce: iv.copiedData()).orThrow("Encryption failed")
+      try AESGCMCrypto.encrypt(data.toData(copyIfNeeded: true), key: key.toData(copyIfNeeded: true), nonce: iv.toData(copyIfNeeded: true)).orThrow("Encryption failed")
     )
   }
 
@@ -259,7 +259,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
 
   func aesGcmDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
     ArrayBuffer.copying(
-      try AESGCMCrypto.decrypt(data.copiedData(), key: key.copiedData(), nonce: iv.copiedData()).orThrow("Decryption failed")
+      try AESGCMCrypto.decrypt(data.toData(copyIfNeeded: true), key: key.toData(copyIfNeeded: true), nonce: iv.toData(copyIfNeeded: true)).orThrow("Decryption failed")
     )
   }
 

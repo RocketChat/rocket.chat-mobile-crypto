@@ -15,14 +15,14 @@ final class HybridRSAPrivateKey: HybridRSAPrivateKeySpec {
   }
 
   func decrypt(ciphertext: ArrayBuffer) throws -> Promise<ArrayBuffer> {
-    let ciphertextData = ciphertext.copiedData()
+    let ciphertextData = ArrayBuffer.copy(of: ciphertext).toData(copyIfNeeded: true)
     return Promise.parallel { [key] in
       ArrayBuffer.copying(try RSACrypto.decrypt(ciphertextData, using: key).orThrow("Decryption failed"))
     }
   }
 
   func sign(message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Promise<ArrayBuffer> {
-    let messageData = message.copiedData()
+    let messageData = ArrayBuffer.copy(of: message).toData(copyIfNeeded: true)
     return Promise.parallel { [key] in
       ArrayBuffer.copying(try RSACrypto.sign(messageData, using: key, hash: hash.coreAlgorithm).orThrow("Signing failed"))
     }

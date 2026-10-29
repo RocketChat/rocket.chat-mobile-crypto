@@ -10,8 +10,4 @@ extension ArrayBuffer {
       return ArrayBuffer.copy(of: baseAddress, size: bytes.count)
     }
   }
-
-  func copiedData() -> Data {
-    size == 0 ? Data() : Data(bytes: data, count: size)
-  }
 }
