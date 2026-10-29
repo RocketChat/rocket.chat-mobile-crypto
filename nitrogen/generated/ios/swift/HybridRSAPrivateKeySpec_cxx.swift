@@ -125,21 +125,21 @@ open class HybridRSAPrivateKeySpec_cxx {
 
   // Methods
   @inline(__always)
-  public final func decrypt(ciphertext: ArrayBuffer) -> bridge.Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____ {
+  public final func decrypt(ciphertext: std.string) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
     do {
-      let __result = try self.__implementation.decrypt(ciphertext: ciphertext)
-      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___ in
-        let __promise = bridge.create_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___()
-        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___(__promise)
+      let __result = try self.__implementation.decrypt(ciphertext: String(ciphertext))
+      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__string__ in
+        let __promise = bridge.create_std__shared_ptr_Promise_std__string__()
+        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__string__(__promise)
         __result
-          .then({ __result in __promiseHolder.resolve(__result.getArrayBuffer()) })
+          .then({ __result in __promiseHolder.resolve(std.string(__result)) })
           .catch({ __error in __promiseHolder.reject(__error.toCpp()) })
         return __promise
       }()
-      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__resultCpp)
+      return bridge.create_Result_std__shared_ptr_Promise_std__string___(__resultCpp)
     } catch (let __error) {
       let __exceptionPtr = __error.toCpp()
-      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__exceptionPtr)
+      return bridge.create_Result_std__shared_ptr_Promise_std__string___(__exceptionPtr)
     }
   }
   
@@ -159,6 +159,18 @@ open class HybridRSAPrivateKeySpec_cxx {
     } catch (let __error) {
       let __exceptionPtr = __error.toCpp()
       return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func exportJwk() -> bridge.Result_std__string_ {
+    do {
+      let __result = try self.__implementation.exportJwk()
+      let __resultCpp = std.string(__result)
+      return bridge.create_Result_std__string_(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__string_(__exceptionPtr)
     }
   }
 }

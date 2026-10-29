@@ -1,36 +1,32 @@
 import Foundation
+import Security
 
 public enum MobileCryptoNative {
-  public static func importJwkKey(_ jwkJson: String) -> String? {
-    guard let jwk = try? JSONDecoder().decode(JWK.self, from: Data(jwkJson.utf8)) else { return nil }
-    return RSAJWKConverter.pem(from: jwk)
+  public static func rsaImportPrivateKey(_ jwk: String) -> SecKey? {
+    RSAJWKConverter.privateKey(fromJson: jwk)
   }
 
-  public static func rsaDecrypt(_ ciphertextBase64: String, privateKeyPem: String) -> String? {
-    RSAPemCrypto.decrypt(ciphertextBase64, privateKeyPem: privateKeyPem)
+  public static func rsaDecrypt(_ ciphertext: String, privateKey: SecKey) -> String? {
+    RSACrypto.decrypt(ciphertext, using: privateKey)
   }
 
-  public static func aesCbcEncryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    AESCBCCrypto.encryptBase64(dataBase64, keyHex: keyHex, ivHex: ivHex)
+  public static func aesImportKey(_ base64Url: String) -> Data? {
+    AESKeyFactory.importBase64URL(base64Url)
   }
 
-  public static func aesCbcDecryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    AESCBCCrypto.decryptBase64(dataBase64, keyHex: keyHex, ivHex: ivHex)
+  public static func aesGcmDecrypt(_ ciphertext: String, iv: String, key: Data) -> String? {
+    AESGCMCrypto.decrypt(ciphertext, ivBase64: iv, key: key)
   }
 
-  public static func aesGcmEncryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    AESGCMCrypto.encryptBase64(dataBase64, keyHex: keyHex, ivHex: ivHex)
+  public static func aesGcmEncrypt(_ plaintext: String, key: Data) -> (iv: String, ciphertext: String)? {
+    AESGCMCrypto.encrypt(plaintext, key: key)
   }
 
-  public static func aesGcmDecryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    AESGCMCrypto.decryptBase64(dataBase64, keyHex: keyHex, ivHex: ivHex)
+  public static func aesCbcDecrypt(_ ivAndCiphertext: String, key: Data) -> String? {
+    AESCBCCrypto.decrypt(ivAndCiphertext, key: key)
   }
 
-  public static func hexString(from data: Data) -> String {
-    data.lowercaseHexString
-  }
-
-  public static func randomBytes(_ count: Int) -> Data? {
-    RandomGenerator.bytes(count: count)
+  public static func aesCbcEncrypt(_ plaintext: String, key: Data) -> String? {
+    AESCBCCrypto.encrypt(plaintext, key: key)
   }
 }

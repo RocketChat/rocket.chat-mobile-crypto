@@ -10,7 +10,11 @@
 #include <fbjni/fbjni.h>
 #include "RSAKeyPair.hpp"
 
-#include <string>
+#include "HybridRSAPrivateKeySpec.hpp"
+#include "HybridRSAPublicKeySpec.hpp"
+#include "JHybridRSAPrivateKeySpec.hpp"
+#include "JHybridRSAPublicKeySpec.hpp"
+#include <memory>
 
 namespace margelo::nitro::mobilecrypto {
 
@@ -31,13 +35,13 @@ namespace margelo::nitro::mobilecrypto {
     [[nodiscard]]
     RSAKeyPair toCpp() const {
       static const auto clazz = javaClassStatic();
-      static const auto fieldPublicKey = clazz->getField<jni::JString>("publicKey");
-      jni::local_ref<jni::JString> publicKey = this->getFieldValue(fieldPublicKey);
-      static const auto fieldPrivateKey = clazz->getField<jni::JString>("privateKey");
-      jni::local_ref<jni::JString> privateKey = this->getFieldValue(fieldPrivateKey);
+      static const auto fieldPublicKey = clazz->getField<JHybridRSAPublicKeySpec::JavaPart>("publicKey");
+      jni::local_ref<JHybridRSAPublicKeySpec::JavaPart> publicKey = this->getFieldValue(fieldPublicKey);
+      static const auto fieldPrivateKey = clazz->getField<JHybridRSAPrivateKeySpec::JavaPart>("privateKey");
+      jni::local_ref<JHybridRSAPrivateKeySpec::JavaPart> privateKey = this->getFieldValue(fieldPrivateKey);
       return RSAKeyPair(
-        publicKey->toStdString(),
-        privateKey->toStdString()
+        publicKey->getJHybridRSAPublicKeySpec(),
+        privateKey->getJHybridRSAPrivateKeySpec()
       );
     }
 
@@ -47,13 +51,13 @@ namespace margelo::nitro::mobilecrypto {
      */
     [[maybe_unused]]
     static jni::local_ref<JRSAKeyPair::javaobject> fromCpp(const RSAKeyPair& value) {
-      using JSignature = JRSAKeyPair(jni::alias_ref<jni::JString>, jni::alias_ref<jni::JString>);
+      using JSignature = JRSAKeyPair(jni::alias_ref<JHybridRSAPublicKeySpec::JavaPart>, jni::alias_ref<JHybridRSAPrivateKeySpec::JavaPart>);
       static const auto clazz = javaClassStatic();
       static const auto create = clazz->getStaticMethod<JSignature>("fromCpp");
       return create(
         clazz,
-        jni::make_jstring(value.publicKey),
-        jni::make_jstring(value.privateKey)
+        std::dynamic_pointer_cast<JHybridRSAPublicKeySpec>(value.publicKey)->getJavaPart(),
+        std::dynamic_pointer_cast<JHybridRSAPrivateKeySpec>(value.privateKey)->getJavaPart()
       );
     }
   };

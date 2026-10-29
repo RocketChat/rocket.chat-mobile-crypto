@@ -32,11 +32,15 @@ abstract class HybridRSAPublicKeySpec: HybridObject() {
   // Methods
   @DoNotStrip
   @Keep
-  abstract fun encrypt(plaintext: ArrayBuffer): ArrayBuffer
+  abstract fun encrypt(plaintext: String): String
   
   @DoNotStrip
   @Keep
   abstract fun verify(signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Boolean
+  
+  @DoNotStrip
+  @Keep
+  abstract fun exportJwk(): String
 
   // Default implementation of `HybridObject.toString()`
   override fun toString(): String {

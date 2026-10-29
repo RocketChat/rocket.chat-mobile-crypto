@@ -1,7 +1,7 @@
 import Foundation
 
 extension Data {
-  init?(base64URLEncoded base64URL: String) {
+  package init?(base64URLEncoded base64URL: String) {
     let base64 = base64URL
       .replacingOccurrences(of: "-", with: "+")
       .replacingOccurrences(of: "_", with: "/")
@@ -9,7 +9,7 @@ extension Data {
     self.init(base64Encoded: base64 + String(repeating: "=", count: paddingLength))
   }
 
-  var base64URLEncodedString: String {
+  package var base64URLEncodedString: String {
     base64EncodedString()
       .replacingOccurrences(of: "+", with: "-")
       .replacingOccurrences(of: "/", with: "_")

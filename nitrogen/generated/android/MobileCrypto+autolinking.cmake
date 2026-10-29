@@ -33,10 +33,12 @@ target_sources(
   # Autolinking Setup
   ../nitrogen/generated/android/MobileCryptoOnLoad.cpp
   # Shared Nitrogen C++ sources
+  ../nitrogen/generated/shared/c++/HybridAESKeySpec.cpp
   ../nitrogen/generated/shared/c++/HybridMobileCryptoSpec.cpp
   ../nitrogen/generated/shared/c++/HybridRSAPrivateKeySpec.cpp
   ../nitrogen/generated/shared/c++/HybridRSAPublicKeySpec.cpp
   # Android-specific Nitrogen C++ sources
+  ../nitrogen/generated/android/c++/JHybridAESKeySpec.cpp
   ../nitrogen/generated/android/c++/JHybridMobileCryptoSpec.cpp
   ../nitrogen/generated/android/c++/JHybridRSAPrivateKeySpec.cpp
   ../nitrogen/generated/android/c++/JHybridRSAPublicKeySpec.cpp

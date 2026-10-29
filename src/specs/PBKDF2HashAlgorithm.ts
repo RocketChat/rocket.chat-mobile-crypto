@@ -1,7 +1,7 @@
 /**
  * The HMAC digest used as the PBKDF2 pseudo-random function.
  *
- * @see {@linkcode MobileCrypto.pbkdf2Hash}
+ * @see {@linkcode MobileCrypto.aesDeriveKey}
  */
 export type PBKDF2HashAlgorithm =
   | 'SHA1'

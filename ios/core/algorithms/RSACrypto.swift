@@ -11,29 +11,31 @@ package enum RSACrypto {
       kSecPrivateKeyAttrs: [CFString: Any](),
     ]
     guard let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, nil),
-          let publicKey = SecKeyCopyPublicKey(privateKey),
-          let privateKeyData = externalRepresentation(of: privateKey),
-          let publicKeyData = externalRepresentation(of: publicKey) else {
+          let publicKey = SecKeyCopyPublicKey(privateKey) else {
       return nil
     }
-    return RSAKeyPair(
-      publicKey: RSAPem.format(publicKeyData, tag: .publicKey),
-      privateKey: RSAPem.format(privateKeyData, tag: .privateKey)
-    )
+    return RSAKeyPair(publicKey: publicKey, privateKey: privateKey)
   }
 
   package static func externalRepresentation(of key: SecKey) -> Data? {
     SecKeyCopyExternalRepresentation(key, nil) as Data?
   }
 
-  package static func encrypt(_ plaintext: Data, using publicKey: SecKey) -> Data? {
-    guard SecKeyIsAlgorithmSupported(publicKey, .encrypt, encryptionAlgorithm) else { return nil }
-    return SecKeyCreateEncryptedData(publicKey, encryptionAlgorithm, plaintext as CFData, nil) as Data?
+  package static func encrypt(_ plaintext: String, using publicKey: SecKey) -> String? {
+    guard SecKeyIsAlgorithmSupported(publicKey, .encrypt, encryptionAlgorithm),
+          let ciphertext = SecKeyCreateEncryptedData(publicKey, encryptionAlgorithm, Data(plaintext.utf8) as CFData, nil) as Data? else {
+      return nil
+    }
+    return ciphertext.base64EncodedString()
   }
 
-  package static func decrypt(_ ciphertext: Data, using privateKey: SecKey) -> Data? {
-    guard SecKeyIsAlgorithmSupported(privateKey, .decrypt, encryptionAlgorithm) else { return nil }
-    return SecKeyCreateDecryptedData(privateKey, encryptionAlgorithm, ciphertext as CFData, nil) as Data?
+  package static func decrypt(_ ciphertextBase64: String, using privateKey: SecKey) -> String? {
+    guard SecKeyIsAlgorithmSupported(privateKey, .decrypt, encryptionAlgorithm),
+          let ciphertext = Data(base64Encoded: ciphertextBase64),
+          let plaintext = SecKeyCreateDecryptedData(privateKey, encryptionAlgorithm, ciphertext as CFData, nil) as Data? else {
+      return nil
+    }
+    return String(data: plaintext, encoding: .utf8)
   }
 
   package static func sign(_ message: Data, using privateKey: SecKey, hash: RSAHashAlgorithm) -> Data? {

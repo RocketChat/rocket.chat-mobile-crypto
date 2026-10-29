@@ -2,30 +2,28 @@ import Foundation
 import CommonCrypto
 
 package enum AESCBCCrypto {
-  package static func encrypt(_ plaintext: Data, key: Data, initializationVector: Data) -> Data? {
-    crypt(CCOperation(kCCEncrypt), input: plaintext, key: key, initializationVector: initializationVector)
-  }
+  private static let initializationVectorLength = kCCBlockSizeAES128
 
-  package static func decrypt(_ ciphertext: Data, key: Data, initializationVector: Data) -> Data? {
-    guard !ciphertext.isEmpty, ciphertext.count % kCCBlockSizeAES128 == 0 else { return nil }
-    return crypt(CCOperation(kCCDecrypt), input: ciphertext, key: key, initializationVector: initializationVector)
-  }
-
-  package static func encryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    cryptBase64(CCOperation(kCCEncrypt), dataBase64: dataBase64, keyHex: keyHex, ivHex: ivHex)
-  }
-
-  package static func decryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    cryptBase64(CCOperation(kCCDecrypt), dataBase64: dataBase64, keyHex: keyHex, ivHex: ivHex)
-  }
-
-  private static func cryptBase64(_ operation: CCOperation, dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    guard let input = Data(base64Encoded: dataBase64),
-          let key = Data(hexString: keyHex),
-          let initializationVector = Data(hexString: ivHex) else {
+  package static func encrypt(_ plaintext: String, key: Data) -> String? {
+    guard let initializationVector = RandomGenerator.bytes(count: initializationVectorLength),
+          let ciphertext = crypt(CCOperation(kCCEncrypt), input: Data(plaintext.utf8), key: key, initializationVector: initializationVector) else {
       return nil
     }
-    return crypt(operation, input: input, key: key, initializationVector: initializationVector)?.base64EncodedString()
+    return (initializationVector + ciphertext).base64EncodedString()
+  }
+
+  package static func decrypt(_ ivAndCiphertextBase64: String, key: Data) -> String? {
+    guard let ivAndCiphertext = Data(base64Encoded: ivAndCiphertextBase64),
+          ivAndCiphertext.count >= initializationVectorLength * 2 else {
+      return nil
+    }
+    let initializationVector = ivAndCiphertext.prefix(initializationVectorLength)
+    let ciphertext = ivAndCiphertext.dropFirst(initializationVectorLength)
+    guard ciphertext.count % kCCBlockSizeAES128 == 0,
+          let plaintext = crypt(CCOperation(kCCDecrypt), input: ciphertext, key: key, initializationVector: initializationVector) else {
+      return nil
+    }
+    return String(data: plaintext, encoding: .utf8)
   }
 
   private static func crypt(_ operation: CCOperation, input: Data, key: Data, initializationVector: Data) -> Data? {

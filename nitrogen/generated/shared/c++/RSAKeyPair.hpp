@@ -28,9 +28,14 @@
 #error NitroModules cannot be found! Are you sure you installed NitroModules properly?
 #endif
 
+// Forward declaration of `HybridRSAPublicKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPublicKeySpec; }
+// Forward declaration of `HybridRSAPrivateKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
 
-
-#include <string>
+#include <memory>
+#include "HybridRSAPublicKeySpec.hpp"
+#include "HybridRSAPrivateKeySpec.hpp"
 
 namespace margelo::nitro::mobilecrypto {
 
@@ -39,12 +44,12 @@ namespace margelo::nitro::mobilecrypto {
    */
   struct RSAKeyPair final {
   public:
-    std::string publicKey     SWIFT_PRIVATE;
-    std::string privateKey     SWIFT_PRIVATE;
+    std::shared_ptr<HybridRSAPublicKeySpec> publicKey     SWIFT_PRIVATE;
+    std::shared_ptr<HybridRSAPrivateKeySpec> privateKey     SWIFT_PRIVATE;
 
   public:
     RSAKeyPair() = default;
-    explicit RSAKeyPair(std::string publicKey, std::string privateKey): publicKey(publicKey), privateKey(privateKey) {}
+    explicit RSAKeyPair(std::shared_ptr<HybridRSAPublicKeySpec> publicKey, std::shared_ptr<HybridRSAPrivateKeySpec> privateKey): publicKey(publicKey), privateKey(privateKey) {}
 
   public:
     friend bool operator==(const RSAKeyPair& lhs, const RSAKeyPair& rhs) = default;
@@ -60,14 +65,14 @@ namespace margelo::nitro {
     static inline margelo::nitro::mobilecrypto::RSAKeyPair fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::mobilecrypto::RSAKeyPair(
-        JSIConverter<std::string>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "publicKey"))),
-        JSIConverter<std::string>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "privateKey")))
+        JSIConverter<std::shared_ptr<margelo::nitro::mobilecrypto::HybridRSAPublicKeySpec>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "publicKey"))),
+        JSIConverter<std::shared_ptr<margelo::nitro::mobilecrypto::HybridRSAPrivateKeySpec>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "privateKey")))
       );
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::mobilecrypto::RSAKeyPair& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, PropNameIDCache::get(runtime, "publicKey"), JSIConverter<std::string>::toJSI(runtime, arg.publicKey));
-      obj.setProperty(runtime, PropNameIDCache::get(runtime, "privateKey"), JSIConverter<std::string>::toJSI(runtime, arg.privateKey));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "publicKey"), JSIConverter<std::shared_ptr<margelo::nitro::mobilecrypto::HybridRSAPublicKeySpec>>::toJSI(runtime, arg.publicKey));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "privateKey"), JSIConverter<std::shared_ptr<margelo::nitro::mobilecrypto::HybridRSAPrivateKeySpec>>::toJSI(runtime, arg.privateKey));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -78,8 +83,8 @@ namespace margelo::nitro {
       if (!nitro::isPlainObject(runtime, obj)) {
         return false;
       }
-      if (!JSIConverter<std::string>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "publicKey")))) return false;
-      if (!JSIConverter<std::string>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "privateKey")))) return false;
+      if (!JSIConverter<std::shared_ptr<margelo::nitro::mobilecrypto::HybridRSAPublicKeySpec>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "publicKey")))) return false;
+      if (!JSIConverter<std::shared_ptr<margelo::nitro::mobilecrypto::HybridRSAPrivateKeySpec>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "privateKey")))) return false;
       return true;
     }
   };

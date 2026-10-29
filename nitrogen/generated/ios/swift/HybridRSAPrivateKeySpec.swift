@@ -13,8 +13,9 @@ public protocol HybridRSAPrivateKeySpec_protocol: HybridObject {
   
 
   // Methods
-  func decrypt(ciphertext: ArrayBuffer) throws -> Promise<ArrayBuffer>
+  func decrypt(ciphertext: String) throws -> Promise<String>
   func sign(message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Promise<ArrayBuffer>
+  func exportJwk() throws -> String
 }
 
 public extension HybridRSAPrivateKeySpec_protocol {

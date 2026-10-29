@@ -2,253 +2,206 @@ package chat.rocket.mobilecrypto.algorithms
 
 import android.content.Context
 import android.net.Uri
-import android.util.Base64
+import com.margelo.nitro.mobilecrypto.AESGCMCiphertext
+import com.margelo.nitro.mobilecrypto.EncryptedFile
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.io.OutputStream
+import java.security.DigestInputStream
+import java.security.DigestOutputStream
+import java.security.MessageDigest
 import java.util.UUID
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-/**
- * AES encryption and decryption operations
- */
 object AESCrypto {
 
-    private const val CIPHER_ALGORITHM = "AES/CBC/PKCS7Padding"
+    private const val CBC_CIPHER_ALGORITHM = "AES/CBC/PKCS7Padding"
     private const val GCM_CIPHER_ALGORITHM = "AES/GCM/NoPadding"
     private const val FILE_CIPHER_ALGORITHM = "AES/CTR/NoPadding"
     private const val KEY_ALGORITHM = "AES"
+    private const val FILE_DIGEST_ALGORITHM = "SHA-256"
     private const val BUFFER_SIZE = 65536
     private const val CBC_IV_LENGTH = 16
     private const val GCM_IV_LENGTH = 12
     private const val GCM_TAG_LENGTH = 16
+    private const val FILE_KEY_LENGTH = 32
+    private const val FILE_IV_LENGTH = 16
     private val AES_KEY_LENGTHS = setOf(16, 24, 32)
 
-    /**
-     * Encrypt Base64-encoded data using AES-CBC with PKCS7 padding
-     */
-    fun encryptBase64(textBase64: String, hexKey: String, hexIv: String): String? {
-        if (textBase64.isEmpty()) return null
-
-        val encrypted = runCbc(Cipher.ENCRYPT_MODE, CryptoUtils.decodeBase64(textBase64), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
-        return CryptoUtils.encodeBase64NoWrap(encrypted)
+    fun generateKey(byteLength: Int): ByteArray {
+        requireKeyLength(byteLength)
+        return RandomUtils.generateRandomBytes(byteLength)
     }
 
-    /**
-     * Decrypt Base64-encoded data using AES-CBC with PKCS7 padding
-     */
-    fun decryptBase64(ciphertext: String, hexKey: String, hexIv: String): String? {
-        if (ciphertext.isEmpty()) return null
-
-        val decrypted = runCbc(Cipher.DECRYPT_MODE, CryptoUtils.decodeBase64(ciphertext), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
-        return CryptoUtils.encodeBase64NoWrap(decrypted)
+    fun importKey(base64Url: String): ByteArray {
+        val key = CryptoUtils.decodeBase64Url(base64Url)
+        requireKeyLength(key.size)
+        return key
     }
 
-    fun encryptCbc(plaintext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
-        requireKeyLength(key)
-        requireIvLength(iv, CBC_IV_LENGTH)
-        return runCbc(Cipher.ENCRYPT_MODE, plaintext, key, iv)
+    fun exportKey(key: ByteArray): String {
+        return CryptoUtils.encodeBase64Url(key)
     }
 
-    fun decryptCbc(ciphertext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
-        requireKeyLength(key)
-        requireIvLength(iv, CBC_IV_LENGTH)
-        return runCbc(Cipher.DECRYPT_MODE, ciphertext, key, iv)
+    fun requireKeyLength(byteLength: Int) {
+        require(byteLength in AES_KEY_LENGTHS) { "AES key must be 16, 24 or 32 bytes, got $byteLength" }
     }
 
-    fun encryptGcm(plaintext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
-        requireKeyLength(key)
-        requireIvLength(iv, GCM_IV_LENGTH)
-        return runGcm(Cipher.ENCRYPT_MODE, plaintext, key, iv)
+    fun gcmEncrypt(key: ByteArray, plaintext: String): AESGCMCiphertext {
+        val iv = RandomUtils.generateRandomBytes(GCM_IV_LENGTH)
+        val sealed = runGcm(Cipher.ENCRYPT_MODE, CryptoUtils.encodeUtf8(plaintext), key, iv)
+        return AESGCMCiphertext(CryptoUtils.encodeBase64(iv), CryptoUtils.encodeBase64(sealed))
     }
 
-    fun decryptGcm(sealed: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
-        requireKeyLength(key)
-        requireIvLength(iv, GCM_IV_LENGTH)
+    fun gcmDecrypt(key: ByteArray, ciphertext: String, iv: String): String {
+        val sealed = CryptoUtils.decodeBase64(ciphertext)
+        val ivBytes = CryptoUtils.decodeBase64(iv)
+        require(ivBytes.size == GCM_IV_LENGTH) { "AES-GCM IV must be $GCM_IV_LENGTH bytes, got ${ivBytes.size}" }
         require(sealed.size >= GCM_TAG_LENGTH) {
-            "AES-GCM input must be at least $GCM_TAG_LENGTH bytes, got ${sealed.size}"
+            "AES-GCM ciphertext must be at least $GCM_TAG_LENGTH bytes, got ${sealed.size}"
         }
-        return runGcm(Cipher.DECRYPT_MODE, sealed, key, iv)
+        return CryptoUtils.decodeUtf8(runGcm(Cipher.DECRYPT_MODE, sealed, key, ivBytes))
+    }
+
+    fun cbcEncrypt(key: ByteArray, plaintext: String): String {
+        val iv = RandomUtils.generateRandomBytes(CBC_IV_LENGTH)
+        val ciphertext = runCbc(Cipher.ENCRYPT_MODE, CryptoUtils.encodeUtf8(plaintext), key, iv)
+        return CryptoUtils.encodeBase64(iv + ciphertext)
+    }
+
+    fun cbcDecrypt(key: ByteArray, ivAndCiphertext: String): String {
+        val combined = CryptoUtils.decodeBase64(ivAndCiphertext)
+        require(combined.size >= CBC_IV_LENGTH * 2) {
+            "AES-CBC input must be at least ${CBC_IV_LENGTH * 2} bytes, got ${combined.size}"
+        }
+        val iv = combined.copyOfRange(0, CBC_IV_LENGTH)
+        val ciphertext = combined.copyOfRange(CBC_IV_LENGTH, combined.size)
+        return CryptoUtils.decodeUtf8(runCbc(Cipher.DECRYPT_MODE, ciphertext, key, iv))
     }
 
     private fun runCbc(mode: Int, input: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
-        val cipher = Cipher.getInstance(CIPHER_ALGORITHM)
+        requireKeyLength(key.size)
+        val cipher = Cipher.getInstance(CBC_CIPHER_ALGORITHM)
         cipher.init(mode, SecretKeySpec(key, KEY_ALGORITHM), IvParameterSpec(iv))
         return cipher.doFinal(input)
     }
 
     private fun runGcm(mode: Int, input: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
+        requireKeyLength(key.size)
         val cipher = Cipher.getInstance(GCM_CIPHER_ALGORITHM)
         cipher.init(mode, SecretKeySpec(key, KEY_ALGORITHM), GCMParameterSpec(GCM_TAG_LENGTH * 8, iv))
         return cipher.doFinal(input)
     }
 
-    private fun requireKeyLength(key: ByteArray) {
-        require(key.size in AES_KEY_LENGTHS) { "AES key must be 16, 24 or 32 bytes, got ${key.size}" }
+    fun encryptFile(inputFile: String, context: Context): EncryptedFile {
+        val key = RandomUtils.generateRandomBytes(FILE_KEY_LENGTH)
+        val iv = RandomUtils.generateRandomBytes(FILE_IV_LENGTH)
+        val plaintextDigest = MessageDigest.getInstance(FILE_DIGEST_ALGORITHM)
+        val outputFile = File(context.cacheDir, "processed_${UUID.randomUUID()}")
+
+        try {
+            DigestInputStream(openInputStream(inputFile, context), plaintextDigest).use { inputStream ->
+                FileOutputStream(outputFile).use { outputStream ->
+                    runCtr(Cipher.ENCRYPT_MODE, key, iv, inputStream, outputStream)
+                }
+            }
+        } catch (exception: Exception) {
+            outputFile.delete()
+            throw exception
+        }
+
+        return EncryptedFile(
+            "file://${outputFile.absolutePath}",
+            CryptoUtils.encodeBase64Url(key),
+            CryptoUtils.encodeBase64(iv),
+            CryptoUtils.bytesToHex(plaintextDigest.digest())
+        )
     }
 
-    private fun requireIvLength(iv: ByteArray, expectedLength: Int) {
-        require(iv.size == expectedLength) { "AES IV must be $expectedLength bytes, got ${iv.size}" }
-    }
-
-    /**
-     * Encrypt a file using AES-CTR mode
-     */
-    fun encryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, context: Context): String {
-        return processFile(inputFile, base64UrlKey, base64Iv, Cipher.ENCRYPT_MODE, context)
-    }
-
-    /**
-     * Decrypt a file using AES-CTR mode
-     */
-    fun decryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, context: Context): String {
-        return processFile(inputFile, base64UrlKey, base64Iv, Cipher.DECRYPT_MODE, context)
-    }
-
-    /**
-     * Process file encryption/decryption using AES-CTR mode
-     */
-    private fun processFile(inputFile: String, base64UrlKey: String, base64Iv: String, cipherMode: Int, context: Context): String {
-        // Decode the key and IV
-        val key = Base64.decode(base64UrlKey, Base64.URL_SAFE or Base64.NO_WRAP)
-        val iv = CryptoUtils.decodeBase64NoWrap(base64Iv)
-        val secretKey = SecretKeySpec(key, "AES")
-
-        // Initialize the cipher
-        val cipher = Cipher.getInstance(FILE_CIPHER_ALGORITHM)
-        val ivParameterSpec = IvParameterSpec(iv)
-        cipher.init(cipherMode, secretKey, ivParameterSpec)
-
+    fun decryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, expectedSha256: String, context: Context): String {
+        val key = CryptoUtils.decodeBase64Url(base64UrlKey)
+        val iv = CryptoUtils.decodeBase64(base64Iv)
         val targetUri = Uri.parse(inputFile)
         val isPlainFilePath = targetUri.scheme == null || targetUri.scheme == "file"
         val targetFile = File(normalizeFilePath(inputFile))
-        val outputDirectory = if (cipherMode == Cipher.DECRYPT_MODE && isPlainFilePath) {
+        val outputDirectory = if (isPlainFilePath) {
             targetFile.absoluteFile.parentFile?.takeIf { it.canWrite() } ?: context.cacheDir
         } else {
             context.cacheDir
         }
-        val outputFileObj = File(outputDirectory, "processed_${UUID.randomUUID()}")
+        val outputFile = File(outputDirectory, "processed_${UUID.randomUUID()}")
+        val plaintextDigest = MessageDigest.getInstance(FILE_DIGEST_ALGORITHM)
 
         try {
-            getInputStream(inputFile, context).use { inputStream ->
-                FileOutputStream(outputFileObj).use { fos ->
-                    val buffer = ByteArray(BUFFER_SIZE)
-                    var numBytesRead: Int
-                    
-                    while (inputStream.read(buffer).also { numBytesRead = it } != -1) {
-                        val output = cipher.update(buffer, 0, numBytesRead)
-                        output?.let { fos.write(it) }
-                    }
-                    
-                    val finalBytes = cipher.doFinal()
-                    finalBytes?.let { fos.write(it) }
+            openInputStream(inputFile, context).use { inputStream ->
+                DigestOutputStream(FileOutputStream(outputFile), plaintextDigest).use { outputStream ->
+                    runCtr(Cipher.DECRYPT_MODE, key, iv, inputStream, outputStream)
                 }
             }
-        } catch (ex: Exception) {
-            outputFileObj.delete()
-            throw ex
+            val actualSha256 = CryptoUtils.bytesToHex(plaintextDigest.digest())
+            if (!actualSha256.equals(expectedSha256, ignoreCase = true)) {
+                throw SecurityException("Decrypted file SHA-256 $actualSha256 does not match expected $expectedSha256")
+            }
+        } catch (exception: Exception) {
+            outputFile.delete()
+            throw exception
         }
 
-        return if (cipherMode == Cipher.DECRYPT_MODE) {
-            if (isPlainFilePath && outputFileObj.renameTo(targetFile)) {
-                return inputFile
-            }
-            FileInputStream(outputFileObj).use { inputStream ->
+        if (isPlainFilePath && outputFile.renameTo(targetFile)) {
+            return inputFile
+        }
+        try {
+            FileInputStream(outputFile).use { inputStream ->
                 val outputStream = if (isPlainFilePath) {
                     FileOutputStream(targetFile)
                 } else {
                     context.contentResolver.openOutputStream(targetUri)
                         ?: throw IllegalArgumentException("Cannot open output stream for URI: $targetUri")
                 }
-                outputStream.use { fos ->
-                    val buffer = ByteArray(BUFFER_SIZE)
-                    var numBytesRead: Int
-                    
-                    while (inputStream.read(buffer).also { numBytesRead = it } != -1) {
-                        fos.write(buffer, 0, numBytesRead)
-                    }
-                }
+                outputStream.use { inputStream.copyTo(it, BUFFER_SIZE) }
             }
-            outputFileObj.delete()
-            inputFile
-        } else {
-            "file://${outputFileObj.absolutePath}"
+        } finally {
+            outputFile.delete()
         }
+        return inputFile
     }
 
-    /**
-     * Encrypt Base64-encoded data using AES-256-GCM
-     * @param textBase64 The Base64-encoded plaintext to encrypt
-     * @param hexKey The 256-bit (32 bytes) key in hexadecimal format
-     * @param hexIv The 96-bit (12 bytes) IV in hexadecimal format
-     * @return Base64-encoded encrypted data with authentication tag, or null on error
-     */
-    fun encryptGcmBase64(textBase64: String, hexKey: String, hexIv: String): String? {
-        if (textBase64.isEmpty()) return null
-
-        return try {
-            val encrypted = runGcm(Cipher.ENCRYPT_MODE, CryptoUtils.decodeBase64(textBase64), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
-            CryptoUtils.encodeBase64NoWrap(encrypted)
-        } catch (e: Exception) {
-            null
+    private fun runCtr(mode: Int, key: ByteArray, iv: ByteArray, inputStream: InputStream, outputStream: OutputStream) {
+        val cipher = Cipher.getInstance(FILE_CIPHER_ALGORITHM)
+        cipher.init(mode, SecretKeySpec(key, KEY_ALGORITHM), IvParameterSpec(iv))
+        val buffer = ByteArray(BUFFER_SIZE)
+        var bytesRead: Int
+        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+            cipher.update(buffer, 0, bytesRead)?.let { outputStream.write(it) }
         }
+        cipher.doFinal()?.let { outputStream.write(it) }
     }
 
-    /**
-     * Decrypt Base64-encoded data using AES-256-GCM
-     * @param ciphertext The Base64-encoded ciphertext with authentication tag to decrypt
-     * @param hexKey The 256-bit (32 bytes) key in hexadecimal format
-     * @param hexIv The 96-bit (12 bytes) IV in hexadecimal format
-     * @return Base64-encoded decrypted data, or null on error or authentication failure
-     */
-    fun decryptGcmBase64(ciphertext: String, hexKey: String, hexIv: String): String? {
-        if (ciphertext.isEmpty()) return null
-
-        return try {
-            val decrypted = runGcm(Cipher.DECRYPT_MODE, CryptoUtils.decodeBase64(ciphertext), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
-            CryptoUtils.encodeBase64NoWrap(decrypted)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    /**
-     * Get input stream for a file path with better error handling
-     */
-    private fun getInputStream(filePath: String, context: Context): InputStream {
+    private fun openInputStream(filePath: String, context: Context): InputStream {
         val uri = Uri.parse(filePath)
 
         return if (uri.scheme == null || uri.scheme == "file") {
-            // Use the decoded path for FileInputStream
-            val normalizedPath = normalizeFilePath(filePath)
-            FileInputStream(normalizedPath)
+            FileInputStream(normalizeFilePath(filePath))
         } else {
             context.contentResolver.openInputStream(uri)
                 ?: throw IllegalArgumentException("Cannot open input stream for URI: $uri")
         }
     }
 
-    /**
-     * Normalize file path by removing file:// prefix and decoding URL-encoded characters
-     * (e.g., %20 for spaces, %D0%9D for Cyrillic chars)
-     */
     private fun normalizeFilePath(filePath: String): String {
-        var path = filePath
-
-        // Remove file:// prefix if present
-        if (path.startsWith("file://")) {
-            path = path.substring(7)
-            return try {
-                Uri.decode(path)
-            } catch (e: Exception) {
-                path
-            }
+        if (!filePath.startsWith("file://")) {
+            return filePath
         }
-
-        return path
+        val path = filePath.substring("file://".length)
+        return try {
+            Uri.decode(path)
+        } catch (exception: Exception) {
+            path
+        }
     }
 }

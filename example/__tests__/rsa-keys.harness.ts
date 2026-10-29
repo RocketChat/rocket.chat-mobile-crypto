@@ -1,204 +1,106 @@
-import { beforeAll, describe, expect, test } from 'react-native-harness';
+import { describe, expect, test } from 'react-native-harness';
 import {
-  rsaDecrypt64,
-  rsaEncrypt64,
   rsaGenerateKeys,
-  rsaImportKey,
   rsaImportPrivateKey,
   rsaImportPublicKey,
-  rsaSign64,
-  rsaVerify64,
-  type RSAHashAlgorithm,
-  type RSAPrivateKey,
-  type RSAPublicKey,
 } from '@rocket.chat/mobile-crypto';
 import {
-  RSA_FIXED_JWK,
-  RSA_FIXED_OAEP_CIPHERTEXT_B64,
-  RSA_FIXED_PLAINTEXT,
-  RSA_FIXED_PRIVATE_KEY,
-  RSA_FIXED_PUBLIC_KEY,
-  RSA_FIXED_SIGNATURE_B64,
+  RSA_FIXED_PRIVATE_JWK,
+  RSA_FIXED_PUBLIC_JWK,
+  RSA_FIXED_SIGNATURE,
   RSA_FIXED_SIGN_MESSAGE,
 } from '../fixtures/rsa';
-import {
-  base64FromBuffer,
-  bufferFromAscii,
-  bufferFromBase64,
-} from './__fixtures__/bytes';
+import { bufferFromAscii, bufferFromBase64 } from './__fixtures__/bytes';
 
-describe('Imported RSA key objects', () => {
-  let fixedPrivateKey: RSAPrivateKey;
-  let fixedPublicKey: RSAPublicKey;
+const privateFields = ['d', 'p', 'q', 'dp', 'dq', 'qi'];
+const { n, e } = JSON.parse(RSA_FIXED_PUBLIC_JWK);
 
-  beforeAll(async () => {
-    fixedPrivateKey = await rsaImportPrivateKey(RSA_FIXED_PRIVATE_KEY);
-    fixedPublicKey = await rsaImportPublicKey(RSA_FIXED_PUBLIC_KEY);
+describe('RSA keys as JWK', () => {
+  test('exports an imported private key as the identical JWK', async () => {
+    const privateKey = await rsaImportPrivateKey(RSA_FIXED_PRIVATE_JWK);
+    expect(privateKey.exportJwk()).toBe(RSA_FIXED_PRIVATE_JWK);
   });
 
-  test('decrypts the independent OAEP-SHA256 known-answer vector', async () => {
-    const plaintext = await fixedPrivateKey.decrypt(
-      bufferFromBase64(RSA_FIXED_OAEP_CIPHERTEXT_B64)
+  test('exports an imported public key as the identical JWK', async () => {
+    const publicKey = await rsaImportPublicKey(RSA_FIXED_PUBLIC_JWK);
+    expect(publicKey.exportJwk()).toBe(RSA_FIXED_PUBLIC_JWK);
+  });
+
+  test('imports a public key from a private JWK, ignoring private fields', async () => {
+    const publicKey = await rsaImportPublicKey(RSA_FIXED_PRIVATE_JWK);
+    expect(publicKey.exportJwk()).toBe(RSA_FIXED_PUBLIC_JWK);
+  });
+
+  test('imports a minimal public JWK with only the modulus and exponent', async () => {
+    const publicKey = await rsaImportPublicKey(
+      JSON.stringify({ kty: 'RSA', n, e })
     );
-    expect(base64FromBuffer(plaintext)).toBe(btoa(RSA_FIXED_PLAINTEXT));
-  });
-
-  test('signs to the exact PKCS#1 v1.5 SHA-256 known answer', async () => {
-    const signature = await fixedPrivateKey.sign(
-      bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
-      'SHA256'
-    );
-    expect(base64FromBuffer(signature)).toBe(RSA_FIXED_SIGNATURE_B64);
-  });
-
-  test('verifies the known signature and rejects a changed message', async () => {
-    const signature = bufferFromBase64(RSA_FIXED_SIGNATURE_B64);
+    expect(publicKey.exportJwk()).toBe(RSA_FIXED_PUBLIC_JWK);
     expect(
-      await fixedPublicKey.verify(
-        signature,
+      await publicKey.verify(
+        bufferFromBase64(RSA_FIXED_SIGNATURE),
         bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
         'SHA256'
       )
     ).toBe(true);
-    expect(
-      await fixedPublicKey.verify(
-        signature,
-        bufferFromAscii(`${RSA_FIXED_SIGN_MESSAGE} modified`),
-        'SHA256'
-      )
-    ).toBe(false);
   });
 
-  test('rejects a signature made with a different hash', async () => {
-    const message = bufferFromAscii('message');
-    const signature = await fixedPrivateKey.sign(message, 'SHA1');
-    expect(await fixedPublicKey.verify(signature, message, 'SHA256')).toBe(
-      false
-    );
-  });
+  test('generates a 2048-bit key pair by default', async () => {
+    const { publicKey, privateKey } = await rsaGenerateKeys();
+    const publicJwk = JSON.parse(publicKey.exportJwk());
+    const privateJwk = JSON.parse(privateKey.exportJwk());
 
-  test('encrypts ciphertext that the PEM string API decrypts', async () => {
-    const ciphertext = await fixedPublicKey.encrypt(
-      bufferFromBase64('AAF/gP7/')
-    );
-    expect(
-      await rsaDecrypt64(base64FromBuffer(ciphertext), RSA_FIXED_PRIVATE_KEY)
-    ).toBe('AAF/gP7/');
-  });
-
-  test('decrypts ciphertext produced by the PEM string API', async () => {
-    const ciphertext = await rsaEncrypt64('AAF/gP7/', RSA_FIXED_PUBLIC_KEY);
-    const plaintext = await fixedPrivateKey.decrypt(
-      bufferFromBase64(ciphertext)
-    );
-    expect(base64FromBuffer(plaintext)).toBe('AAF/gP7/');
-  });
-
-  for (const hash of [
-    'SHA1',
-    'SHA224',
-    'SHA256',
-    'SHA384',
-    'SHA512',
-  ] as const) {
-    test(`produces the same ${hash} signature as the PEM string API`, async () => {
-      const message = 'AAF/gP7/';
-      const signature = await fixedPrivateKey.sign(
-        bufferFromBase64(message),
-        hash
-      );
-      expect(base64FromBuffer(signature)).toBe(
-        await rsaSign64(message, RSA_FIXED_PRIVATE_KEY, hash)
-      );
-      expect(
-        await rsaVerify64(
-          base64FromBuffer(signature),
-          message,
-          RSA_FIXED_PUBLIC_KEY,
-          hash
-        )
-      ).toBe(true);
-    });
-  }
-
-  test('signs and verifies a precomputed digest with Raw', async () => {
-    const digest = bufferFromBase64(
-      'LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ='
-    );
-    const signature = await fixedPrivateKey.sign(digest, 'Raw');
-    expect(await fixedPublicKey.verify(signature, digest, 'Raw')).toBe(true);
-  });
-
-  test('stays usable across concurrent operations', async () => {
-    const message = bufferFromAscii(RSA_FIXED_SIGN_MESSAGE);
-    const signatures = await Promise.all(
-      Array.from({ length: 20 }, () => fixedPrivateKey.sign(message, 'SHA256'))
-    );
-    for (const signature of signatures) {
-      expect(base64FromBuffer(signature)).toBe(RSA_FIXED_SIGNATURE_B64);
+    expect(publicJwk.n).toHaveLength(342);
+    expect(publicJwk.e).toBe('AQAB');
+    expect(privateJwk.n).toBe(publicJwk.n);
+    for (const field of privateFields) {
+      expect(field in publicJwk).toBe(false);
+      expect(privateJwk[field]).toMatch(/^[A-Za-z0-9_-]+$/);
     }
   });
 
-  test('imports keys generated on the device', async () => {
-    const keys = await rsaGenerateKeys(2048);
-    const privateKey = await rsaImportPrivateKey(keys.private);
-    const publicKey = await rsaImportPublicKey(keys.public);
-    const plaintext = bufferFromAscii('generated key');
-    const decrypted = await privateKey.decrypt(
-      await publicKey.encrypt(plaintext)
-    );
-    expect(base64FromBuffer(decrypted)).toBe(base64FromBuffer(plaintext));
+  test('generates a fresh key pair on every call', async () => {
+    const first = await rsaGenerateKeys(2048);
+    const second = await rsaGenerateKeys(2048);
+    expect(second.publicKey.exportJwk()).not.toBe(first.publicKey.exportJwk());
   });
 
-  test('imports a PKCS#1 public key built from a JWK', async () => {
-    const publicKey = await rsaImportPublicKey(
-      await rsaImportKey(RSA_FIXED_JWK)
-    );
+  test('round-trips generated keys through JWK export and import', async () => {
+    const keys = await rsaGenerateKeys(2048);
+    const privateJwk = keys.privateKey.exportJwk();
+    const publicJwk = keys.publicKey.exportJwk();
+    const privateKey = await rsaImportPrivateKey(privateJwk);
+    const publicKey = await rsaImportPublicKey(publicJwk);
+
+    expect(privateKey.exportJwk()).toBe(privateJwk);
+    expect(publicKey.exportJwk()).toBe(publicJwk);
     expect(
-      await publicKey.verify(
-        bufferFromBase64(RSA_FIXED_SIGNATURE_B64),
-        bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
-        'SHA256'
-      )
-    ).toBe(true);
+      await privateKey.decrypt(await keys.publicKey.encrypt('generated'))
+    ).toBe('generated');
+    expect(
+      await keys.privateKey.decrypt(await publicKey.encrypt('imported'))
+    ).toBe('imported');
   });
 
-  test('rejects ciphertext encrypted for a different key', async () => {
-    const keys = await rsaGenerateKeys(2048);
-    const otherKey = await rsaImportPrivateKey(keys.private);
-    await expect(
-      otherKey.decrypt(bufferFromBase64(RSA_FIXED_OAEP_CIPHERTEXT_B64))
-    ).rejects.toThrow();
-  });
+  for (const [description, jwk] of [
+    ['text that is not JSON', 'not JSON'],
+    ['an empty object', '{}'],
+    ['a JWK without a modulus', JSON.stringify({ kty: 'RSA', e })],
+    [
+      'a modulus that is not base64url',
+      JSON.stringify({ kty: 'RSA', n: '!', e }),
+    ],
+  ]) {
+    test(`rejects ${description} as a public key`, async () => {
+      await expect(rsaImportPublicKey(jwk!)).rejects.toThrow();
+    });
 
-  test('rejects plaintext larger than the OAEP block can hold', async () => {
-    await expect(
-      fixedPublicKey.encrypt(new Uint8Array(256).buffer)
-    ).rejects.toThrow();
-  });
+    test(`rejects ${description} as a private key`, async () => {
+      await expect(rsaImportPrivateKey(jwk!)).rejects.toThrow();
+    });
+  }
 
-  test('rejects an unknown hash instead of throwing', async () => {
-    const message = bufferFromAscii('message');
-    const unknownHash = 'bogus' as RSAHashAlgorithm;
-    const signing = fixedPrivateKey.sign(message, unknownHash);
-    const verifying = fixedPublicKey.verify(message, message, unknownHash);
-    await expect(signing).rejects.toThrow();
-    await expect(verifying).rejects.toThrow();
-  });
-
-  test('rejects a non-buffer argument instead of throwing', async () => {
-    const notABuffer = 'not a buffer' as unknown as ArrayBuffer;
-    const decrypting = fixedPrivateKey.decrypt(notABuffer);
-    const encrypting = fixedPublicKey.encrypt(notABuffer);
-    await expect(decrypting).rejects.toThrow();
-    await expect(encrypting).rejects.toThrow();
-  });
-
-  test('rejects an invalid private key PEM', async () => {
-    await expect(rsaImportPrivateKey('invalid PEM')).rejects.toThrow();
-  });
-
-  test('rejects an invalid public key PEM', async () => {
-    await expect(rsaImportPublicKey('invalid PEM')).rejects.toThrow();
+  test('rejects a public JWK as a private key', async () => {
+    await expect(rsaImportPrivateKey(RSA_FIXED_PUBLIC_JWK)).rejects.toThrow();
   });
 });

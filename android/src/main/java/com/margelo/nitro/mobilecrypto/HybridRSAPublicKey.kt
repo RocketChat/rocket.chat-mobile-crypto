@@ -12,8 +12,8 @@ import java.security.interfaces.RSAPublicKey
 class HybridRSAPublicKey(private val publicKey: RSAPublicKey) : HybridRSAPublicKeySpec() {
   override val memorySize: Long = publicKey.modulus.bitLength().toLong() / 8
 
-  override fun encrypt(plaintext: ArrayBuffer): ArrayBuffer =
-    ArrayBuffer.copy(RSACrypto.encrypt(plaintext.toByteArray(), publicKey))
+  override fun encrypt(plaintext: String): String =
+    RSACrypto.encrypt(plaintext, publicKey)
 
   override fun verify(signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Boolean =
     try {
@@ -21,4 +21,7 @@ class HybridRSAPublicKey(private val publicKey: RSAPublicKey) : HybridRSAPublicK
     } catch (exception: SignatureException) {
       false
     }
+
+  override fun exportJwk(): String =
+    RSACrypto.exportJwk(publicKey)
 }

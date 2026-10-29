@@ -17,6 +17,7 @@ namespace NitroModules { class ArrayBufferHolder; }
 // Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
 
+#include <string>
 #include <NitroModules/ArrayBuffer.hpp>
 #include <NitroModules/ArrayBufferHolder.hpp>
 #include "RSAHashAlgorithm.hpp"
@@ -71,8 +72,8 @@ namespace margelo::nitro::mobilecrypto {
 
   public:
     // Methods
-    inline std::shared_ptr<ArrayBuffer> encrypt(const std::shared_ptr<ArrayBuffer>& plaintext) override {
-      auto __result = _swiftPart.encrypt(ArrayBufferHolder(plaintext));
+    inline std::string encrypt(const std::string& plaintext) override {
+      auto __result = _swiftPart.encrypt(plaintext);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
@@ -81,6 +82,14 @@ namespace margelo::nitro::mobilecrypto {
     }
     inline bool verify(const std::shared_ptr<ArrayBuffer>& signature, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) override {
       auto __result = _swiftPart.verify(ArrayBufferHolder(signature), ArrayBufferHolder(message), static_cast<int>(hash));
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::string exportJwk() override {
+      auto __result = _swiftPart.exportJwk();
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

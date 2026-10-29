@@ -5,45 +5,48 @@ package enum RSAJWKConverter {
   private static let keyType = "RSA"
   private static let algorithm = "RSA-OAEP-256"
   private static let privateKeyVersion = Data([0])
+  private static let publicKeyIntegerCount = 2
+  private static let privateKeyIntegerCount = 9
 
-  package static func pem(from jwk: JWK) -> String? {
-    guard jwk.kty == keyType,
+  package static func privateKey(fromJson json: String) -> SecKey? {
+    guard let jwk = decode(json),
           let modulus = Data(base64URLEncoded: jwk.n),
           let publicExponent = Data(base64URLEncoded: jwk.e) else {
       return nil
     }
-    guard let privateExponentBase64URL = jwk.d, !privateExponentBase64URL.isEmpty else {
-      return RSAPem.format(ASN1DER.sequence(ofIntegers: [modulus, publicExponent]), tag: .rsaPublic)
+    let encodedPrivateComponents = [jwk.d, jwk.p, jwk.q, jwk.dp, jwk.dq, jwk.qi]
+    let privateComponents = encodedPrivateComponents.compactMap { $0.flatMap(Data.init(base64URLEncoded:)) }
+    guard privateComponents.count == encodedPrivateComponents.count else { return nil }
+    let integers = [privateKeyVersion, modulus, publicExponent] + privateComponents
+    return RSAKeyLoader.key(from: ASN1DER.sequence(ofIntegers: integers), keyClass: kSecAttrKeyClassPrivate)
+  }
+
+  package static func publicKey(fromJson json: String) -> SecKey? {
+    guard let jwk = decode(json),
+          let modulus = Data(base64URLEncoded: jwk.n),
+          let publicExponent = Data(base64URLEncoded: jwk.e) else {
+      return nil
     }
-    let privateComponents = [privateExponentBase64URL, jwk.p, jwk.q, jwk.dp, jwk.dq, jwk.qi]
-      .map { $0.flatMap(Data.init(base64URLEncoded:)) }
-    guard privateComponents.allSatisfy({ $0 != nil }) else { return nil }
-    let integers = [privateKeyVersion, modulus, publicExponent] + privateComponents.compactMap { $0 }
-    return RSAPem.format(ASN1DER.sequence(ofIntegers: integers), tag: .rsaPrivate)
+    return RSAKeyLoader.key(from: ASN1DER.sequence(ofIntegers: [modulus, publicExponent]), keyClass: kSecAttrKeyClassPublic)
   }
 
-  package static func jwk(fromPem pem: String) -> JWK? {
-    guard let block = RSAPem.parse(pem) else { return nil }
-    switch block.tag {
-    case .rsaPublic:
-      return publicJWK(fromPkcs1: block.data)
-    case .publicKey:
-      return pkcs1Data(of: block.data, keyClass: kSecAttrKeyClassPublic).flatMap(publicJWK(fromPkcs1:))
-    case .rsaPrivate, .privateKey, nil:
-      return pkcs1Data(of: block.data, keyClass: kSecAttrKeyClassPrivate).flatMap(privateJWK(fromPkcs1:))
-    }
+  package static func json(ofPrivateKey key: SecKey) -> String? {
+    integers(of: key, count: privateKeyIntegerCount)
+      .map { makeJWK(keyOperation: "decrypt", integers: Array($0.dropFirst())).json }
   }
 
-  private static func pkcs1Data(of keyData: Data, keyClass: CFString) -> Data? {
-    RSAKeyLoader.key(from: keyData, keyClass: keyClass).flatMap(RSACrypto.externalRepresentation)
+  package static func json(ofPublicKey key: SecKey) -> String? {
+    integers(of: key, count: publicKeyIntegerCount)
+      .map { makeJWK(keyOperation: "encrypt", integers: $0).json }
   }
 
-  private static func publicJWK(fromPkcs1 keyData: Data) -> JWK? {
-    ASN1DER.integers(inSequence: keyData, count: 2).map { makeJWK(keyOperation: "encrypt", integers: $0) }
+  private static func decode(_ json: String) -> JWK? {
+    guard let jwk = try? JSONDecoder().decode(JWK.self, from: Data(json.utf8)), jwk.kty == keyType else { return nil }
+    return jwk
   }
 
-  private static func privateJWK(fromPkcs1 keyData: Data) -> JWK? {
-    ASN1DER.integers(inSequence: keyData, count: 9).map { makeJWK(keyOperation: "decrypt", integers: Array($0.dropFirst())) }
+  private static func integers(of key: SecKey, count: Int) -> [Data]? {
+    RSACrypto.externalRepresentation(of: key).flatMap { ASN1DER.integers(inSequence: $0, count: count) }
   }
 
   private static func makeJWK(keyOperation: String, integers: [Data]) -> JWK {

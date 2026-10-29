@@ -14,11 +14,15 @@ final class HybridRSAPublicKey: HybridRSAPublicKeySpec {
     SecKeyGetBlockSize(key)
   }
 
-  func encrypt(plaintext: ArrayBuffer) throws -> ArrayBuffer {
-    ArrayBuffer.copying(try RSACrypto.encrypt(plaintext.copiedData(), using: key).orThrow("Encryption failed"))
+  func encrypt(plaintext: String) throws -> String {
+    try RSACrypto.encrypt(plaintext, using: key).orThrow("Encryption failed")
   }
 
   func verify(signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Bool {
     RSACrypto.verify(signature.copiedData(), message: message.copiedData(), using: key, hash: hash.coreAlgorithm)
+  }
+
+  func exportJwk() throws -> String {
+    try RSAJWKConverter.json(ofPublicKey: key).orThrow("Key export failed")
   }
 }
