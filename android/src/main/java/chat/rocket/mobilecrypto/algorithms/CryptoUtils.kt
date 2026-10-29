@@ -8,18 +8,43 @@ import java.nio.charset.StandardCharsets
  */
 object CryptoUtils {
     
+    private val HEX_DIGITS = "0123456789abcdef".toCharArray()
+
     /**
      * Convert byte array to hexadecimal string
      */
     fun bytesToHex(bytes: ByteArray): String {
-        return bytes.joinToString("") { "%02x".format(it) }
+        val hexCharacters = CharArray(bytes.size * 2)
+        for (index in bytes.indices) {
+            val unsignedByte = bytes[index].toInt() and 0xff
+            hexCharacters[index * 2] = HEX_DIGITS[unsignedByte ushr 4]
+            hexCharacters[index * 2 + 1] = HEX_DIGITS[unsignedByte and 0x0f]
+        }
+        return String(hexCharacters)
     }
 
     /**
      * Convert hexadecimal string to byte array
      */
     fun hexToBytes(hex: String): ByteArray {
-        return hex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+        val bytes = ByteArray((hex.length + 1) / 2)
+        for (index in bytes.indices) {
+            val highNibble = hexDigitValue(hex, index * 2)
+            bytes[index] = if (index * 2 + 1 < hex.length) {
+                ((highNibble shl 4) or hexDigitValue(hex, index * 2 + 1)).toByte()
+            } else {
+                highNibble.toByte()
+            }
+        }
+        return bytes
+    }
+
+    private fun hexDigitValue(hex: String, position: Int): Int {
+        val digitValue = Character.digit(hex[position], 16)
+        if (digitValue < 0) {
+            throw NumberFormatException("Invalid hex character '${hex[position]}' at position $position")
+        }
+        return digitValue
     }
 
     /**

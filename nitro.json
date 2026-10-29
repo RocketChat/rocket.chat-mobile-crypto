@@ -1,0 +1,24 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": ["mobilecrypto"],
+  "ios": {
+    "iosModuleName": "MobileCrypto"
+  },
+  "android": {
+    "androidNamespace": ["mobilecrypto"],
+    "androidCxxLibName": "MobileCrypto"
+  },
+  "autolinking": {
+    "MobileCrypto": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "HybridMobileCrypto"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridMobileCrypto"
+      }
+    }
+  },
+  "ignorePaths": ["**/node_modules", "example", "lib"]
+}

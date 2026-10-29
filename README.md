@@ -5,7 +5,20 @@ Rocket.Chat Mobile Crypto - A comprehensive cryptographic library for React Nati
 ## Installation
 
 ```sh
-npm install @rocket.chat/mobile-crypto
+npm install @rocket.chat/mobile-crypto react-native-nitro-modules
+```
+
+The native module is built with [Nitro Modules](https://nitro.margelo.com), so `react-native-nitro-modules` must be installed alongside it (React Native 0.75+).
+
+On iOS, the crypto code ships in a second pod, `MobileCryptoCore`, that autolinking does not add. Declare it in your app target in `ios/Podfile`, then run `pod install`:
+
+```ruby
+target 'YourApp' do
+  config = use_native_modules!
+
+  pod 'MobileCryptoCore', :path => '../node_modules/@rocket.chat/mobile-crypto'
+  # ...
+end
 ```
 
 ## Usage
@@ -167,6 +180,47 @@ const isValid64 = await rsaVerify64(
 );
 ```
 
+### Imported RSA Keys
+
+Import a PEM key once and reuse it, instead of parsing the PEM on every call.
+Key objects work on `ArrayBuffer` bytes:
+
+```js
+import {
+  rsaImportPrivateKey,
+  rsaImportPublicKey,
+} from '@rocket.chat/mobile-crypto';
+
+const privateKey = await rsaImportPrivateKey(keyPair.private);
+const publicKey = await rsaImportPublicKey(keyPair.public);
+
+const ciphertext = await publicKey.encrypt(plaintextBytes);
+const plaintext = await privateKey.decrypt(ciphertext);
+
+const signature = await privateKey.sign(messageBytes, 'SHA256');
+const isValid = await publicKey.verify(signature, messageBytes, 'SHA256');
+```
+
+### ArrayBuffer Variants
+
+Byte-oriented variants skip the Base64/hex conversions of the string API and
+throw on failure instead of resolving `null`:
+
+```js
+import {
+  aesGcmEncryptBuffer,
+  aesGcmDecryptBuffer,
+  randomBytesBuffer,
+  shaBuffer,
+} from '@rocket.chat/mobile-crypto';
+
+const key = await randomBytesBuffer(32);
+const iv = await randomBytesBuffer(12);
+const ciphertext = await aesGcmEncryptBuffer(plaintextBytes, key, iv);
+const plaintext = await aesGcmDecryptBuffer(ciphertext, key, iv);
+const digest = await shaBuffer(plaintext, 'SHA-256');
+```
+
 ### Utility Functions
 
 Additional utility functions for file operations:
@@ -182,21 +236,31 @@ const checksum = await calculateFileChecksum('/path/to/file');
 
 ### Hash Functions
 
-- `shaBase64(data: string, algorithm: string): Promise<string>` - SHA hash from base64 data
-- `shaUtf8(data: string, algorithm: string): Promise<string>` - SHA hash from UTF-8 string
+- `shaBase64(data: string, algorithm: SHAAlgorithm): Promise<string>` - SHA hash from base64 data
+- `shaUtf8(data: string, algorithm: SHAAlgorithm): Promise<string>` - SHA hash from UTF-8 string
+- `shaBuffer(data: ArrayBuffer, algorithm: SHAAlgorithm): Promise<ArrayBuffer>` - SHA digest bytes
+
+`SHAAlgorithm` is `'SHA-1' | 'SHA-256' | 'SHA-384' | 'SHA-512'`.
 
 ### Key Derivation
 
-- `pbkdf2Hash(pwdBase64: string, saltBase64: string, iterations: number, keyLen: number, hash: string): Promise<string>` - PBKDF2 key derivation
+- `pbkdf2Hash(pwdBase64: string, saltBase64: string, iterations: number, keyLen: number, hash: PBKDF2HashAlgorithm): Promise<string>` - PBKDF2 key derivation
+
+`PBKDF2HashAlgorithm` is `'SHA1' | 'SHA224' | 'SHA256' | 'SHA384' | 'SHA512'`.
 
 ### Message Authentication
 
 - `hmac256(data: string, key: string): Promise<string>` - HMAC-SHA256
+- `hmac256Buffer(data: ArrayBuffer, key: ArrayBuffer): Promise<ArrayBuffer>` - HMAC-SHA256 bytes
 
 ### Symmetric Encryption
 
-- `aesEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>` - AES encryption
-- `aesDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>` - AES decryption
+- `aesEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string | null>` - AES encryption
+- `aesDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string | null>` - AES decryption
+- `aesEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>` - AES-CBC encryption
+- `aesDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>` - AES-CBC decryption
+- `aesGcmEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>` - AES-GCM encryption (ciphertext followed by the 16-byte tag)
+- `aesGcmDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>` - AES-GCM decryption
 - `aesEncryptFile(filePath: string, base64UrlKey: string, base64Iv: string): Promise<string>` - AES file encryption
 - `aesDecryptFile(filePath: string, base64UrlKey: string, base64Iv: string): Promise<string>` - AES file decryption
 
@@ -205,6 +269,7 @@ const checksum = await calculateFileChecksum('/path/to/file');
 - `randomUuid(): Promise<string>` - Generate random UUID
 - `randomKey(length: number): Promise<string>` - Generate random key (hex)
 - `randomBytes(size: number): Promise<string>` - Generate random bytes (base64)
+- `randomBytesBuffer(size: number): Promise<ArrayBuffer>` - Generate random bytes
 - `getRandomValues(length: number): Promise<string>` - Generate random alphanumeric string
 
 ### Asymmetric Encryption (RSA)
@@ -214,13 +279,17 @@ const checksum = await calculateFileChecksum('/path/to/file');
 - `rsaEncrypt64(message: string, publicKey: string): Promise<string>` - RSA encryption (base64)
 - `rsaDecrypt(encodedMessage: string, privateKey: string): Promise<string>` - RSA decryption
 - `rsaDecrypt64(encodedMessage: string, privateKey: string): Promise<string>` - RSA decryption (base64)
+- `rsaImportPrivateKey(pem: string): Promise<RSAPrivateKey>` - Parse a private key once; `decrypt(ciphertext)` and `sign(message, hash)` resolve `ArrayBuffer`s
+- `rsaImportPublicKey(pem: string): Promise<RSAPublicKey>` - Parse a public key once; `encrypt(plaintext)` resolves an `ArrayBuffer`, `verify(signature, message, hash)` a boolean
 
 ### Digital Signatures (RSA)
 
-- `rsaSign(message: string, privateKey: string, hash?: string): Promise<string>` - RSA signing
-- `rsaSign64(message: string, privateKey: string, hash?: string): Promise<string>` - RSA signing (base64)
-- `rsaVerify(signature: string, message: string, publicKey: string, hash?: string): Promise<boolean>` - RSA signature verification
-- `rsaVerify64(signature: string, message: string, publicKey: string, hash?: string): Promise<boolean>` - RSA signature verification (base64)
+- `rsaSign(message: string, privateKey: string, hash?: RSAHashAlgorithm): Promise<string>` - RSA signing
+- `rsaSign64(message: string, privateKey: string, hash?: RSAHashAlgorithm): Promise<string>` - RSA signing (base64)
+- `rsaVerify(signature: string, message: string, publicKey: string, hash?: RSAHashAlgorithm): Promise<boolean>` - RSA signature verification
+- `rsaVerify64(signature: string, message: string, publicKey: string, hash?: RSAHashAlgorithm): Promise<boolean>` - RSA signature verification (base64)
+
+`RSAHashAlgorithm` is `'Raw' | 'SHA1' | 'SHA224' | 'SHA256' | 'SHA384' | 'SHA512'`.
 
 ### Utilities
 

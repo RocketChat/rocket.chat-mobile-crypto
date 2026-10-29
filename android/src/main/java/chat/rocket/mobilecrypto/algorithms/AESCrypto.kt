@@ -1,8 +1,8 @@
 package chat.rocket.mobilecrypto.algorithms
 
+import android.content.Context
 import android.net.Uri
 import android.util.Base64
-import com.facebook.react.bridge.ReactApplicationContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -22,63 +22,97 @@ object AESCrypto {
     private const val GCM_CIPHER_ALGORITHM = "AES/GCM/NoPadding"
     private const val FILE_CIPHER_ALGORITHM = "AES/CTR/NoPadding"
     private const val KEY_ALGORITHM = "AES"
-    private const val BUFFER_SIZE = 4096
-    private const val GCM_IV_LENGTH = 12 // 96 bits for GCM
-    private const val GCM_TAG_LENGTH = 16 // 128 bits for GCM authentication tag
-    private val EMPTY_IV_SPEC = IvParameterSpec(ByteArray(16) { 0 })
+    private const val BUFFER_SIZE = 65536
+    private const val CBC_IV_LENGTH = 16
+    private const val GCM_IV_LENGTH = 12
+    private const val GCM_TAG_LENGTH = 16
+    private val AES_KEY_LENGTHS = setOf(16, 24, 32)
 
     /**
      * Encrypt Base64-encoded data using AES-CBC with PKCS7 padding
      */
-    fun encryptBase64(textBase64: String?, hexKey: String, hexIv: String?): String? {
-        if (textBase64.isNullOrEmpty()) return null
+    fun encryptBase64(textBase64: String, hexKey: String, hexIv: String): String? {
+        if (textBase64.isEmpty()) return null
 
-        val key = CryptoUtils.hexToBytes(hexKey)
-        val secretKey = SecretKeySpec(key, KEY_ALGORITHM)
-
-        val cipher = Cipher.getInstance(CIPHER_ALGORITHM)
-        val ivSpec = if (hexIv == null) EMPTY_IV_SPEC else IvParameterSpec(CryptoUtils.hexToBytes(hexIv))
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec)
-        
-        val encrypted = cipher.doFinal(CryptoUtils.decodeBase64(textBase64))
+        val encrypted = runCbc(Cipher.ENCRYPT_MODE, CryptoUtils.decodeBase64(textBase64), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
         return CryptoUtils.encodeBase64NoWrap(encrypted)
     }
 
     /**
      * Decrypt Base64-encoded data using AES-CBC with PKCS7 padding
      */
-    fun decryptBase64(ciphertext: String?, hexKey: String, hexIv: String?): String? {
-        if (ciphertext.isNullOrEmpty()) return null
+    fun decryptBase64(ciphertext: String, hexKey: String, hexIv: String): String? {
+        if (ciphertext.isEmpty()) return null
 
-        val key = CryptoUtils.hexToBytes(hexKey)
-        val secretKey = SecretKeySpec(key, KEY_ALGORITHM)
-
-        val cipher = Cipher.getInstance(CIPHER_ALGORITHM)
-        val ivSpec = if (hexIv == null) EMPTY_IV_SPEC else IvParameterSpec(CryptoUtils.hexToBytes(hexIv))
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
-        
-        val decrypted = cipher.doFinal(CryptoUtils.decodeBase64(ciphertext))
+        val decrypted = runCbc(Cipher.DECRYPT_MODE, CryptoUtils.decodeBase64(ciphertext), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
         return CryptoUtils.encodeBase64NoWrap(decrypted)
+    }
+
+    fun encryptCbc(plaintext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
+        requireKeyLength(key)
+        requireIvLength(iv, CBC_IV_LENGTH)
+        return runCbc(Cipher.ENCRYPT_MODE, plaintext, key, iv)
+    }
+
+    fun decryptCbc(ciphertext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
+        requireKeyLength(key)
+        requireIvLength(iv, CBC_IV_LENGTH)
+        return runCbc(Cipher.DECRYPT_MODE, ciphertext, key, iv)
+    }
+
+    fun encryptGcm(plaintext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
+        requireKeyLength(key)
+        requireIvLength(iv, GCM_IV_LENGTH)
+        return runGcm(Cipher.ENCRYPT_MODE, plaintext, key, iv)
+    }
+
+    fun decryptGcm(sealed: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
+        requireKeyLength(key)
+        requireIvLength(iv, GCM_IV_LENGTH)
+        require(sealed.size >= GCM_TAG_LENGTH) {
+            "AES-GCM input must be at least $GCM_TAG_LENGTH bytes, got ${sealed.size}"
+        }
+        return runGcm(Cipher.DECRYPT_MODE, sealed, key, iv)
+    }
+
+    private fun runCbc(mode: Int, input: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
+        val cipher = Cipher.getInstance(CIPHER_ALGORITHM)
+        cipher.init(mode, SecretKeySpec(key, KEY_ALGORITHM), IvParameterSpec(iv))
+        return cipher.doFinal(input)
+    }
+
+    private fun runGcm(mode: Int, input: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
+        val cipher = Cipher.getInstance(GCM_CIPHER_ALGORITHM)
+        cipher.init(mode, SecretKeySpec(key, KEY_ALGORITHM), GCMParameterSpec(GCM_TAG_LENGTH * 8, iv))
+        return cipher.doFinal(input)
+    }
+
+    private fun requireKeyLength(key: ByteArray) {
+        require(key.size in AES_KEY_LENGTHS) { "AES key must be 16, 24 or 32 bytes, got ${key.size}" }
+    }
+
+    private fun requireIvLength(iv: ByteArray, expectedLength: Int) {
+        require(iv.size == expectedLength) { "AES IV must be $expectedLength bytes, got ${iv.size}" }
     }
 
     /**
      * Encrypt a file using AES-CTR mode
      */
-    fun encryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, reactContext: ReactApplicationContext): String {
-        return processFile(inputFile, base64UrlKey, base64Iv, "encrypt", reactContext)
+    fun encryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, context: Context): String {
+        return processFile(inputFile, base64UrlKey, base64Iv, Cipher.ENCRYPT_MODE, context)
     }
 
     /**
      * Decrypt a file using AES-CTR mode
      */
-    fun decryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, reactContext: ReactApplicationContext): String {
-        return processFile(inputFile, base64UrlKey, base64Iv, "decrypt", reactContext)
+    fun decryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, context: Context): String {
+        return processFile(inputFile, base64UrlKey, base64Iv, Cipher.DECRYPT_MODE, context)
     }
 
     /**
      * Process file encryption/decryption using AES-CTR mode
      */
-    private fun processFile(inputFile: String, base64UrlKey: String, base64Iv: String, mode: String, reactContext: ReactApplicationContext): String {
+    private fun processFile(inputFile: String, base64UrlKey: String, base64Iv: String, cipherMode: Int, context: Context): String {
         // Decode the key and IV
         val key = Base64.decode(base64UrlKey, Base64.URL_SAFE or Base64.NO_WRAP)
         val iv = CryptoUtils.decodeBase64NoWrap(base64Iv)
@@ -87,14 +121,20 @@ object AESCrypto {
         // Initialize the cipher
         val cipher = Cipher.getInstance(FILE_CIPHER_ALGORITHM)
         val ivParameterSpec = IvParameterSpec(iv)
-        val cipherMode = if (mode == "encrypt") Cipher.ENCRYPT_MODE else Cipher.DECRYPT_MODE
         cipher.init(cipherMode, secretKey, ivParameterSpec)
 
-        // Create a temporary output file in the cache directory
-        val outputFileObj = File(reactContext.cacheDir, "processed_${UUID.randomUUID()}")
+        val targetUri = Uri.parse(inputFile)
+        val isPlainFilePath = targetUri.scheme == null || targetUri.scheme == "file"
+        val targetFile = File(normalizeFilePath(inputFile))
+        val outputDirectory = if (cipherMode == Cipher.DECRYPT_MODE && isPlainFilePath) {
+            targetFile.absoluteFile.parentFile?.takeIf { it.canWrite() } ?: context.cacheDir
+        } else {
+            context.cacheDir
+        }
+        val outputFileObj = File(outputDirectory, "processed_${UUID.randomUUID()}")
 
         try {
-            getInputStream(inputFile, reactContext).use { inputStream ->
+            getInputStream(inputFile, context).use { inputStream ->
                 FileOutputStream(outputFileObj).use { fos ->
                     val buffer = ByteArray(BUFFER_SIZE)
                     var numBytesRead: Int
@@ -113,14 +153,15 @@ object AESCrypto {
             throw ex
         }
 
-        return if (mode == "decrypt") {
-            // Overwrite the input file with the decrypted file
-            val targetUri = Uri.parse(inputFile)
+        return if (cipherMode == Cipher.DECRYPT_MODE) {
+            if (isPlainFilePath && outputFileObj.renameTo(targetFile)) {
+                return inputFile
+            }
             FileInputStream(outputFileObj).use { inputStream ->
-                val outputStream = if (targetUri.scheme == null || targetUri.scheme == "file") {
-                    FileOutputStream(normalizeFilePath(inputFile))
+                val outputStream = if (isPlainFilePath) {
+                    FileOutputStream(targetFile)
                 } else {
-                    reactContext.contentResolver.openOutputStream(targetUri)
+                    context.contentResolver.openOutputStream(targetUri)
                         ?: throw IllegalArgumentException("Cannot open output stream for URI: $targetUri")
                 }
                 outputStream.use { fos ->
@@ -143,26 +184,17 @@ object AESCrypto {
      * Encrypt Base64-encoded data using AES-256-GCM
      * @param textBase64 The Base64-encoded plaintext to encrypt
      * @param hexKey The 256-bit (32 bytes) key in hexadecimal format
-     * @param hexIv The 96-bit (12 bytes) IV in hexadecimal format, or null to use zero IV
+     * @param hexIv The 96-bit (12 bytes) IV in hexadecimal format
      * @return Base64-encoded encrypted data with authentication tag, or null on error
      */
-    fun encryptGcmBase64(textBase64: String?, hexKey: String, hexIv: String?): String? {
-        if (textBase64.isNullOrEmpty()) return null
+    fun encryptGcmBase64(textBase64: String, hexKey: String, hexIv: String): String? {
+        if (textBase64.isEmpty()) return null
 
-        try {
-            val key = CryptoUtils.hexToBytes(hexKey)
-            val secretKey = SecretKeySpec(key, KEY_ALGORITHM)
-
-            val cipher = Cipher.getInstance(GCM_CIPHER_ALGORITHM)
-            val iv = if (hexIv == null) ByteArray(GCM_IV_LENGTH) { 0 } else CryptoUtils.hexToBytes(hexIv)
-            val gcmSpec = GCMParameterSpec(GCM_TAG_LENGTH * 8, iv) // Tag length in bits
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmSpec)
-            
-            val encrypted = cipher.doFinal(CryptoUtils.decodeBase64(textBase64))
-            return CryptoUtils.encodeBase64NoWrap(encrypted)
+        return try {
+            val encrypted = runGcm(Cipher.ENCRYPT_MODE, CryptoUtils.decodeBase64(textBase64), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
+            CryptoUtils.encodeBase64NoWrap(encrypted)
         } catch (e: Exception) {
-            // Return null on any encryption error
-            return null
+            null
         }
     }
 
@@ -170,33 +202,24 @@ object AESCrypto {
      * Decrypt Base64-encoded data using AES-256-GCM
      * @param ciphertext The Base64-encoded ciphertext with authentication tag to decrypt
      * @param hexKey The 256-bit (32 bytes) key in hexadecimal format
-     * @param hexIv The 96-bit (12 bytes) IV in hexadecimal format, or null to use zero IV
+     * @param hexIv The 96-bit (12 bytes) IV in hexadecimal format
      * @return Base64-encoded decrypted data, or null on error or authentication failure
      */
-    fun decryptGcmBase64(ciphertext: String?, hexKey: String, hexIv: String?): String? {
-        if (ciphertext.isNullOrEmpty()) return null
+    fun decryptGcmBase64(ciphertext: String, hexKey: String, hexIv: String): String? {
+        if (ciphertext.isEmpty()) return null
 
-        try {
-            val key = CryptoUtils.hexToBytes(hexKey)
-            val secretKey = SecretKeySpec(key, KEY_ALGORITHM)
-
-            val cipher = Cipher.getInstance(GCM_CIPHER_ALGORITHM)
-            val iv = if (hexIv == null) ByteArray(GCM_IV_LENGTH) { 0 } else CryptoUtils.hexToBytes(hexIv)
-            val gcmSpec = GCMParameterSpec(GCM_TAG_LENGTH * 8, iv) // Tag length in bits
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmSpec)
-            
-            val decrypted = cipher.doFinal(CryptoUtils.decodeBase64(ciphertext))
-            return CryptoUtils.encodeBase64NoWrap(decrypted)
+        return try {
+            val decrypted = runGcm(Cipher.DECRYPT_MODE, CryptoUtils.decodeBase64(ciphertext), CryptoUtils.hexToBytes(hexKey), CryptoUtils.hexToBytes(hexIv))
+            CryptoUtils.encodeBase64NoWrap(decrypted)
         } catch (e: Exception) {
-            // Return null on any decryption error (including authentication failure)
-            return null
+            null
         }
     }
 
     /**
      * Get input stream for a file path with better error handling
      */
-    private fun getInputStream(filePath: String, reactContext: ReactApplicationContext): InputStream {
+    private fun getInputStream(filePath: String, context: Context): InputStream {
         val uri = Uri.parse(filePath)
 
         return if (uri.scheme == null || uri.scheme == "file") {
@@ -204,7 +227,7 @@ object AESCrypto {
             val normalizedPath = normalizeFilePath(filePath)
             FileInputStream(normalizedPath)
         } else {
-            reactContext.contentResolver.openInputStream(uri)
+            context.contentResolver.openInputStream(uri)
                 ?: throw IllegalArgumentException("Cannot open input stream for URI: $uri")
         }
     }

@@ -12,6 +12,7 @@ jsconfig.json
 # Xcode
 #
 build/
+.build/
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -75,12 +76,13 @@ android/keystores/debug.keystore
 # Turborepo
 .turbo/
 
+# React Native Harness
+.harness/
+coverage/
+
 # React Native Codegen
 ios/generated
 android/generated
-
-# React Native Nitro Modules
-nitrogen/
 
 # Agent skills (local-only issue tracker and docs)
 .scratch/

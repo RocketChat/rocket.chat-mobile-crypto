@@ -1,13 +1,24 @@
-import { type JWK } from './NativeMobileCrypto';
-export type { JWK };
-export declare function shaBase64(data: string, algorithm: string): Promise<string>;
-export declare function shaUtf8(data: string, algorithm: string): Promise<string>;
-export declare function pbkdf2Hash(pwdBase64: string, saltBase64: string, iterations: number, keyLen: number, hash: string): Promise<string>;
+import type { JWK } from './specs/JWK';
+import type { PBKDF2HashAlgorithm } from './specs/PBKDF2HashAlgorithm';
+import type { RSAHashAlgorithm } from './specs/RSAHashAlgorithm';
+import type { SHAAlgorithm } from './specs/SHAAlgorithm';
+export interface RSAPrivateKey {
+    decrypt(ciphertext: ArrayBuffer): Promise<ArrayBuffer>;
+    sign(message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>;
+}
+export interface RSAPublicKey {
+    encrypt(plaintext: ArrayBuffer): Promise<ArrayBuffer>;
+    verify(signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<boolean>;
+}
+export type { JWK, PBKDF2HashAlgorithm, RSAHashAlgorithm, SHAAlgorithm };
+export declare function shaBase64(data: string, algorithm: SHAAlgorithm): Promise<string>;
+export declare function shaUtf8(data: string, algorithm: SHAAlgorithm): Promise<string>;
+export declare function pbkdf2Hash(pwdBase64: string, saltBase64: string, iterations: number, keyLen: number, hash: PBKDF2HashAlgorithm): Promise<string>;
 export declare function hmac256(data: string, key: string): Promise<string>;
-export declare function aesEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>;
-export declare function aesDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>;
-export declare function aesGcmEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>;
-export declare function aesGcmDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>;
+export declare function aesEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string | null>;
+export declare function aesDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string | null>;
+export declare function aesGcmEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string | null>;
+export declare function aesGcmDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string | null>;
 export declare function aesEncryptFile(filePath: string, base64UrlKey: string, base64Iv: string): Promise<string>;
 export declare function aesDecryptFile(filePath: string, base64UrlKey: string, base64Iv: string): Promise<string>;
 export declare function randomUuid(): Promise<string>;
@@ -21,13 +32,22 @@ export declare function rsaEncrypt(message: string, publicKey: string): Promise<
 export declare function rsaEncrypt64(message: string, publicKey: string): Promise<string>;
 export declare function rsaDecrypt(encodedMessage: string, privateKey: string): Promise<string>;
 export declare function rsaDecrypt64(encodedMessage: string, privateKey: string): Promise<string>;
-export declare function rsaSign(message: string, privateKey: string, hash?: string): Promise<string>;
-export declare function rsaSign64(message: string, privateKey: string, hash?: string): Promise<string>;
-export declare function rsaVerify(signature: string, message: string, publicKey: string, hash?: string): Promise<boolean>;
-export declare function rsaVerify64(signature: string, message: string, publicKey: string, hash?: string): Promise<boolean>;
+export declare function rsaSign(message: string, privateKey: string, hash?: RSAHashAlgorithm): Promise<string>;
+export declare function rsaSign64(message: string, privateKey: string, hash?: RSAHashAlgorithm): Promise<string>;
+export declare function rsaVerify(signature: string, message: string, publicKey: string, hash?: RSAHashAlgorithm): Promise<boolean>;
+export declare function rsaVerify64(signature: string, message: string, publicKey: string, hash?: RSAHashAlgorithm): Promise<boolean>;
 export declare function rsaImportKey(jwk: JWK): Promise<string>;
 export declare function rsaExportKey(pem: string): Promise<JWK>;
 export declare function rsaPemToJwk(pemKey: string): Promise<JWK>;
 export declare function calculateFileChecksum(filePath: string): Promise<string>;
 export declare function getRandomValues(length: number): Promise<string>;
+export declare function rsaImportPrivateKey(pem: string): Promise<RSAPrivateKey>;
+export declare function rsaImportPublicKey(pem: string): Promise<RSAPublicKey>;
+export declare function shaBuffer(data: ArrayBuffer, algorithm: SHAAlgorithm): Promise<ArrayBuffer>;
+export declare function hmac256Buffer(data: ArrayBuffer, key: ArrayBuffer): Promise<ArrayBuffer>;
+export declare function aesEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>;
+export declare function aesDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>;
+export declare function aesGcmEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>;
+export declare function aesGcmDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>;
+export declare function randomBytesBuffer(size: number): Promise<ArrayBuffer>;
 //# sourceMappingURL=index.d.ts.map

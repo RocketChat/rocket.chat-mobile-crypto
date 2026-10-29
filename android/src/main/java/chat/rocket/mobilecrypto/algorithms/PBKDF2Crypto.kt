@@ -1,13 +1,6 @@
 package chat.rocket.mobilecrypto.algorithms
 
-import java.security.NoSuchAlgorithmException
-import org.bouncycastle.crypto.ExtendedDigest
-import org.bouncycastle.crypto.PBEParametersGenerator
-import org.bouncycastle.crypto.digests.SHA1Digest
-import org.bouncycastle.crypto.digests.SHA224Digest
-import org.bouncycastle.crypto.digests.SHA256Digest
-import org.bouncycastle.crypto.digests.SHA384Digest
-import org.bouncycastle.crypto.digests.SHA512Digest
+import com.margelo.nitro.mobilecrypto.PBKDF2HashAlgorithm
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator
 import org.bouncycastle.crypto.params.KeyParameter
 
@@ -16,66 +9,28 @@ import org.bouncycastle.crypto.params.KeyParameter
  */
 object PBKDF2Crypto {
 
-    private val algorithmMap = mapOf<String, ExtendedDigest>(
-        "SHA1" to SHA1Digest(),
-        "SHA224" to SHA224Digest(),
-        "SHA256" to SHA256Digest(),
-        "SHA384" to SHA384Digest(),
-        "SHA512" to SHA512Digest()
-    )
-
-    /**
-     * Derive a key using PBKDF2 with specified parameters
-     * 
-     * @param password Password bytes
-     * @param salt Salt bytes
-     * @param iterations Number of iterations
-     * @param keyLength Desired key length in bytes
-     * @param hashAlgorithm Hash algorithm (SHA1, SHA224, SHA256, SHA384, SHA512)
-     * @return Derived key bytes
-     */
     fun deriveKey(
         password: ByteArray,
         salt: ByteArray,
         iterations: Int,
         keyLength: Int,
-        hashAlgorithm: String
+        hashAlgorithm: PBKDF2HashAlgorithm
     ): ByteArray {
-        val digest = algorithmMap[hashAlgorithm] 
-            ?: throw NoSuchAlgorithmException("Specified hash algorithm '$hashAlgorithm' is not supported")
-        
-        val generator: PBEParametersGenerator = PKCS5S2ParametersGenerator(digest)
+        val generator = PKCS5S2ParametersGenerator(hashAlgorithm.createDigest())
         generator.init(password, salt, iterations)
         return (generator.generateDerivedParameters(keyLength * 8) as KeyParameter).key
     }
 
-    /**
-     * Derive a key using PBKDF2 with Base64-encoded inputs
-     * 
-     * @param passwordBase64 Base64-encoded password
-     * @param saltBase64 Base64-encoded salt
-     * @param iterations Number of iterations
-     * @param keyLength Desired key length in bytes
-     * @param hashAlgorithm Hash algorithm (SHA1, SHA224, SHA256, SHA384, SHA512)
-     * @return Base64-encoded derived key
-     */
     fun deriveKeyBase64(
         passwordBase64: String,
         saltBase64: String,
         iterations: Int,
         keyLength: Int,
-        hashAlgorithm: String
+        hashAlgorithm: PBKDF2HashAlgorithm
     ): String {
         val passwordBytes = CryptoUtils.decodeBase64(passwordBase64)
         val saltBytes = CryptoUtils.decodeBase64(saltBase64)
         val derivedKey = deriveKey(passwordBytes, saltBytes, iterations, keyLength, hashAlgorithm)
         return CryptoUtils.encodeBase64NoWrap(derivedKey)
-    }
-
-    /**
-     * Get list of supported hash algorithms
-     */
-    fun getSupportedAlgorithms(): List<String> {
-        return algorithmMap.keys.toList()
     }
 }

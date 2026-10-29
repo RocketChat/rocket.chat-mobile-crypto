@@ -10,6 +10,8 @@ object RandomUtils {
 
     private const val ALPHANUMERIC_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
+    private val secureRandom = SecureRandom()
+
     /**
      * Generate a random UUID string
      * 
@@ -27,7 +29,6 @@ object RandomUtils {
      */
     fun generateRandomKeyHex(length: Int): String {
         val key = ByteArray(length)
-        val secureRandom = SecureRandom()
         secureRandom.nextBytes(key)
         return CryptoUtils.bytesToHex(key)
     }
@@ -40,7 +41,6 @@ object RandomUtils {
      */
     fun generateRandomBytesBase64(size: Int): String {
         val bytes = ByteArray(size)
-        val secureRandom = SecureRandom()
         secureRandom.nextBytes(bytes)
         return CryptoUtils.encodeBase64NoWrap(bytes)
     }
@@ -53,7 +53,6 @@ object RandomUtils {
      */
     fun generateRandomBytes(size: Int): ByteArray {
         val bytes = ByteArray(size)
-        val secureRandom = SecureRandom()
         secureRandom.nextBytes(bytes)
         return bytes
     }
@@ -65,10 +64,7 @@ object RandomUtils {
      * @return Random alphanumeric string
      */
     fun generateRandomAlphanumeric(length: Int): String {
-        val secureRandom = SecureRandom()
-        return (1..length)
-            .map { ALPHANUMERIC_CHARS[secureRandom.nextInt(ALPHANUMERIC_CHARS.length)] }
-            .joinToString("")
+        return String(CharArray(length) { ALPHANUMERIC_CHARS[secureRandom.nextInt(ALPHANUMERIC_CHARS.length)] })
     }
 
     /**
@@ -79,7 +75,6 @@ object RandomUtils {
      * @return Random integer
      */
     fun generateRandomInt(min: Int, max: Int): Int {
-        val secureRandom = SecureRandom()
         return secureRandom.nextInt(max - min) + min
     }
 
@@ -89,7 +84,6 @@ object RandomUtils {
      * @return Random boolean value
      */
     fun generateRandomBoolean(): Boolean {
-        val secureRandom = SecureRandom()
         return secureRandom.nextBoolean()
     }
 
