@@ -29,7 +29,6 @@ jobs:
       - name: Check Nitro generated code is up to date
         run: |
           yarn nitrogen
-          git diff --exit-code -- nitrogen
           test -z "$(git status --porcelain -- nitrogen)"
 
   test:
