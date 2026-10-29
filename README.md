@@ -10,6 +10,17 @@ npm install @rocket.chat/mobile-crypto react-native-nitro-modules
 
 The native module is built with [Nitro Modules](https://nitro.margelo.com), so `react-native-nitro-modules` must be installed alongside it (React Native 0.75+).
 
+On iOS, the crypto code ships in a second pod, `MobileCryptoCore`, that autolinking does not add. Declare it in your app target in `ios/Podfile`, then run `pod install`:
+
+```ruby
+target 'YourApp' do
+  config = use_native_modules!
+
+  pod 'MobileCryptoCore', :path => '../node_modules/@rocket.chat/mobile-crypto'
+  # ...
+end
+```
+
 ## Usage
 
 ### SHA Functions
