@@ -200,8 +200,8 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func shaBuffer(data: ArrayBuffer, algorithm: SHAAlgorithm) throws -> Promise<ArrayBuffer> {
-    let input = data.copiedData()
-    return Promise.parallel { ArrayBuffer.copying(algorithm.coreAlgorithm.digest(of: input)) }
+    let input = ArrayBuffer.copy(of: data)
+    return Promise.parallel { try self.shaBufferSync(data: input, algorithm: algorithm) }
   }
 
   func shaBufferSync(data: ArrayBuffer, algorithm: SHAAlgorithm) throws -> ArrayBuffer {
@@ -209,9 +209,8 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func hmac256Buffer(data: ArrayBuffer, key: ArrayBuffer) throws -> Promise<ArrayBuffer> {
-    let content = data.copiedData()
-    let keyData = key.copiedData()
-    return Promise.parallel { ArrayBuffer.copying(HMACCrypto.hmacSha256(content, key: keyData)) }
+    let (input, keyCopy) = (ArrayBuffer.copy(of: data), ArrayBuffer.copy(of: key))
+    return Promise.parallel { try self.hmac256BufferSync(data: input, key: keyCopy) }
   }
 
   func hmac256BufferSync(data: ArrayBuffer, key: ArrayBuffer) throws -> ArrayBuffer {
@@ -219,62 +218,52 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func aesEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer> {
-    let (input, keyData, initializationVector) = (data.copiedData(), key.copiedData(), iv.copiedData())
-    return Promise.parallel {
-      try Self.aesCBCEncrypt(input, key: keyData, initializationVector: initializationVector)
-    }
+    let (input, keyCopy, ivCopy) = (ArrayBuffer.copy(of: data), ArrayBuffer.copy(of: key), ArrayBuffer.copy(of: iv))
+    return Promise.parallel { try self.aesEncryptBufferSync(data: input, key: keyCopy, iv: ivCopy) }
   }
 
   func aesEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
-    try Self.aesCBCEncrypt(data.copiedData(), key: key.copiedData(), initializationVector: iv.copiedData())
+    ArrayBuffer.copying(
+      try AESCBCCrypto.encrypt(data.copiedData(), key: key.copiedData(), initializationVector: iv.copiedData())
+        .orThrow("Encryption failed")
+    )
   }
 
   func aesDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer> {
-    let (input, keyData, initializationVector) = (data.copiedData(), key.copiedData(), iv.copiedData())
-    return Promise.parallel {
-      try Self.aesCBCDecrypt(input, key: keyData, initializationVector: initializationVector)
-    }
+    let (input, keyCopy, ivCopy) = (ArrayBuffer.copy(of: data), ArrayBuffer.copy(of: key), ArrayBuffer.copy(of: iv))
+    return Promise.parallel { try self.aesDecryptBufferSync(data: input, key: keyCopy, iv: ivCopy) }
   }
 
   func aesDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
-    try Self.aesCBCDecrypt(data.copiedData(), key: key.copiedData(), initializationVector: iv.copiedData())
+    ArrayBuffer.copying(
+      try AESCBCCrypto.decrypt(data.copiedData(), key: key.copiedData(), initializationVector: iv.copiedData())
+        .orThrow("Decryption failed")
+    )
   }
 
   func aesGcmEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer> {
-    let (input, keyData, nonce) = (data.copiedData(), key.copiedData(), iv.copiedData())
-    return Promise.parallel { try Self.aesGCMEncrypt(input, key: keyData, nonce: nonce) }
+    let (input, keyCopy, ivCopy) = (ArrayBuffer.copy(of: data), ArrayBuffer.copy(of: key), ArrayBuffer.copy(of: iv))
+    return Promise.parallel { try self.aesGcmEncryptBufferSync(data: input, key: keyCopy, iv: ivCopy) }
   }
 
   func aesGcmEncryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
-    try Self.aesGCMEncrypt(data.copiedData(), key: key.copiedData(), nonce: iv.copiedData())
+    ArrayBuffer.copying(
+      try AESGCMCrypto.encrypt(data.copiedData(), key: key.copiedData(), nonce: iv.copiedData()).orThrow("Encryption failed")
+    )
   }
 
   func aesGcmDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> Promise<ArrayBuffer> {
-    let (input, keyData, nonce) = (data.copiedData(), key.copiedData(), iv.copiedData())
-    return Promise.parallel { try Self.aesGCMDecrypt(input, key: keyData, nonce: nonce) }
+    let (input, keyCopy, ivCopy) = (ArrayBuffer.copy(of: data), ArrayBuffer.copy(of: key), ArrayBuffer.copy(of: iv))
+    return Promise.parallel { try self.aesGcmDecryptBufferSync(data: input, key: keyCopy, iv: ivCopy) }
   }
 
   func aesGcmDecryptBufferSync(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer) throws -> ArrayBuffer {
-    try Self.aesGCMDecrypt(data.copiedData(), key: key.copiedData(), nonce: iv.copiedData())
+    ArrayBuffer.copying(
+      try AESGCMCrypto.decrypt(data.copiedData(), key: key.copiedData(), nonce: iv.copiedData()).orThrow("Decryption failed")
+    )
   }
 
   func randomBytesBuffer(size: Double) throws -> ArrayBuffer {
     ArrayBuffer.copying(try RandomGenerator.bytes(count: size.toCount()).orThrow("Failed to generate random bytes"))
-  }
-
-  private static func aesCBCEncrypt(_ plaintext: Data, key: Data, initializationVector: Data) throws -> ArrayBuffer {
-    ArrayBuffer.copying(try AESCBCCrypto.encrypt(plaintext, key: key, initializationVector: initializationVector).orThrow("Encryption failed"))
-  }
-
-  private static func aesCBCDecrypt(_ ciphertext: Data, key: Data, initializationVector: Data) throws -> ArrayBuffer {
-    ArrayBuffer.copying(try AESCBCCrypto.decrypt(ciphertext, key: key, initializationVector: initializationVector).orThrow("Decryption failed"))
-  }
-
-  private static func aesGCMEncrypt(_ plaintext: Data, key: Data, nonce: Data) throws -> ArrayBuffer {
-    ArrayBuffer.copying(try AESGCMCrypto.encrypt(plaintext, key: key, nonce: nonce).orThrow("Encryption failed"))
-  }
-
-  private static func aesGCMDecrypt(_ ciphertextAndTag: Data, key: Data, nonce: Data) throws -> ArrayBuffer {
-    ArrayBuffer.copying(try AESGCMCrypto.decrypt(ciphertextAndTag, key: key, nonce: nonce).orThrow("Decryption failed"))
   }
 }
