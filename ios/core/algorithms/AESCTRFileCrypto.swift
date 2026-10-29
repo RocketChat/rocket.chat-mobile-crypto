@@ -92,7 +92,7 @@ package enum AESCTRFileCrypto {
 
     var outputBuffer = [UInt8](repeating: 0, count: chunkSize)
     do {
-      while let chunk = try input.read(upToCount: chunkSize), !chunk.isEmpty {
+      while let chunk = try autoreleasepool(invoking: { try input.read(upToCount: chunkSize) }), !chunk.isEmpty {
         var bytesMoved = 0
         let updateStatus = chunk.withUnsafeBytes { chunkBytes in
           CCCryptorUpdate(cryptor, chunkBytes.baseAddress, chunk.count, &outputBuffer, chunkSize, &bytesMoved)

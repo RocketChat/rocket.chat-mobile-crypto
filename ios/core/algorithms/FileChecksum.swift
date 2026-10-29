@@ -9,7 +9,7 @@ package enum FileChecksum {
     defer { input.closeFile() }
     var hasher = SHA256()
     do {
-      while let chunk = try input.read(upToCount: chunkSize), !chunk.isEmpty {
+      while let chunk = try autoreleasepool(invoking: { try input.read(upToCount: chunkSize) }), !chunk.isEmpty {
         hasher.update(data: chunk)
       }
     } catch {
