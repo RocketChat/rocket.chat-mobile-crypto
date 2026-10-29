@@ -29,6 +29,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
 import org.bouncycastle.util.io.pem.PemObject
 import org.bouncycastle.util.io.pem.PemReader
 import org.bouncycastle.util.io.pem.PemWriter
+import org.json.JSONObject
 
 /**
  * RSA encryption, decryption, signing and key format conversion operations
@@ -150,6 +151,8 @@ object RSACrypto {
         }
     }
 
+    fun importJwkKey(jwkJson: String): String = importJwkKey(parseJwk(JSONObject(jwkJson)))
+
     /**
      * Export PEM key to JWK format
      * 
@@ -225,6 +228,24 @@ object RSACrypto {
             val keySpec = X509EncodedKeySpec(keyData)
             keyFactory.generatePublic(keySpec) as RSAPublicKey
         }
+    }
+
+    private fun parseJwk(json: JSONObject): JWK {
+        fun optionalString(name: String): String? = if (json.isNull(name)) null else json.getString(name)
+        return JWK(
+            kty = optionalString("kty") ?: "RSA",
+            alg = optionalString("alg"),
+            ext = null,
+            key_ops = null,
+            n = json.getString("n"),
+            e = json.getString("e"),
+            d = optionalString("d"),
+            p = optionalString("p"),
+            q = optionalString("q"),
+            dp = optionalString("dp"),
+            dq = optionalString("dq"),
+            qi = optionalString("qi")
+        )
     }
 
     private fun readPem(pemKey: String): PemObject {
