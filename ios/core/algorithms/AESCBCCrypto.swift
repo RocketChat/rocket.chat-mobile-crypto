@@ -20,7 +20,8 @@ package enum AESCBCCrypto {
   }
 
   private static func cryptBase64(_ operation: CCOperation, dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    guard let input = Data(base64Encoded: dataBase64),
+    guard !dataBase64.isEmpty,
+          let input = Data(base64Encoded: dataBase64),
           let key = Data(hexString: keyHex),
           let initializationVector = Data(hexString: ivHex) else {
       return nil
