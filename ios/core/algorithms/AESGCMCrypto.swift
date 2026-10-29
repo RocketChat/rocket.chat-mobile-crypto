@@ -1,12 +1,12 @@
 import Foundation
 import CryptoKit
 
-enum AESGCMCrypto {
+package enum AESGCMCrypto {
   private static let nonceLength = 12
   private static let tagLength = 16
   private static let stringKeyLength = 32
 
-  static func encrypt(_ plaintext: Data, key: Data, nonce: Data) -> Data? {
+  package static func encrypt(_ plaintext: Data, key: Data, nonce: Data) -> Data? {
     guard nonce.count == nonceLength,
           let gcmNonce = try? AES.GCM.Nonce(data: nonce),
           let sealedBox = try? AES.GCM.seal(plaintext, using: SymmetricKey(data: key), nonce: gcmNonce) else {
@@ -15,7 +15,7 @@ enum AESGCMCrypto {
     return sealedBox.ciphertext + sealedBox.tag
   }
 
-  static func decrypt(_ ciphertextAndTag: Data, key: Data, nonce: Data) -> Data? {
+  package static func decrypt(_ ciphertextAndTag: Data, key: Data, nonce: Data) -> Data? {
     guard nonce.count == nonceLength,
           ciphertextAndTag.count >= tagLength,
           let gcmNonce = try? AES.GCM.Nonce(data: nonce),
@@ -29,12 +29,12 @@ enum AESGCMCrypto {
     return try? AES.GCM.open(sealedBox, using: SymmetricKey(data: key))
   }
 
-  static func encryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
+  package static func encryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
     guard let (input, key, nonce) = decodeStringArguments(dataBase64, keyHex: keyHex, ivHex: ivHex) else { return nil }
     return encrypt(input, key: key, nonce: nonce)?.base64EncodedString()
   }
 
-  static func decryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
+  package static func decryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
     guard let (input, key, nonce) = decodeStringArguments(dataBase64, keyHex: keyHex, ivHex: ivHex) else { return nil }
     return decrypt(input, key: key, nonce: nonce)?.base64EncodedString()
   }

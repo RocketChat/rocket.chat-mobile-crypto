@@ -1,8 +1,8 @@
 import Foundation
 import CommonCrypto
 
-enum PBKDF2Crypto {
-  static func deriveKeyBase64(
+package enum PBKDF2Crypto {
+  package static func deriveKeyBase64(
     _ passwordBase64: String,
     saltBase64: String,
     iterations: Int,

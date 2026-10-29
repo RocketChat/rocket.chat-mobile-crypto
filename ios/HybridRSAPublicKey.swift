@@ -1,4 +1,5 @@
 import Foundation
+import MobileCryptoCore
 import NitroModules
 
 final class HybridRSAPublicKey: HybridRSAPublicKeySpec {
@@ -18,6 +19,6 @@ final class HybridRSAPublicKey: HybridRSAPublicKeySpec {
   }
 
   func verify(signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Bool {
-    RSACrypto.verify(signature.copiedData(), message: message.copiedData(), using: key, hash: hash)
+    RSACrypto.verify(signature.copiedData(), message: message.copiedData(), using: key, hash: hash.coreAlgorithm)
   }
 }

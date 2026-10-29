@@ -1,18 +1,18 @@
 import Foundation
 import Security
 
-enum RSAKeyLoader {
+package enum RSAKeyLoader {
   private static let cache: NSCache<NSString, SecKey> = {
     let cache = NSCache<NSString, SecKey>()
     cache.countLimit = 16
     return cache
   }()
 
-  static func publicKey(fromPem pem: String) -> SecKey? {
+  package static func publicKey(fromPem pem: String) -> SecKey? {
     key(fromPem: pem, keyClass: kSecAttrKeyClassPublic, cachePrefix: "public:")
   }
 
-  static func privateKey(fromPem pem: String) -> SecKey? {
+  package static func privateKey(fromPem pem: String) -> SecKey? {
     key(fromPem: pem, keyClass: kSecAttrKeyClassPrivate, cachePrefix: "private:")
   }
 
@@ -27,7 +27,7 @@ enum RSAKeyLoader {
     return key
   }
 
-  static func key(from keyData: Data, keyClass: CFString) -> SecKey? {
+  package static func key(from keyData: Data, keyClass: CFString) -> SecKey? {
     let attributes: [CFString: Any] = [
       kSecAttrKeyType: kSecAttrKeyTypeRSA,
       kSecAttrKeyClass: keyClass,

@@ -14,7 +14,13 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/RocketChat/rocket.chat-mobile-crypto.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.swift"
+  s.exclude_files = "ios/core/**/*"
   s.frameworks = "Foundation"
+
+  s.dependency "MobileCryptoCore"
+  s.pod_target_xcconfig = {
+    "SWIFT_PACKAGE_NAME" => "MobileCrypto",
+  }
 
   load "nitrogen/generated/ios/MobileCrypto+autolinking.rb"
   add_nitrogen_files(s)

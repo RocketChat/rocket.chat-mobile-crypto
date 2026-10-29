@@ -1,16 +1,16 @@
 import Foundation
 import CommonCrypto
 
-enum AESCTRFileCrypto {
+package enum AESCTRFileCrypto {
   private static let chunkSize = 65536
   private static let outputFilePrefix = "processed_"
 
-  static func encryptFile(_ filePath: String, base64URLKey: String, base64InitializationVector: String) -> String? {
+  package static func encryptFile(_ filePath: String, base64URLKey: String, base64InitializationVector: String) -> String? {
     processFile(filePath.normalizedFilePath, operation: CCOperation(kCCEncrypt), base64URLKey: base64URLKey, base64InitializationVector: base64InitializationVector)
       .map { "file://\($0)" }
   }
 
-  static func decryptFile(_ filePath: String, base64URLKey: String, base64InitializationVector: String) -> String? {
+  package static func decryptFile(_ filePath: String, base64URLKey: String, base64InitializationVector: String) -> String? {
     let inputPath = filePath.normalizedFilePath
     guard let outputPath = processFile(inputPath, operation: CCOperation(kCCDecrypt), base64URLKey: base64URLKey, base64InitializationVector: base64InitializationVector) else {
       return nil

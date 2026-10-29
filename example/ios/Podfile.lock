@@ -16,6 +16,7 @@ PODS:
   - hermes-engine/Pre-built (260318099.0.4)
   - MobileCrypto (0.4.0):
     - hermes-engine
+    - MobileCryptoCore
     - NitroModules
     - RCTRequired
     - RCTTypeSafety
@@ -38,6 +39,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - MobileCryptoCore (0.4.0)
   - NitroModules (0.37.1):
     - hermes-engine
     - RCTRequired
@@ -1900,6 +1902,7 @@ DEPENDENCIES:
   - glog (from `build/rndeps-facades/glog`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - MobileCrypto (from `../..`)
+  - MobileCryptoCore (from `../..`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - RCT-Folly (from `build/rndeps-facades/RCT-Folly`)
   - RCTDeprecation (from `build/rncore-facades/RCTDeprecation`)
@@ -2005,6 +2008,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v260318099.0.2
   MobileCrypto:
+    :path: "../.."
+  MobileCryptoCore:
     :path: "../.."
   NitroModules:
     :path: "../node_modules/react-native-nitro-modules"
@@ -2179,7 +2184,8 @@ SPEC CHECKSUMS:
   fmt: ba0886e864ebb21d14c98b2e12e164b8002f5b93
   glog: 3cf7cb46f743c4bc758ae3e6d9c15bd1b4cfd6d4
   hermes-engine: a1158910bb7e300b9e3d2f1e2d433f817ec1a4b5
-  MobileCrypto: 0cd8016221bd64e259a37a82bf3b3d1b322c6d30
+  MobileCrypto: ebca5d6ef63557f3ebad3723b133502ceb04c1e8
+  MobileCryptoCore: 73f7efd3ea7dc90f213687b9a52908b6f436399b
   NitroModules: c32f969b7c536e0b6b401a9dfdb35bb4eba071ef
   RCT-Folly: 82921e585c0400eda46fac1068297aa9dfb035e4
   RCTDeprecation: e134f2a2c096a6450f5fcbbe949531f913a2ff04
@@ -2264,6 +2270,6 @@ SPEC CHECKSUMS:
   Yoga: d1c536142c5ff8ec8cd856ab2a7c227a1d875c8e
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 
-PODFILE CHECKSUM: 4a18eace44a55956002a444e74791d3ddea7147f
+PODFILE CHECKSUM: f6e9decfdf4c6d86f3131f62b904d6040d72f981
 
 COCOAPODS: 1.15.2

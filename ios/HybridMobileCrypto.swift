@@ -1,4 +1,5 @@
 import Foundation
+import MobileCryptoCore
 import NitroModules
 
 final class HybridMobileCrypto: HybridMobileCryptoSpec {
@@ -9,7 +10,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func shaBase64Sync(data: String, algorithm: SHAAlgorithm) throws -> String {
-    try SHACrypto.hashBase64(data, algorithm: algorithm).orThrow("Invalid algorithm or input")
+    try SHACrypto.hashBase64(data, algorithm: algorithm.coreAlgorithm).orThrow("Invalid algorithm or input")
   }
 
   func shaUtf8(data: String, algorithm: SHAAlgorithm) throws -> Promise<String> {
@@ -17,7 +18,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func shaUtf8Sync(data: String, algorithm: SHAAlgorithm) throws -> String {
-    SHACrypto.hashUtf8ToHex(data, algorithm: algorithm)
+    SHACrypto.hashUtf8ToHex(data, algorithm: algorithm.coreAlgorithm)
   }
 
   func pbkdf2Hash(pwdBase64: String, saltBase64: String, iterations: Double, keyLen: Double, hash: PBKDF2HashAlgorithm) throws -> Promise<String> {
@@ -27,7 +28,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
         saltBase64: saltBase64,
         iterations: iterations.toCount(),
         keyLength: keyLen.toCount(),
-        hash: hash
+        hash: hash.coreAlgorithm
       )
       .orThrow("PBKDF2 derivation failed")
     }
@@ -108,7 +109,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   func rsaGenerateKeys(keySize: Double?) throws -> Promise<RSAKeyPair> {
     return Promise.parallel {
       let bitCount = try (keySize ?? Self.defaultRSAKeySize).toCount()
-      return try RSACrypto.generateKeyPair(bitCount: bitCount).orThrow("Key generation failed")
+      return RSAKeyPair(try RSACrypto.generateKeyPair(bitCount: bitCount).orThrow("Key generation failed"))
     }
   }
 
@@ -134,13 +135,13 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
 
   func rsaSign(message: String, privateKey: String, hash: RSAHashAlgorithm?) throws -> Promise<String> {
     return Promise.parallel {
-      try RSAPemCrypto.sign(message, privateKeyPem: privateKey, hash: hash).orThrow("Signing failed")
+      try RSAPemCrypto.sign(message, privateKeyPem: privateKey, hash: hash?.coreAlgorithm).orThrow("Signing failed")
     }
   }
 
   func rsaSign64(message: String, privateKey: String, hash: RSAHashAlgorithm?) throws -> Promise<String> {
     return Promise.parallel {
-      try RSAPemCrypto.signBase64(message, privateKeyPem: privateKey, hash: hash).orThrow("Signing failed")
+      try RSAPemCrypto.signBase64(message, privateKeyPem: privateKey, hash: hash?.coreAlgorithm).orThrow("Signing failed")
     }
   }
 
@@ -151,7 +152,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func rsaVerifySync(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?) throws -> Bool {
-    RSAPemCrypto.verify(signature, message: message, publicKeyPem: publicKey, hash: hash)
+    RSAPemCrypto.verify(signature, message: message, publicKeyPem: publicKey, hash: hash?.coreAlgorithm)
   }
 
   func rsaVerify64(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?) throws -> Promise<Bool> {
@@ -161,7 +162,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func rsaVerify64Sync(signature: String, message: String, publicKey: String, hash: RSAHashAlgorithm?) throws -> Bool {
-    RSAPemCrypto.verifyBase64(signature, messageBase64: message, publicKeyPem: publicKey, hash: hash)
+    RSAPemCrypto.verifyBase64(signature, messageBase64: message, publicKeyPem: publicKey, hash: hash?.coreAlgorithm)
   }
 
   func calculateFileChecksum(filePath: String) throws -> Promise<String> {
@@ -176,13 +177,13 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
 
   func rsaImportKey(jwk: JWK) throws -> Promise<String> {
     return Promise.parallel {
-      try RSAJWKConverter.pem(from: jwk).orThrow("Key import failed")
+      try RSAJWKConverter.pem(from: jwk.coreKey).orThrow("Key import failed")
     }
   }
 
   func rsaExportKey(pem: String) throws -> Promise<JWK> {
     return Promise.parallel {
-      try RSAJWKConverter.jwk(fromPem: pem).orThrow("Key export failed")
+      JWK(try RSAJWKConverter.jwk(fromPem: pem).orThrow("Key export failed"))
     }
   }
 
@@ -200,11 +201,11 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
 
   func shaBuffer(data: ArrayBuffer, algorithm: SHAAlgorithm) throws -> Promise<ArrayBuffer> {
     let input = data.copiedData()
-    return Promise.parallel { ArrayBuffer.copying(algorithm.digest(of: input)) }
+    return Promise.parallel { ArrayBuffer.copying(algorithm.coreAlgorithm.digest(of: input)) }
   }
 
   func shaBufferSync(data: ArrayBuffer, algorithm: SHAAlgorithm) throws -> ArrayBuffer {
-    ArrayBuffer.copying(algorithm.digest(of: data.copiedData()))
+    ArrayBuffer.copying(algorithm.coreAlgorithm.digest(of: data.copiedData()))
   }
 
   func hmac256Buffer(data: ArrayBuffer, key: ArrayBuffer) throws -> Promise<ArrayBuffer> {

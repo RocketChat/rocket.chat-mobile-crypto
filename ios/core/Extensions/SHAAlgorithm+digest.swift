@@ -2,7 +2,7 @@ import CryptoKit
 import Foundation
 
 extension SHAAlgorithm {
-  func digest(of input: Data) -> Data {
+  package func digest(of input: Data) -> Data {
     switch self {
     case .sha1:
       return Data(Insecure.SHA1.hash(data: input))

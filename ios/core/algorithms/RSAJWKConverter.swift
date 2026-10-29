@@ -1,12 +1,12 @@
 import Foundation
 import Security
 
-enum RSAJWKConverter {
+package enum RSAJWKConverter {
   private static let keyType = "RSA"
   private static let algorithm = "RSA-OAEP-256"
   private static let privateKeyVersion = Data([0])
 
-  static func pem(from jwk: JWK) -> String? {
+  package static func pem(from jwk: JWK) -> String? {
     guard jwk.kty == keyType,
           let modulus = Data(base64URLEncoded: jwk.n),
           let publicExponent = Data(base64URLEncoded: jwk.e) else {
@@ -22,7 +22,7 @@ enum RSAJWKConverter {
     return RSAPem.format(ASN1DER.sequence(ofIntegers: integers), tag: .rsaPrivate)
   }
 
-  static func jwk(fromPem pem: String) -> JWK? {
+  package static func jwk(fromPem pem: String) -> JWK? {
     guard let block = RSAPem.parse(pem) else { return nil }
     switch block.tag {
     case .rsaPublic:
@@ -53,7 +53,7 @@ enum RSAJWKConverter {
       kty: keyType,
       alg: algorithm,
       ext: true,
-      key_ops: [keyOperation],
+      keyOperations: [keyOperation],
       n: components[0],
       e: components[1],
       d: component(2),

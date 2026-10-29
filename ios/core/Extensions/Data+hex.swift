@@ -15,7 +15,7 @@ extension Data {
     self.init(bytes)
   }
 
-  var lowercaseHexString: String {
+  package var lowercaseHexString: String {
     let hexDigits = Array("0123456789abcdef".utf8)
     var hexCharacters = [UInt8]()
     hexCharacters.reserveCapacity(count * 2)

@@ -1,4 +1,5 @@
 import Foundation
+import MobileCryptoCore
 import NitroModules
 
 final class HybridRSAPrivateKey: HybridRSAPrivateKeySpec {
@@ -23,7 +24,7 @@ final class HybridRSAPrivateKey: HybridRSAPrivateKeySpec {
   func sign(message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Promise<ArrayBuffer> {
     let messageData = message.copiedData()
     return Promise.parallel { [key] in
-      ArrayBuffer.copying(try RSACrypto.sign(messageData, using: key, hash: hash).orThrow("Signing failed"))
+      ArrayBuffer.copying(try RSACrypto.sign(messageData, using: key, hash: hash.coreAlgorithm).orThrow("Signing failed"))
     }
   }
 }
