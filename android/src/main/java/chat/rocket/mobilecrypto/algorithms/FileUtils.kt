@@ -12,12 +12,6 @@ import android.provider.OpenableColumns
  * File-related cryptographic utilities
  */
 object FileUtils {
-    private lateinit var appContext: Context
-
-    fun init(context: Context) {
-        appContext = context.applicationContext
-    }
-
     private const val BUFFER_SIZE = 65536
 
     /**
@@ -26,8 +20,8 @@ object FileUtils {
      * @param filePath Path to the file (supports file:// prefix)
      * @return Hexadecimal checksum string
      */
-    fun calculateSha256Checksum(filePath: String): String {
-        return calculateChecksum(filePath, "SHA-256")
+    fun calculateSha256Checksum(filePath: String, context: Context): String {
+        return calculateChecksum(filePath, "SHA-256", context)
     }
 
     /**
@@ -36,8 +30,8 @@ object FileUtils {
      * @param filePath Path to the file (supports file:// prefix)
      * @return Hexadecimal checksum string
      */
-    fun calculateSha1Checksum(filePath: String): String {
-        return calculateChecksum(filePath, "SHA-1")
+    fun calculateSha1Checksum(filePath: String, context: Context): String {
+        return calculateChecksum(filePath, "SHA-1", context)
     }
 
     /**
@@ -46,8 +40,8 @@ object FileUtils {
      * @param filePath Path to the file (supports file:// prefix)
      * @return Hexadecimal checksum string
      */
-    fun calculateSha512Checksum(filePath: String): String {
-        return calculateChecksum(filePath, "SHA-512")
+    fun calculateSha512Checksum(filePath: String, context: Context): String {
+        return calculateChecksum(filePath, "SHA-512", context)
     }
 
     /**
@@ -57,8 +51,8 @@ object FileUtils {
      * @param algorithm Hash algorithm (SHA-1, SHA-256, SHA-384, SHA-512, MD5)
      * @return Hexadecimal checksum string
      */
-    fun calculateChecksum(filePath: String, algorithm: String): String {
-        getInputStream(filePath).use { inputStream ->
+    fun calculateChecksum(filePath: String, algorithm: String, context: Context): String {
+        getInputStream(filePath, context).use { inputStream ->
             val digest = MessageDigest.getInstance(algorithm)
             val buffer = ByteArray(BUFFER_SIZE)
             var bytesRead: Int
@@ -79,8 +73,8 @@ object FileUtils {
      * @param algorithm Hash algorithm (SHA-1, SHA-256, SHA-384, SHA-512, MD5)
      * @return Base64-encoded checksum string
      */
-    fun calculateChecksumBase64(filePath: String, algorithm: String): String {
-        getInputStream(filePath).use { inputStream ->
+    fun calculateChecksumBase64(filePath: String, algorithm: String, context: Context): String {
+        getInputStream(filePath, context).use { inputStream ->
             val digest = MessageDigest.getInstance(algorithm)
             val buffer = ByteArray(BUFFER_SIZE)
             var bytesRead: Int
@@ -100,17 +94,13 @@ object FileUtils {
      * @param filePath Path to the file (supports file:// and content:// prefixes)
      * @return File size in bytes, or -1 if size cannot be determined
      */
-    fun getFileSize(filePath: String): Long {
+    fun getFileSize(filePath: String, context: Context): Long {
         val uri = Uri.parse(filePath)
 
         return if (uri.scheme == null || uri.scheme == "file") {
             File(uri.path ?: filePath).length()
         } else {
-            if (!::appContext.isInitialized) {
-                throw IllegalStateException("FileUtils.init(context) not called")
-            }
-            
-            appContext.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
                 val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
                 if (cursor.moveToFirst() && sizeIndex != -1) {
                     cursor.getLong(sizeIndex)
@@ -127,19 +117,15 @@ object FileUtils {
      * @param filePath Path to the file (supports file:// and content:// prefixes)
      * @return True if file exists
      */
-    fun fileExists(filePath: String): Boolean {
+    fun fileExists(filePath: String, context: Context): Boolean {
         val uri = Uri.parse(filePath)
 
         return if (uri.scheme == null || uri.scheme == "file") {
             val file = File(uri.path ?: filePath)
             file.exists() && file.isFile
         } else {
-            if (!::appContext.isInitialized) {
-                throw IllegalStateException("FileUtils.init(context) not called")
-            }
-            
             try {
-                appContext.contentResolver.openInputStream(uri)?.use { true } ?: false
+                context.contentResolver.openInputStream(uri)?.use { true } ?: false
             } catch (e: Exception) {
                 false
             }
@@ -154,8 +140,8 @@ object FileUtils {
      * @param algorithm Hash algorithm to use (default: SHA-256)
      * @return True if checksums match
      */
-    fun verifyFileIntegrity(filePath: String, expectedChecksum: String, algorithm: String = "SHA-256"): Boolean {
-        val actualChecksum = calculateChecksum(filePath, algorithm)
+    fun verifyFileIntegrity(filePath: String, expectedChecksum: String, context: Context, algorithm: String = "SHA-256"): Boolean {
+        val actualChecksum = calculateChecksum(filePath, algorithm, context)
         return actualChecksum.equals(expectedChecksum, ignoreCase = true)
     }
 
@@ -166,10 +152,10 @@ object FileUtils {
      * @param algorithms List of hash algorithms to use
      * @return Map of algorithm to checksum (hexadecimal)
      */
-    fun calculateMultipleChecksums(filePath: String, algorithms: List<String>): Map<String, String> {
+    fun calculateMultipleChecksums(filePath: String, algorithms: List<String>, context: Context): Map<String, String> {
         val digests = algorithms.associateWith { MessageDigest.getInstance(it) }
         
-        getInputStream(filePath).use { inputStream ->
+        getInputStream(filePath, context).use { inputStream ->
             val buffer = ByteArray(BUFFER_SIZE)
             var bytesRead: Int
             
@@ -188,16 +174,13 @@ object FileUtils {
     /**
      * Get input stream for any URI type without creating temp files
      */
-    private fun getInputStream(filePath: String): InputStream {
+    private fun getInputStream(filePath: String, context: Context): InputStream {
         val uri = Uri.parse(filePath)
 
         return if (uri.scheme == null || uri.scheme == "file") {
             FileInputStream(uri.path ?: filePath)
         } else {
-            if (!::appContext.isInitialized) {
-                throw IllegalStateException("FileUtils.init(context) not called")
-            }
-            appContext.contentResolver.openInputStream(uri)
+            context.contentResolver.openInputStream(uri)
                 ?: throw IllegalArgumentException("Cannot open input stream for URI: $uri")
         }
     }

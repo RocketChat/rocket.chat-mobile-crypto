@@ -22,10 +22,6 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
   private val context: Context
     get() = NitroModules.applicationContext ?: throw Error("No ApplicationContext set!")
 
-  init {
-    FileUtils.init(context)
-  }
-
   override fun shaBase64(data: String, algorithm: SHAAlgorithm): Promise<String> =
     Promise.async { shaBase64Sync(data, algorithm) }
 
@@ -128,7 +124,7 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
     RSACrypto.verifyBase64(signature, message, publicKey, hash)
 
   override fun calculateFileChecksum(filePath: String): Promise<String> =
-    Promise.async(fileScope) { FileUtils.calculateSha256Checksum(filePath) }
+    Promise.async(fileScope) { FileUtils.calculateSha256Checksum(filePath, context) }
 
   override fun getRandomValues(length: Double): String =
     RandomUtils.generateRandomAlphanumeric(length.toInt())
