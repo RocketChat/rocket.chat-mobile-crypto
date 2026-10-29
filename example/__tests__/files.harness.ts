@@ -161,6 +161,26 @@ describe('Native file encryption and checksums', () => {
     expect(await FileSystem.readFile(otherEncryptedPath)).toBe(plaintext);
   });
 
+  test('round-trips a file whose name is near the file system limit', async () => {
+    const longInputPath = `${directory}/${'a'.repeat(226)}.bin`;
+    await FileSystem.writeFile(longInputPath, fileVector.plaintext, 'base64');
+    const encrypted = await aesEncryptFile(
+      longInputPath,
+      fileVector.key,
+      fileVector.iv
+    );
+    const encryptedPath = pathFromUri(encrypted);
+    encryptedPaths.add(encryptedPath);
+
+    expect(await FileSystem.readFile(encryptedPath, 'base64')).toBe(
+      fileVector.ciphertext
+    );
+    await aesDecryptFile(encrypted, fileVector.key, fileVector.iv);
+    expect(await FileSystem.readFile(encryptedPath, 'base64')).toBe(
+      fileVector.plaintext
+    );
+  });
+
   test('rejects a missing file when calculating a checksum', async () => {
     await expect(
       calculateFileChecksum(`${directory}/missing.bin`)
