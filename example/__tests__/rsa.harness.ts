@@ -113,6 +113,38 @@ describe('RSA encryption and signatures', () => {
     ).toBe(false);
   });
 
+  test('returns false for a signature of the wrong length', async () => {
+    const truncatedSignature = RSA_FIXED_SIGNATURE_B64.slice(0, 8);
+    expect(
+      await rsaVerify(
+        truncatedSignature,
+        RSA_FIXED_SIGN_MESSAGE,
+        RSA_FIXED_PUBLIC_KEY,
+        'SHA256'
+      )
+    ).toBe(false);
+    expect(
+      await rsaVerify64(
+        truncatedSignature,
+        'SGVsbG8gUlNBIHNpZ25hdHVyZSBmaXhlZCB2ZWN0b3Ih',
+        RSA_FIXED_PUBLIC_KEY,
+        'SHA256'
+      )
+    ).toBe(false);
+  });
+
+  test('returns false for a Raw signature longer than the key', async () => {
+    const oversizedSignature = btoa('\x01'.repeat(300));
+    expect(
+      await rsaVerify(
+        oversizedSignature,
+        RSA_FIXED_SIGN_MESSAGE,
+        RSA_FIXED_PUBLIC_KEY,
+        'Raw'
+      )
+    ).toBe(false);
+  });
+
   test('signs Base64-decoded bytes to the same fixed signature', async () => {
     expect(
       await rsaSign64(

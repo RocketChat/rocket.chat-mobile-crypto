@@ -15,6 +15,7 @@ import java.security.KeyPairGenerator
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.Signature
+import java.security.SignatureException
 import java.security.interfaces.RSAPrivateCrtKey
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
@@ -132,7 +133,11 @@ object RSACrypto {
         val signature = Signature.getInstance(signatureAlgorithm(hash))
         signature.initVerify(publicKey)
         signature.update(message)
-        return signature.verify(signatureBytes)
+        return try {
+            signature.verify(signatureBytes)
+        } catch (exception: SignatureException) {
+            false
+        }
     }
 
     /**

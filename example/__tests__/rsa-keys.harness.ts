@@ -77,6 +77,19 @@ describe('Imported RSA key objects', () => {
     );
   });
 
+  test('returns false for a signature of the wrong length', async () => {
+    const truncatedSignature = bufferFromBase64(
+      RSA_FIXED_SIGNATURE_B64.slice(0, 8)
+    );
+    expect(
+      await fixedPublicKey.verify(
+        truncatedSignature,
+        bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
+        'SHA256'
+      )
+    ).toBe(false);
+  });
+
   test('encrypts ciphertext that the PEM string API decrypts', async () => {
     const ciphertext = await fixedPublicKey.encrypt(
       bufferFromBase64('AAF/gP7/')
