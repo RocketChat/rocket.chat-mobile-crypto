@@ -66,7 +66,7 @@ describe('AES-256-GCM authenticated encryption', () => {
       ).toBe(vector.plaintext);
     });
 
-    test(`rejects modified ciphertext for the ${vector.name}`, async () => {
+    test(`returns null for modified ciphertext for the ${vector.name}`, async () => {
       expect(
         await aesGcmDecrypt(
           vector.tamperedCiphertext,
@@ -76,19 +76,19 @@ describe('AES-256-GCM authenticated encryption', () => {
       ).toBeNull();
     });
 
-    test(`rejects a modified authentication tag for the ${vector.name}`, async () => {
+    test(`returns null for a modified authentication tag for the ${vector.name}`, async () => {
       expect(
         await aesGcmDecrypt(vector.tamperedTag, vector.keyHex, vector.ivHex)
       ).toBeNull();
     });
 
-    test(`rejects the wrong key for the ${vector.name}`, async () => {
+    test(`returns null for the wrong key for the ${vector.name}`, async () => {
       expect(
         await aesGcmDecrypt(vector.ciphertext, '11'.repeat(32), vector.ivHex)
       ).toBeNull();
     });
 
-    test(`rejects the wrong IV for the ${vector.name}`, async () => {
+    test(`returns null for the wrong IV for the ${vector.name}`, async () => {
       expect(
         await aesGcmDecrypt(vector.ciphertext, vector.keyHex, '11'.repeat(12))
       ).toBeNull();
