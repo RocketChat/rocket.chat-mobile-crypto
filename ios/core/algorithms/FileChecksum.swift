@@ -9,8 +9,13 @@ package enum FileChecksum {
     defer { input.closeFile() }
     var hasher = SHA256()
     do {
-      while let chunk = try input.read(upToCount: chunkSize), !chunk.isEmpty {
-        hasher.update(data: chunk)
+      var reachedEnd = false
+      while !reachedEnd {
+        reachedEnd = try autoreleasepool {
+          guard let chunk = try input.read(upToCount: chunkSize), !chunk.isEmpty else { return true }
+          hasher.update(data: chunk)
+          return false
+        }
       }
     } catch {
       return nil
