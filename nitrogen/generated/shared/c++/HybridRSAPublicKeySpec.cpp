@@ -16,6 +16,7 @@ namespace margelo::nitro::mobilecrypto {
     registerHybrids(this, [](Prototype& prototype) {
       prototype.registerHybridMethod("encrypt", &HybridRSAPublicKeySpec::encrypt);
       prototype.registerHybridMethod("verify", &HybridRSAPublicKeySpec::verify);
+      prototype.registerHybridMethod("exportJwk", &HybridRSAPublicKeySpec::exportJwk);
     });
   }
 

@@ -20,10 +20,10 @@ import java.util.Objects
 data class RSAKeyPair(
   @DoNotStrip
   @Keep
-  val publicKey: String,
+  val publicKey: HybridRSAPublicKeySpec,
   @DoNotStrip
   @Keep
-  val privateKey: String
+  val privateKey: HybridRSAPrivateKeySpec
 ) {
   /* primary constructor */
 
@@ -49,7 +49,7 @@ data class RSAKeyPair(
     @Keep
     @Suppress("unused")
     @JvmStatic
-    private fun fromCpp(publicKey: String, privateKey: String): RSAKeyPair {
+    private fun fromCpp(publicKey: HybridRSAPublicKeySpec, privateKey: HybridRSAPrivateKeySpec): RSAKeyPair {
       return RSAKeyPair(publicKey, privateKey)
     }
   }

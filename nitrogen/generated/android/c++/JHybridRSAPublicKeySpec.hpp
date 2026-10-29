@@ -54,8 +54,9 @@ namespace margelo::nitro::mobilecrypto {
 
   public:
     // Methods
-    std::shared_ptr<ArrayBuffer> encrypt(const std::shared_ptr<ArrayBuffer>& plaintext) override;
+    std::string encrypt(const std::string& plaintext) override;
     bool verify(const std::shared_ptr<ArrayBuffer>& signature, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) override;
+    std::string exportJwk() override;
 
   private:
     jni::global_ref<JHybridRSAPublicKeySpec::JavaPart> _javaPart;

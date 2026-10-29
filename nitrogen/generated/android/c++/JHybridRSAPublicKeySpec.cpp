@@ -10,6 +10,7 @@
 // Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
 
+#include <string>
 #include <NitroModules/ArrayBuffer.hpp>
 #include <NitroModules/JArrayBuffer.hpp>
 #include "RSAHashAlgorithm.hpp"
@@ -48,15 +49,20 @@ namespace margelo::nitro::mobilecrypto {
   
 
   // Methods
-  std::shared_ptr<ArrayBuffer> JHybridRSAPublicKeySpec::encrypt(const std::shared_ptr<ArrayBuffer>& plaintext) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JArrayBuffer::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* plaintext */)>("encrypt");
-    auto __result = method(_javaPart, JArrayBuffer::wrap(plaintext));
-    return __result->cthis()->getArrayBuffer();
+  std::string JHybridRSAPublicKeySpec::encrypt(const std::string& plaintext) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>(jni::alias_ref<jni::JString> /* plaintext */)>("encrypt");
+    auto __result = method(_javaPart, jni::make_jstring(plaintext));
+    return __result->toStdString();
   }
   bool JHybridRSAPublicKeySpec::verify(const std::shared_ptr<ArrayBuffer>& signature, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) {
     static const auto method = _javaPart->javaClassStatic()->getMethod<jboolean(jni::alias_ref<JArrayBuffer::javaobject> /* signature */, jni::alias_ref<JArrayBuffer::javaobject> /* message */, jni::alias_ref<JRSAHashAlgorithm> /* hash */)>("verify");
     auto __result = method(_javaPart, JArrayBuffer::wrap(signature), JArrayBuffer::wrap(message), JRSAHashAlgorithm::fromCpp(hash));
     return static_cast<bool>(__result);
+  }
+  std::string JHybridRSAPublicKeySpec::exportJwk() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>()>("exportJwk");
+    auto __result = method(_javaPart);
+    return __result->toStdString();
   }
 
 } // namespace margelo::nitro::mobilecrypto

@@ -10,9 +10,10 @@
 // Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
 
-#include <NitroModules/ArrayBuffer.hpp>
+#include <string>
 #include <NitroModules/Promise.hpp>
 #include <NitroModules/JPromise.hpp>
+#include <NitroModules/ArrayBuffer.hpp>
 #include <NitroModules/JArrayBuffer.hpp>
 #include "RSAHashAlgorithm.hpp"
 #include "JRSAHashAlgorithm.hpp"
@@ -50,14 +51,14 @@ namespace margelo::nitro::mobilecrypto {
   
 
   // Methods
-  std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> JHybridRSAPrivateKeySpec::decrypt(const std::shared_ptr<ArrayBuffer>& ciphertext) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* ciphertext */)>("decrypt");
-    auto __result = method(_javaPart, JArrayBuffer::wrap(ciphertext));
+  std::shared_ptr<Promise<std::string>> JHybridRSAPrivateKeySpec::decrypt(const std::string& ciphertext) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* ciphertext */)>("decrypt");
+    auto __result = method(_javaPart, jni::make_jstring(ciphertext));
     return [&]() {
-      auto __promise = Promise<std::shared_ptr<ArrayBuffer>>::create();
+      auto __promise = Promise<std::string>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
-        auto __result = jni::static_ref_cast<JArrayBuffer::javaobject>(__boxedResult);
-        __promise->resolve(__result->cthis()->getArrayBuffer());
+        auto __result = jni::static_ref_cast<jni::JString>(__boxedResult);
+        __promise->resolve(__result->toStdString());
       });
       __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
         jni::JniException __jniError(__throwable);
@@ -81,6 +82,11 @@ namespace margelo::nitro::mobilecrypto {
       });
       return __promise;
     }();
+  }
+  std::string JHybridRSAPrivateKeySpec::exportJwk() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>()>("exportJwk");
+    auto __result = method(_javaPart);
+    return __result->toStdString();
   }
 
 } // namespace margelo::nitro::mobilecrypto

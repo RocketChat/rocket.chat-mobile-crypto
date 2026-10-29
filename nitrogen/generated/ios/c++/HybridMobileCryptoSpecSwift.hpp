@@ -12,37 +12,39 @@
 // Forward declaration of `HybridMobileCryptoSpec_cxx` to properly resolve imports.
 namespace MobileCrypto { class HybridMobileCryptoSpec_cxx; }
 
-// Forward declaration of `SHAAlgorithm` to properly resolve imports.
-namespace margelo::nitro::mobilecrypto { enum class SHAAlgorithm; }
-// Forward declaration of `PBKDF2HashAlgorithm` to properly resolve imports.
-namespace margelo::nitro::mobilecrypto { enum class PBKDF2HashAlgorithm; }
-// Forward declaration of `RSAKeyPair` to properly resolve imports.
-namespace margelo::nitro::mobilecrypto { struct RSAKeyPair; }
-// Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
-namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
-// Forward declaration of `JWK` to properly resolve imports.
-namespace margelo::nitro::mobilecrypto { struct JWK; }
-// Forward declaration of `HybridRSAPrivateKeySpec` to properly resolve imports.
-namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
-// Forward declaration of `HybridRSAPublicKeySpec` to properly resolve imports.
-namespace margelo::nitro::mobilecrypto { class HybridRSAPublicKeySpec; }
 // Forward declaration of `ArrayBufferHolder` to properly resolve imports.
 namespace NitroModules { class ArrayBufferHolder; }
+// Forward declaration of `SHAAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class SHAAlgorithm; }
+// Forward declaration of `HybridAESKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridAESKeySpec; }
+// Forward declaration of `PBKDF2HashAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class PBKDF2HashAlgorithm; }
+// Forward declaration of `AESGCMCiphertext` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { struct AESGCMCiphertext; }
+// Forward declaration of `EncryptedFile` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { struct EncryptedFile; }
+// Forward declaration of `RSAKeyPair` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { struct RSAKeyPair; }
+// Forward declaration of `HybridRSAPublicKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPublicKeySpec; }
+// Forward declaration of `HybridRSAPrivateKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
 
-#include <string>
-#include <NitroModules/Promise.hpp>
-#include "SHAAlgorithm.hpp"
-#include "PBKDF2HashAlgorithm.hpp"
-#include <optional>
-#include "RSAKeyPair.hpp"
-#include "RSAHashAlgorithm.hpp"
-#include "JWK.hpp"
-#include <vector>
-#include <memory>
-#include "HybridRSAPrivateKeySpec.hpp"
-#include "HybridRSAPublicKeySpec.hpp"
 #include <NitroModules/ArrayBuffer.hpp>
+#include <NitroModules/Promise.hpp>
 #include <NitroModules/ArrayBufferHolder.hpp>
+#include "SHAAlgorithm.hpp"
+#include <memory>
+#include "HybridAESKeySpec.hpp"
+#include <string>
+#include "PBKDF2HashAlgorithm.hpp"
+#include "AESGCMCiphertext.hpp"
+#include "EncryptedFile.hpp"
+#include "RSAKeyPair.hpp"
+#include "HybridRSAPublicKeySpec.hpp"
+#include "HybridRSAPrivateKeySpec.hpp"
+#include <optional>
 
 #include "MobileCrypto-Swift-Cxx-Umbrella.hpp"
 
@@ -94,136 +96,160 @@ namespace margelo::nitro::mobilecrypto {
 
   public:
     // Methods
-    inline std::shared_ptr<Promise<std::string>> shaBase64(const std::string& data, SHAAlgorithm algorithm) override {
-      auto __result = _swiftPart.shaBase64(data, static_cast<int>(algorithm));
+    inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> sha(const std::shared_ptr<ArrayBuffer>& data, SHAAlgorithm algorithm) override {
+      auto __result = _swiftPart.sha(ArrayBufferHolder(data), static_cast<int>(algorithm));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::string shaBase64Sync(const std::string& data, SHAAlgorithm algorithm) override {
-      auto __result = _swiftPart.shaBase64Sync(data, static_cast<int>(algorithm));
+    inline std::shared_ptr<ArrayBuffer> shaSync(const std::shared_ptr<ArrayBuffer>& data, SHAAlgorithm algorithm) override {
+      auto __result = _swiftPart.shaSync(ArrayBufferHolder(data), static_cast<int>(algorithm));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> shaUtf8(const std::string& data, SHAAlgorithm algorithm) override {
-      auto __result = _swiftPart.shaUtf8(data, static_cast<int>(algorithm));
+    inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> hmac256(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key) override {
+      auto __result = _swiftPart.hmac256(ArrayBufferHolder(data), ArrayBufferHolder(key));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::string shaUtf8Sync(const std::string& data, SHAAlgorithm algorithm) override {
-      auto __result = _swiftPart.shaUtf8Sync(data, static_cast<int>(algorithm));
+    inline std::shared_ptr<ArrayBuffer> hmac256Sync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key) override {
+      auto __result = _swiftPart.hmac256Sync(ArrayBufferHolder(data), ArrayBufferHolder(key));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> pbkdf2Hash(const std::string& pwdBase64, const std::string& saltBase64, double iterations, double keyLen, PBKDF2HashAlgorithm hash) override {
-      auto __result = _swiftPart.pbkdf2Hash(pwdBase64, saltBase64, std::forward<decltype(iterations)>(iterations), std::forward<decltype(keyLen)>(keyLen), static_cast<int>(hash));
+    inline std::shared_ptr<HybridAESKeySpec> aesGenerateKey(double byteLength) override {
+      auto __result = _swiftPart.aesGenerateKey(std::forward<decltype(byteLength)>(byteLength));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> hmac256(const std::string& data, const std::string& key) override {
-      auto __result = _swiftPart.hmac256(data, key);
+    inline std::shared_ptr<HybridAESKeySpec> aesImportKey(const std::string& base64Url) override {
+      auto __result = _swiftPart.aesImportKey(base64Url);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::string hmac256Sync(const std::string& data, const std::string& key) override {
-      auto __result = _swiftPart.hmac256Sync(data, key);
+    inline std::shared_ptr<Promise<std::shared_ptr<HybridAESKeySpec>>> aesDeriveKey(const std::string& passwordBase64, const std::string& saltBase64, double iterations, double byteLength, PBKDF2HashAlgorithm hash) override {
+      auto __result = _swiftPart.aesDeriveKey(passwordBase64, saltBase64, std::forward<decltype(iterations)>(iterations), std::forward<decltype(byteLength)>(byteLength), static_cast<int>(hash));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::optional<std::string>>> aesEncrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
-      auto __result = _swiftPart.aesEncrypt(dataBase64, keyHex, ivHex);
+    inline std::shared_ptr<Promise<AESGCMCiphertext>> aesGcmEncrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) override {
+      auto __result = _swiftPart.aesGcmEncrypt(key, plaintext);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::optional<std::string> aesEncryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
-      auto __result = _swiftPart.aesEncryptSync(dataBase64, keyHex, ivHex);
+    inline AESGCMCiphertext aesGcmEncryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) override {
+      auto __result = _swiftPart.aesGcmEncryptSync(key, plaintext);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::optional<std::string>>> aesDecrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
-      auto __result = _swiftPart.aesDecrypt(dataBase64, keyHex, ivHex);
+    inline std::shared_ptr<Promise<std::string>> aesGcmDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ciphertext, const std::string& iv) override {
+      auto __result = _swiftPart.aesGcmDecrypt(key, ciphertext, iv);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::optional<std::string> aesDecryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
-      auto __result = _swiftPart.aesDecryptSync(dataBase64, keyHex, ivHex);
+    inline std::string aesGcmDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ciphertext, const std::string& iv) override {
+      auto __result = _swiftPart.aesGcmDecryptSync(key, ciphertext, iv);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::optional<std::string>>> aesGcmEncrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
-      auto __result = _swiftPart.aesGcmEncrypt(dataBase64, keyHex, ivHex);
+    inline std::shared_ptr<Promise<std::string>> aesCbcEncrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) override {
+      auto __result = _swiftPart.aesCbcEncrypt(key, plaintext);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::optional<std::string> aesGcmEncryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
-      auto __result = _swiftPart.aesGcmEncryptSync(dataBase64, keyHex, ivHex);
+    inline std::string aesCbcEncryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) override {
+      auto __result = _swiftPart.aesCbcEncryptSync(key, plaintext);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::optional<std::string>>> aesGcmDecrypt(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
-      auto __result = _swiftPart.aesGcmDecrypt(dataBase64, keyHex, ivHex);
+    inline std::shared_ptr<Promise<std::string>> aesCbcDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ivAndCiphertext) override {
+      auto __result = _swiftPart.aesCbcDecrypt(key, ivAndCiphertext);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::optional<std::string> aesGcmDecryptSync(const std::string& dataBase64, const std::string& keyHex, const std::string& ivHex) override {
-      auto __result = _swiftPart.aesGcmDecryptSync(dataBase64, keyHex, ivHex);
+    inline std::string aesCbcDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ivAndCiphertext) override {
+      auto __result = _swiftPart.aesCbcDecryptSync(key, ivAndCiphertext);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> aesEncryptFile(const std::string& filePath, const std::string& base64UrlKey, const std::string& base64Iv) override {
-      auto __result = _swiftPart.aesEncryptFile(filePath, base64UrlKey, base64Iv);
+    inline std::shared_ptr<Promise<EncryptedFile>> aesEncryptFile(const std::string& filePath) override {
+      auto __result = _swiftPart.aesEncryptFile(filePath);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> aesDecryptFile(const std::string& filePath, const std::string& base64UrlKey, const std::string& base64Iv) override {
-      auto __result = _swiftPart.aesDecryptFile(filePath, base64UrlKey, base64Iv);
+    inline std::shared_ptr<Promise<std::string>> aesDecryptFile(const std::string& filePath, const std::string& key, const std::string& iv, const std::string& sha256) override {
+      auto __result = _swiftPart.aesDecryptFile(filePath, key, iv, sha256);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::shared_ptr<Promise<RSAKeyPair>> rsaGenerateKeys(std::optional<double> keySize) override {
+      auto __result = _swiftPart.rsaGenerateKeys(keySize);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>> rsaImportPrivateKey(const std::string& jwk) override {
+      auto __result = _swiftPart.rsaImportPrivateKey(jwk);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> rsaImportPublicKey(const std::string& jwk) override {
+      auto __result = _swiftPart.rsaImportPublicKey(jwk);
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
@@ -246,248 +272,8 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::string randomBytes(double size) override {
+    inline std::shared_ptr<ArrayBuffer> randomBytes(double size) override {
       auto __result = _swiftPart.randomBytes(std::forward<decltype(size)>(size));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<RSAKeyPair>> rsaGenerateKeys(std::optional<double> keySize) override {
-      auto __result = _swiftPart.rsaGenerateKeys(keySize);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::string rsaEncrypt(const std::string& message, const std::string& publicKey) override {
-      auto __result = _swiftPart.rsaEncrypt(message, publicKey);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::string rsaEncrypt64(const std::string& message, const std::string& publicKey) override {
-      auto __result = _swiftPart.rsaEncrypt64(message, publicKey);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::string>> rsaDecrypt(const std::string& encodedMessage, const std::string& privateKey) override {
-      auto __result = _swiftPart.rsaDecrypt(encodedMessage, privateKey);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::string>> rsaDecrypt64(const std::string& encodedMessage, const std::string& privateKey) override {
-      auto __result = _swiftPart.rsaDecrypt64(encodedMessage, privateKey);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::string>> rsaSign(const std::string& message, const std::string& privateKey, std::optional<RSAHashAlgorithm> hash) override {
-      auto __result = _swiftPart.rsaSign(message, privateKey, hash);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::string>> rsaSign64(const std::string& message, const std::string& privateKey, std::optional<RSAHashAlgorithm> hash) override {
-      auto __result = _swiftPart.rsaSign64(message, privateKey, hash);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<bool>> rsaVerify(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) override {
-      auto __result = _swiftPart.rsaVerify(signature, message, publicKey, hash);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline bool rsaVerifySync(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) override {
-      auto __result = _swiftPart.rsaVerifySync(signature, message, publicKey, hash);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<bool>> rsaVerify64(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) override {
-      auto __result = _swiftPart.rsaVerify64(signature, message, publicKey, hash);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline bool rsaVerify64Sync(const std::string& signature, const std::string& message, const std::string& publicKey, std::optional<RSAHashAlgorithm> hash) override {
-      auto __result = _swiftPart.rsaVerify64Sync(signature, message, publicKey, hash);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::string>> calculateFileChecksum(const std::string& filePath) override {
-      auto __result = _swiftPart.calculateFileChecksum(filePath);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::string getRandomValues(double length) override {
-      auto __result = _swiftPart.getRandomValues(std::forward<decltype(length)>(length));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::string>> rsaImportKey(const JWK& jwk) override {
-      auto __result = _swiftPart.rsaImportKey(std::forward<decltype(jwk)>(jwk));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<JWK>> rsaExportKey(const std::string& pem) override {
-      auto __result = _swiftPart.rsaExportKey(pem);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>> rsaImportPrivateKey(const std::string& pem) override {
-      auto __result = _swiftPart.rsaImportPrivateKey(pem);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> rsaImportPublicKey(const std::string& pem) override {
-      auto __result = _swiftPart.rsaImportPublicKey(pem);
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> shaBuffer(const std::shared_ptr<ArrayBuffer>& data, SHAAlgorithm algorithm) override {
-      auto __result = _swiftPart.shaBuffer(ArrayBufferHolder(data), static_cast<int>(algorithm));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<ArrayBuffer> shaBufferSync(const std::shared_ptr<ArrayBuffer>& data, SHAAlgorithm algorithm) override {
-      auto __result = _swiftPart.shaBufferSync(ArrayBufferHolder(data), static_cast<int>(algorithm));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> hmac256Buffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key) override {
-      auto __result = _swiftPart.hmac256Buffer(ArrayBufferHolder(data), ArrayBufferHolder(key));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<ArrayBuffer> hmac256BufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key) override {
-      auto __result = _swiftPart.hmac256BufferSync(ArrayBufferHolder(data), ArrayBufferHolder(key));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesEncryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override {
-      auto __result = _swiftPart.aesEncryptBuffer(ArrayBufferHolder(data), ArrayBufferHolder(key), ArrayBufferHolder(iv));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<ArrayBuffer> aesEncryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override {
-      auto __result = _swiftPart.aesEncryptBufferSync(ArrayBufferHolder(data), ArrayBufferHolder(key), ArrayBufferHolder(iv));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesDecryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override {
-      auto __result = _swiftPart.aesDecryptBuffer(ArrayBufferHolder(data), ArrayBufferHolder(key), ArrayBufferHolder(iv));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<ArrayBuffer> aesDecryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override {
-      auto __result = _swiftPart.aesDecryptBufferSync(ArrayBufferHolder(data), ArrayBufferHolder(key), ArrayBufferHolder(iv));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesGcmEncryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override {
-      auto __result = _swiftPart.aesGcmEncryptBuffer(ArrayBufferHolder(data), ArrayBufferHolder(key), ArrayBufferHolder(iv));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<ArrayBuffer> aesGcmEncryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override {
-      auto __result = _swiftPart.aesGcmEncryptBufferSync(ArrayBufferHolder(data), ArrayBufferHolder(key), ArrayBufferHolder(iv));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> aesGcmDecryptBuffer(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override {
-      auto __result = _swiftPart.aesGcmDecryptBuffer(ArrayBufferHolder(data), ArrayBufferHolder(key), ArrayBufferHolder(iv));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<ArrayBuffer> aesGcmDecryptBufferSync(const std::shared_ptr<ArrayBuffer>& data, const std::shared_ptr<ArrayBuffer>& key, const std::shared_ptr<ArrayBuffer>& iv) override {
-      auto __result = _swiftPart.aesGcmDecryptBufferSync(ArrayBufferHolder(data), ArrayBufferHolder(key), ArrayBufferHolder(iv));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<ArrayBuffer> randomBytesBuffer(double size) override {
-      auto __result = _swiftPart.randomBytesBuffer(std::forward<decltype(size)>(size));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

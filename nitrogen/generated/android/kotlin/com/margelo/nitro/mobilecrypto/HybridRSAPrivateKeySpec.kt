@@ -11,8 +11,8 @@ import androidx.annotation.Keep
 import com.facebook.jni.HybridData
 import com.facebook.proguard.annotations.DoNotStrip
 import dalvik.annotation.optimization.FastNative
-import com.margelo.nitro.core.ArrayBuffer
 import com.margelo.nitro.core.Promise
+import com.margelo.nitro.core.ArrayBuffer
 import com.margelo.nitro.core.HybridObject
 
 /**
@@ -33,11 +33,15 @@ abstract class HybridRSAPrivateKeySpec: HybridObject() {
   // Methods
   @DoNotStrip
   @Keep
-  abstract fun decrypt(ciphertext: ArrayBuffer): Promise<ArrayBuffer>
+  abstract fun decrypt(ciphertext: String): Promise<String>
   
   @DoNotStrip
   @Keep
   abstract fun sign(message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun exportJwk(): String
 
   // Default implementation of `HybridObject.toString()`
   override fun toString(): String {

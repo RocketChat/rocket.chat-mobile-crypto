@@ -1,296 +1,171 @@
 import { beforeAll, describe, expect, test } from 'react-native-harness';
 import {
-  rsaDecrypt,
-  rsaDecrypt64,
-  rsaEncrypt,
-  rsaEncrypt64,
-  rsaExportKey,
   rsaGenerateKeys,
-  rsaImportKey,
-  rsaPemToJwk,
-  rsaSign,
-  rsaSign64,
-  rsaVerify,
-  rsaVerify64,
-  type JWK,
+  rsaImportPrivateKey,
+  rsaImportPublicKey,
   type RSAHashAlgorithm,
+  type RSAKeyPair,
+  type RSAPrivateKey,
+  type RSAPublicKey,
 } from '@rocket.chat/mobile-crypto';
 import {
-  RSA_FIXED_JWK,
-  RSA_FIXED_OAEP_CIPHERTEXT_B64,
+  RSA_FIXED_OAEP_CIPHERTEXT,
   RSA_FIXED_PLAINTEXT,
-  RSA_FIXED_PRIVATE_KEY,
-  RSA_FIXED_PUBLIC_KEY,
-  RSA_FIXED_SIGNATURE_B64,
+  RSA_FIXED_PRIVATE_JWK,
+  RSA_FIXED_PUBLIC_JWK,
+  RSA_FIXED_SIGNATURE,
   RSA_FIXED_SIGN_MESSAGE,
-  RSA_SPKI_WITH_RSA_IN_BODY,
-  RSA_SPKI_WITH_RSA_IN_BODY_JWK,
+  RSA_UNICODE_OAEP_CIPHERTEXT,
+  RSA_UNICODE_PLAINTEXT,
 } from '../fixtures/rsa';
+import {
+  base64FromBuffer,
+  bufferFromAscii,
+  bufferFromBase64,
+} from './__fixtures__/bytes';
 
 describe('RSA encryption and signatures', () => {
-  let generatedKeys: { public: string; private: string };
+  let fixedPrivateKey: RSAPrivateKey;
+  let fixedPublicKey: RSAPublicKey;
+  let generatedKeys: RSAKeyPair;
 
   beforeAll(async () => {
+    fixedPrivateKey = await rsaImportPrivateKey(RSA_FIXED_PRIVATE_JWK);
+    fixedPublicKey = await rsaImportPublicKey(RSA_FIXED_PUBLIC_JWK);
     generatedKeys = await rsaGenerateKeys(2048);
   });
 
-  test('generates a usable 2048-bit PEM key pair', async () => {
-    expect(generatedKeys.public).toMatch(/-----BEGIN (RSA )?PUBLIC KEY-----/);
-    expect(generatedKeys.private).toMatch(/-----BEGIN (RSA )?PRIVATE KEY-----/);
-    const jwk = await rsaExportKey(generatedKeys.public);
-    expect(jwk.n).toHaveLength(342);
-    expect(jwk.e).toBe('AQAB');
+  test('decrypts the independent OAEP-SHA256 known-answer vector', async () => {
+    expect(await fixedPrivateKey.decrypt(RSA_FIXED_OAEP_CIPHERTEXT)).toBe(
+      RSA_FIXED_PLAINTEXT
+    );
   });
 
-  test('defaults to a 2048-bit key pair when no size is provided', async () => {
-    const keys = await rsaGenerateKeys();
-    const jwk = await rsaExportKey(keys.public);
-    expect(jwk.n).toHaveLength(342);
-    expect(keys.public).not.toBe(generatedKeys.public);
+  test('decrypts an independent OAEP-SHA256 ciphertext of UTF-8 text', async () => {
+    expect(await fixedPrivateKey.decrypt(RSA_UNICODE_OAEP_CIPHERTEXT)).toBe(
+      RSA_UNICODE_PLAINTEXT
+    );
+  });
+
+  test('round-trips UTF-8 text with the fixed keys', async () => {
+    const ciphertext = await fixedPublicKey.encrypt(RSA_UNICODE_PLAINTEXT);
+    expect(atob(ciphertext)).toHaveLength(256);
+    expect(await fixedPrivateKey.decrypt(ciphertext)).toBe(
+      RSA_UNICODE_PLAINTEXT
+    );
+  });
+
+  test('encrypts with randomized OAEP padding', async () => {
+    expect(await fixedPublicKey.encrypt('hello')).not.toBe(
+      await fixedPublicKey.encrypt('hello')
+    );
   });
 
   test('round-trips UTF-8 text with generated keys', async () => {
-    const message = 'Rocket.Chat 🔐 — olá';
-    const ciphertext = await rsaEncrypt(message, generatedKeys.public);
-    expect(ciphertext).not.toBe(message);
-    expect(await rsaDecrypt(ciphertext, generatedKeys.private)).toBe(message);
-  });
-
-  test('round-trips binary Base64 input without UTF-8 conversion', async () => {
-    const plaintext = 'AAF/gP7/';
-    const ciphertext = await rsaEncrypt64(plaintext, generatedKeys.public);
-    expect(await rsaDecrypt64(ciphertext, generatedKeys.private)).toBe(
-      plaintext
+    const ciphertext = await generatedKeys.publicKey.encrypt(
+      RSA_UNICODE_PLAINTEXT
     );
-  });
-
-  test('uses the same plaintext bytes for UTF-8 and Base64 encryption APIs', async () => {
-    const ciphertext = await rsaEncrypt64('aGVsbG8=', generatedKeys.public);
-    expect(await rsaDecrypt(ciphertext, generatedKeys.private)).toBe('hello');
-    const utf8Ciphertext = await rsaEncrypt('hello', generatedKeys.public);
-    expect(await rsaDecrypt64(utf8Ciphertext, generatedKeys.private)).toBe(
-      'aGVsbG8='
+    expect(await generatedKeys.privateKey.decrypt(ciphertext)).toBe(
+      RSA_UNICODE_PLAINTEXT
     );
-  });
-
-  test('decrypts the independent OAEP-SHA256 known-answer vector', async () => {
-    expect(
-      await rsaDecrypt(RSA_FIXED_OAEP_CIPHERTEXT_B64, RSA_FIXED_PRIVATE_KEY)
-    ).toBe(RSA_FIXED_PLAINTEXT);
-  });
-
-  test('decrypts the fixed OAEP ciphertext to Base64 bytes', async () => {
-    expect(
-      await rsaDecrypt64(RSA_FIXED_OAEP_CIPHERTEXT_B64, RSA_FIXED_PRIVATE_KEY)
-    ).toBe('SGVsbG8gUlNBIGZpeGVkIHZlY3RvciE=');
   });
 
   test('signs to the exact PKCS#1 v1.5 SHA-256 known answer', async () => {
-    expect(
-      await rsaSign(RSA_FIXED_SIGN_MESSAGE, RSA_FIXED_PRIVATE_KEY, 'SHA256')
-    ).toBe(RSA_FIXED_SIGNATURE_B64);
+    const signature = await fixedPrivateKey.sign(
+      bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
+      'SHA256'
+    );
+    expect(base64FromBuffer(signature)).toBe(RSA_FIXED_SIGNATURE);
   });
 
-  test('verifies the independent PKCS#1 v1.5 SHA-256 signature', async () => {
+  test('verifies the known signature and rejects a changed message', async () => {
+    const signature = bufferFromBase64(RSA_FIXED_SIGNATURE);
     expect(
-      await rsaVerify(
-        RSA_FIXED_SIGNATURE_B64,
-        RSA_FIXED_SIGN_MESSAGE,
-        RSA_FIXED_PUBLIC_KEY,
+      await fixedPublicKey.verify(
+        signature,
+        bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
         'SHA256'
       )
     ).toBe(true);
-  });
-
-  test('rejects a signature for a changed message', async () => {
     expect(
-      await rsaVerify(
-        RSA_FIXED_SIGNATURE_B64,
-        `${RSA_FIXED_SIGN_MESSAGE} modified`,
-        RSA_FIXED_PUBLIC_KEY,
+      await fixedPublicKey.verify(
+        signature,
+        bufferFromAscii(`${RSA_FIXED_SIGN_MESSAGE} modified`),
         'SHA256'
       )
     ).toBe(false);
   });
 
-  test('signs Base64-decoded bytes to the same fixed signature', async () => {
-    expect(
-      await rsaSign64(
-        'SGVsbG8gUlNBIHNpZ25hdHVyZSBmaXhlZCB2ZWN0b3Ih',
-        RSA_FIXED_PRIVATE_KEY,
-        'SHA256'
-      )
-    ).toBe(RSA_FIXED_SIGNATURE_B64);
+  test('rejects a signature made with a different hash', async () => {
+    const message = bufferFromAscii('message');
+    const signature = await fixedPrivateKey.sign(message, 'SHA1');
+    expect(await fixedPublicKey.verify(signature, message, 'SHA256')).toBe(
+      false
+    );
   });
 
-  test('rejects an unsupported signature hash', async () => {
-    await expect(
-      rsaSign(
-        RSA_FIXED_SIGN_MESSAGE,
-        RSA_FIXED_PRIVATE_KEY,
-        'unsupported' as RSAHashAlgorithm
-      )
-    ).rejects.toThrow(/"unsupported"/);
-  });
-
-  test('rejects an unsupported signature hash for Base64-decoded bytes', async () => {
-    await expect(
-      rsaSign64(
-        'SGVsbG8gUlNBIHNpZ25hdHVyZSBmaXhlZCB2ZWN0b3Ih',
-        RSA_FIXED_PRIVATE_KEY,
-        'unsupported' as RSAHashAlgorithm
-      )
-    ).rejects.toThrow(/"unsupported"/);
-  });
-
-  test('verifies the fixed signature against Base64-decoded bytes', async () => {
-    expect(
-      await rsaVerify64(
-        RSA_FIXED_SIGNATURE_B64,
-        'SGVsbG8gUlNBIHNpZ25hdHVyZSBmaXhlZCB2ZWN0b3Ih',
-        RSA_FIXED_PUBLIC_KEY,
-        'SHA256'
-      )
-    ).toBe(true);
-  });
-
-  test('rejects a signature for changed Base64-decoded bytes', async () => {
-    expect(
-      await rsaVerify64(
-        RSA_FIXED_SIGNATURE_B64,
-        'bW9kaWZpZWQ=',
-        RSA_FIXED_PUBLIC_KEY,
-        'SHA256'
-      )
-    ).toBe(false);
-  });
-
-  test('signs and verifies non-UTF-8 binary data', async () => {
-    const message = 'AAF/gP7/';
-    const signature = await rsaSign64(message, generatedKeys.private, 'SHA256');
-    expect(
-      await rsaVerify64(signature, message, generatedKeys.public, 'SHA256')
-    ).toBe(true);
-  });
-
-  for (const algorithm of [
+  for (const hash of [
     'SHA1',
     'SHA224',
     'SHA256',
     'SHA384',
     'SHA512',
   ] as const) {
-    test(`signs and verifies using ${algorithm}`, async () => {
-      const signature = await rsaSign(
-        'message',
-        generatedKeys.private,
-        algorithm
-      );
+    test(`signs and verifies non-UTF-8 bytes using ${hash}`, async () => {
+      const message = bufferFromBase64('AAF/gP7/');
+      const signature = await generatedKeys.privateKey.sign(message, hash);
       expect(
-        await rsaVerify(signature, 'message', generatedKeys.public, algorithm)
+        await generatedKeys.publicKey.verify(signature, message, hash)
       ).toBe(true);
     });
   }
 
-  test('signs and verifies when the optional hash is omitted', async () => {
-    const signature = await rsaSign('message', generatedKeys.private);
-    expect(await rsaVerify(signature, 'message', generatedKeys.public)).toBe(
-      true
+  test('signs and verifies a precomputed digest with Raw', async () => {
+    const digest = bufferFromBase64(
+      'LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ='
     );
+    const signature = await fixedPrivateKey.sign(digest, 'Raw');
+    expect(await fixedPublicKey.verify(signature, digest, 'Raw')).toBe(true);
+  });
+
+  test('stays usable across concurrent operations', async () => {
+    const message = bufferFromAscii(RSA_FIXED_SIGN_MESSAGE);
+    const signatures = await Promise.all(
+      Array.from({ length: 20 }, () => fixedPrivateKey.sign(message, 'SHA256'))
+    );
+    for (const signature of signatures) {
+      expect(base64FromBuffer(signature)).toBe(RSA_FIXED_SIGNATURE);
+    }
+  });
+
+  test('rejects an unsupported hash instead of throwing', async () => {
+    const message = bufferFromAscii(RSA_FIXED_SIGN_MESSAGE);
+    const unsupportedHash = 'unsupported' as RSAHashAlgorithm;
+    const signing = fixedPrivateKey.sign(message, unsupportedHash);
+    const verifying = fixedPublicKey.verify(message, message, unsupportedHash);
+    await expect(signing).rejects.toThrow(/"unsupported"/);
+    await expect(verifying).rejects.toThrow(/"unsupported"/);
+  });
+
+  test('rejects a non-string argument instead of throwing', async () => {
+    const notAString = 1 as unknown as string;
+    const decrypting = fixedPrivateKey.decrypt(notAString);
+    const encrypting = fixedPublicKey.encrypt(notAString);
+    await expect(decrypting).rejects.toThrow();
+    await expect(encrypting).rejects.toThrow();
   });
 
   test('rejects a ciphertext encrypted for a different private key', async () => {
     await expect(
-      rsaDecrypt(RSA_FIXED_OAEP_CIPHERTEXT_B64, generatedKeys.private)
+      generatedKeys.privateKey.decrypt(RSA_FIXED_OAEP_CIPHERTEXT)
     ).rejects.toThrow();
+  });
+
+  test('rejects a ciphertext that is not base64', async () => {
+    await expect(fixedPrivateKey.decrypt('not base64!')).rejects.toThrow();
   });
 
   test('rejects plaintext larger than the OAEP block can hold', async () => {
-    await expect(
-      rsaEncrypt('x'.repeat(256), generatedKeys.public)
-    ).rejects.toThrow();
-  });
-
-  test('rejects an invalid encryption key', async () => {
-    await expect(rsaEncrypt('hello', 'invalid PEM')).rejects.toThrow();
-  });
-});
-
-describe('RSA JWK conversions', () => {
-  test('exports the fixed public key modulus and exponent', async () => {
-    expect(await rsaExportKey(RSA_FIXED_PUBLIC_KEY)).toMatchObject(
-      RSA_FIXED_JWK
-    );
-  });
-
-  test('exports an SPKI public key whose body contains RSA', async () => {
-    expect(await rsaExportKey(RSA_SPKI_WITH_RSA_IN_BODY)).toMatchObject(
-      RSA_SPKI_WITH_RSA_IN_BODY_JWK
-    );
-  });
-
-  test('encrypts with an SPKI public key whose body contains RSA', async () => {
-    const ciphertext = await rsaEncrypt('hello', RSA_SPKI_WITH_RSA_IN_BODY);
-    expect(atob(ciphertext)).toHaveLength(256);
-  });
-
-  test('supports the rsaPemToJwk public alias', async () => {
-    expect(await rsaPemToJwk(RSA_FIXED_PUBLIC_KEY)).toMatchObject(
-      RSA_FIXED_JWK
-    );
-  });
-
-  test('imports a public JWK and preserves its key material', async () => {
-    const pem = await rsaImportKey(RSA_FIXED_JWK);
-    expect(pem).toContain('-----BEGIN RSA PUBLIC KEY-----');
-    expect(await rsaExportKey(pem)).toMatchObject(RSA_FIXED_JWK);
-    const encrypted = await rsaEncrypt('imported key', pem);
-    expect(await rsaDecrypt(encrypted, RSA_FIXED_PRIVATE_KEY)).toBe(
-      'imported key'
-    );
-  });
-
-  test('exports every private RSA component', async () => {
-    const jwk = await rsaExportKey(RSA_FIXED_PRIVATE_KEY);
-    expect(jwk).toMatchObject(RSA_FIXED_JWK);
-    for (const field of ['d', 'p', 'q', 'dp', 'dq', 'qi'] as const) {
-      expect(jwk[field]).toMatch(/^[A-Za-z0-9_-]+$/);
-    }
-  });
-
-  test('omits private components from public exports', async () => {
-    const privateFields = ['d', 'p', 'q', 'dp', 'dq', 'qi'];
-    const publicJwk = await rsaExportKey(RSA_FIXED_PUBLIC_KEY);
-    const aliasJwk = await rsaPemToJwk(RSA_FIXED_PUBLIC_KEY);
-    const privateJwk = await rsaExportKey(RSA_FIXED_PRIVATE_KEY);
-    for (const field of privateFields) {
-      expect(field in publicJwk).toBe(false);
-      expect(field in aliasJwk).toBe(false);
-      expect(field in privateJwk).toBe(true);
-    }
-  });
-
-  test('round-trips all private JWK components through PEM', async () => {
-    const original = await rsaExportKey(RSA_FIXED_PRIVATE_KEY);
-    const pem = await rsaImportKey(original);
-    expect(pem).toContain('-----BEGIN RSA PRIVATE KEY-----');
-    expect(await rsaExportKey(pem)).toEqual(original);
-  });
-
-  test('rejects a JWK without key components', async () => {
-    await expect(rsaImportKey({} as JWK)).rejects.toThrow();
-  });
-
-  test('rejects an invalid PEM export', async () => {
-    await expect(rsaExportKey('invalid PEM')).rejects.toThrow();
-  });
-
-  test('rejects a PKCS#1 public key with an overflowing length', async () => {
-    const pem = [
-      '-----BEGIN RSA PUBLIC KEY-----',
-      'MA0CiIAAAAAAAAAAAgEB',
-      '-----END RSA PUBLIC KEY-----',
-    ].join('\n');
-    await expect(rsaExportKey(pem)).rejects.toThrow();
+    await expect(fixedPublicKey.encrypt('x'.repeat(256))).rejects.toThrow();
   });
 });

@@ -14,10 +14,9 @@ final class HybridRSAPrivateKey: HybridRSAPrivateKeySpec {
     SecKeyGetBlockSize(key)
   }
 
-  func decrypt(ciphertext: ArrayBuffer) throws -> Promise<ArrayBuffer> {
-    let ciphertextData = ciphertext.copiedData()
+  func decrypt(ciphertext: String) throws -> Promise<String> {
     return Promise.parallel { [key] in
-      ArrayBuffer.copying(try RSACrypto.decrypt(ciphertextData, using: key).orThrow("Decryption failed"))
+      try RSACrypto.decrypt(ciphertext, using: key).orThrow("Decryption failed")
     }
   }
 
@@ -26,5 +25,9 @@ final class HybridRSAPrivateKey: HybridRSAPrivateKeySpec {
     return Promise.parallel { [key] in
       ArrayBuffer.copying(try RSACrypto.sign(messageData, using: key, hash: hash.coreAlgorithm).orThrow("Signing failed"))
     }
+  }
+
+  func exportJwk() throws -> String {
+    try RSAJWKConverter.json(ofPrivateKey: key).orThrow("Key export failed")
   }
 }

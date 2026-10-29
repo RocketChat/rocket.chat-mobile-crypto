@@ -1,12 +1,6 @@
 package chat.rocket.mobilecrypto.algorithms
 
-import android.util.Base64
-import android.util.LruCache
-import com.margelo.nitro.mobilecrypto.JWK
 import com.margelo.nitro.mobilecrypto.RSAHashAlgorithm
-import com.margelo.nitro.mobilecrypto.RSAKeyPair
-import java.io.StringReader
-import java.io.StringWriter
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.KeyPair
@@ -14,394 +8,129 @@ import java.security.KeyPairGenerator
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.Signature
-import java.security.interfaces.RSAPrivateKey
+import java.security.interfaces.RSAPrivateCrtKey
 import java.security.interfaces.RSAPublicKey
-import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.RSAPrivateCrtKeySpec
 import java.security.spec.RSAPublicKeySpec
-import java.security.spec.X509EncodedKeySpec
-import java.util.Arrays
 import javax.crypto.Cipher
-import org.bouncycastle.asn1.ASN1InputStream
-import org.bouncycastle.asn1.ASN1Primitive
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
-import org.bouncycastle.util.io.pem.PemObject
-import org.bouncycastle.util.io.pem.PemReader
-import org.bouncycastle.util.io.pem.PemWriter
 import org.json.JSONObject
 
-/**
- * RSA encryption, decryption, signing and key format conversion operations
- */
 object RSACrypto {
 
-    private const val KEY_CACHE_SIZE = 16
+    private const val KEY_ALGORITHM = "RSA"
     private const val CIPHER_ALGORITHM = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding"
-    private val publicKeyCache = LruCache<String, PublicKey>(KEY_CACHE_SIZE)
-    private val privateKeyCache = LruCache<String, PrivateKey>(KEY_CACHE_SIZE)
+    private const val JWK_HEADER_PREFIX = "{\"kty\":\"RSA\",\"alg\":\"RSA-OAEP-256\",\"ext\":true,\"key_ops\":"
 
-    /**
-     * Generate RSA key pair
-     * 
-     * @param keySize Key size in bits (default: 2048)
-     * @return PEM-formatted public and private keys
-     */
-    fun generateKeyPair(keySize: Int = 2048): RSAKeyPair {
-        val keyPairGenerator = KeyPairGenerator.getInstance("RSA")
+    fun generateKeyPair(keySize: Int): KeyPair {
+        val keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGORITHM)
         keyPairGenerator.initialize(keySize)
-        val keyPair = keyPairGenerator.generateKeyPair()
-        
-        val publicKeyBytes = keyPair.public.encoded
-        val privateKeyBytes = keyPair.private.encoded
-        
-        val publicPem = keyToPem(publicKeyBytes, "PUBLIC KEY")
-        val privatePem = keyToPem(privateKeyBytes, "PRIVATE KEY")
-        
-        return RSAKeyPair(publicPem, privatePem)
+        return keyPairGenerator.generateKeyPair()
     }
 
-    fun encrypt(message: String, publicKeyPem: String): String {
-        val encryptedBytes = encrypt(CryptoUtils.stringToUtf8Bytes(message), cachedPublicKey(publicKeyPem))
-        return CryptoUtils.encodeBase64NoWrap(encryptedBytes)
-    }
-
-    fun encryptBase64(messageBase64: String, publicKeyPem: String): String {
-        val encryptedBytes = encrypt(CryptoUtils.decodeBase64(messageBase64), cachedPublicKey(publicKeyPem))
-        return CryptoUtils.encodeBase64NoWrap(encryptedBytes)
-    }
-
-    fun decrypt(encryptedMessage: String, privateKeyPem: String): String {
-        val decryptedBytes = decrypt(CryptoUtils.decodeBase64(encryptedMessage), cachedPrivateKey(privateKeyPem))
-        return CryptoUtils.utf8BytesToString(decryptedBytes)
-    }
-
-    fun decryptToBase64(encryptedMessage: String, privateKeyPem: String): String {
-        val decryptedBytes = decrypt(CryptoUtils.decodeBase64(encryptedMessage), cachedPrivateKey(privateKeyPem))
-        return CryptoUtils.encodeBase64NoWrap(decryptedBytes)
-    }
-
-    fun sign(message: String, privateKeyPem: String, hash: RSAHashAlgorithm?): String {
-        val signatureBytes = sign(CryptoUtils.stringToUtf8Bytes(message), cachedPrivateKey(privateKeyPem), hash)
-        return CryptoUtils.encodeBase64NoWrap(signatureBytes)
-    }
-
-    fun signBase64(messageBase64: String, privateKeyPem: String, hash: RSAHashAlgorithm?): String {
-        val signatureBytes = sign(CryptoUtils.decodeBase64(messageBase64), cachedPrivateKey(privateKeyPem), hash)
-        return CryptoUtils.encodeBase64NoWrap(signatureBytes)
-    }
-
-    fun verify(signatureBase64: String, message: String, publicKeyPem: String, hash: RSAHashAlgorithm?): Boolean {
-        return verify(
-            CryptoUtils.decodeBase64(signatureBase64),
-            CryptoUtils.stringToUtf8Bytes(message),
-            cachedPublicKey(publicKeyPem),
-            hash
-        )
-    }
-
-    fun verifyBase64(signatureBase64: String, messageBase64: String, publicKeyPem: String, hash: RSAHashAlgorithm?): Boolean {
-        return verify(
-            CryptoUtils.decodeBase64(signatureBase64),
-            CryptoUtils.decodeBase64(messageBase64),
-            cachedPublicKey(publicKeyPem),
-            hash
-        )
-    }
-
-    fun encrypt(plaintext: ByteArray, publicKey: PublicKey): ByteArray {
+    fun encrypt(plaintext: String, publicKey: PublicKey): String {
         val cipher = Cipher.getInstance(CIPHER_ALGORITHM)
         cipher.init(Cipher.ENCRYPT_MODE, publicKey)
-        return cipher.doFinal(plaintext)
+        return CryptoUtils.encodeBase64(cipher.doFinal(CryptoUtils.encodeUtf8(plaintext)))
     }
 
-    fun decrypt(ciphertext: ByteArray, privateKey: PrivateKey): ByteArray {
+    fun decrypt(ciphertext: String, privateKey: PrivateKey): String {
         val cipher = Cipher.getInstance(CIPHER_ALGORITHM)
         cipher.init(Cipher.DECRYPT_MODE, privateKey)
-        return cipher.doFinal(ciphertext)
+        return CryptoUtils.decodeUtf8(cipher.doFinal(CryptoUtils.decodeBase64(ciphertext)))
     }
 
-    fun sign(message: ByteArray, privateKey: PrivateKey, hash: RSAHashAlgorithm?): ByteArray {
-        val signature = Signature.getInstance(signatureAlgorithm(hash))
+    fun sign(message: ByteArray, privateKey: PrivateKey, hash: RSAHashAlgorithm): ByteArray {
+        val signature = Signature.getInstance(hash.signatureAlgorithm)
         signature.initSign(privateKey)
         signature.update(message)
         return signature.sign()
     }
 
-    fun verify(signatureBytes: ByteArray, message: ByteArray, publicKey: PublicKey, hash: RSAHashAlgorithm?): Boolean {
-        val signature = Signature.getInstance(signatureAlgorithm(hash))
+    fun verify(signatureBytes: ByteArray, message: ByteArray, publicKey: PublicKey, hash: RSAHashAlgorithm): Boolean {
+        val signature = Signature.getInstance(hash.signatureAlgorithm)
         signature.initVerify(publicKey)
         signature.update(message)
         return signature.verify(signatureBytes)
     }
 
-    /**
-     * Import JWK format key to PEM format
-     * 
-     * @param jwk JWK key data
-     * @return PEM-formatted key
-     */
-    fun importJwkKey(jwk: JWK): String {
-        val isPrivate = jwk.d != null
-        
-        return if (isPrivate) {
-            jwkToPrivatePkcs1(jwk)
-        } else {
-            jwkToPublicPkcs1(jwk)
-        }
+    fun importPrivateKey(jwkJson: String): RSAPrivateCrtKey {
+        val jwk = parseRsaJwk(jwkJson)
+        val keySpec = RSAPrivateCrtKeySpec(
+            jwkComponent(jwk, "n"),
+            jwkComponent(jwk, "e"),
+            jwkComponent(jwk, "d"),
+            jwkComponent(jwk, "p"),
+            jwkComponent(jwk, "q"),
+            jwkComponent(jwk, "dp"),
+            jwkComponent(jwk, "dq"),
+            jwkComponent(jwk, "qi")
+        )
+        return KeyFactory.getInstance(KEY_ALGORITHM).generatePrivate(keySpec) as RSAPrivateCrtKey
     }
 
-    fun importJwkKey(jwkJson: String): String = importJwkKey(parseJwk(JSONObject(jwkJson)))
-
-    /**
-     * Export PEM key to JWK format
-     * 
-     * @param pemKey PEM-formatted key
-     * @return JWK key data
-     */
-    fun exportPemKey(pemKey: String): JWK {
-        val pemObject = readPem(pemKey)
-        val keyData = pemObject.content
-
-        return when (pemObject.type) {
-            "RSA PUBLIC KEY" -> pkcs1ToPublicKey(ASN1InputStream(keyData).readObject())
-            "PUBLIC KEY" -> pkcs1ToPublicKey(SubjectPublicKeyInfo.getInstance(keyData).parsePublicKey())
-            "RSA PRIVATE KEY" -> pkcs1ToPrivateKey(ASN1InputStream(keyData).readObject())
-            else -> pkcs1ToPrivateKey(PrivateKeyInfo.getInstance(keyData).parsePrivateKey().toASN1Primitive())
-        }
+    fun importPublicKey(jwkJson: String): RSAPublicKey {
+        val jwk = parseRsaJwk(jwkJson)
+        val keySpec = RSAPublicKeySpec(jwkComponent(jwk, "n"), jwkComponent(jwk, "e"))
+        return KeyFactory.getInstance(KEY_ALGORITHM).generatePublic(keySpec) as RSAPublicKey
     }
 
-    // Private helper methods
-
-    private fun signatureAlgorithm(hash: RSAHashAlgorithm?): String =
-        (hash ?: RSAHashAlgorithm.SHA1).signatureAlgorithm
-
-    private fun keyToPem(key: ByteArray, header: String): String {
-        val base64Key = Base64.encodeToString(key, Base64.DEFAULT)
-        val lines = base64Key.chunked(64)
-        return buildString {
-            appendLine("-----BEGIN $header-----")
-            lines.forEach { appendLine(it) }
-            appendLine("-----END $header-----")
-        }
-    }
-
-    private fun pemToKey(pem: String): ByteArray {
-        val lines = pem.lines().filter { 
-            !it.startsWith("-----") && it.isNotBlank() 
-        }
-        val base64Content = lines.joinToString("")
-        return Base64.decode(base64Content, Base64.DEFAULT)
-    }
-
-    private fun cachedPublicKey(publicKeyPem: String): PublicKey {
-        return publicKeyCache.get(publicKeyPem)
-            ?: createPublicKeyFromPem(publicKeyPem).also { publicKeyCache.put(publicKeyPem, it) }
-    }
-
-    private fun cachedPrivateKey(privateKeyPem: String): PrivateKey {
-        return privateKeyCache.get(privateKeyPem)
-            ?: createPrivateKeyFromPem(privateKeyPem).also { privateKeyCache.put(privateKeyPem, it) }
-    }
-
-    fun createPrivateKeyFromPem(privateKeyPem: String): RSAPrivateKey {
-        val keySpec = PKCS8EncodedKeySpec(pemToKey(privateKeyPem))
-        return KeyFactory.getInstance("RSA").generatePrivate(keySpec) as RSAPrivateKey
-    }
-
-    fun createPublicKeyFromPem(publicKeyPem: String): RSAPublicKey {
-        val pemObject = readPem(publicKeyPem)
-        val keyData = pemObject.content
-        val isRsaPkcs1 = pemObject.type == "RSA PUBLIC KEY"
-        val keyFactory = KeyFactory.getInstance("RSA")
-        
-        return if (isRsaPkcs1) {
-            // PKCS#1 RSA PUBLIC KEY format - need to convert to X.509
-            val inputStream = ASN1InputStream(keyData)
-            val obj = inputStream.readObject()
-            val rsaPublicKey = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(obj)
-            
-            val keySpec = RSAPublicKeySpec(rsaPublicKey.modulus, rsaPublicKey.publicExponent)
-            keyFactory.generatePublic(keySpec) as RSAPublicKey
-        } else {
-            // X.509 SubjectPublicKeyInfo format
-            val keySpec = X509EncodedKeySpec(keyData)
-            keyFactory.generatePublic(keySpec) as RSAPublicKey
-        }
-    }
-
-    private fun parseJwk(json: JSONObject): JWK {
-        fun optionalString(name: String): String? = if (json.isNull(name)) null else json.getString(name)
-        return JWK(
-            kty = optionalString("kty") ?: "RSA",
-            alg = optionalString("alg"),
-            ext = null,
-            key_ops = null,
-            n = json.getString("n"),
-            e = json.getString("e"),
-            d = optionalString("d"),
-            p = optionalString("p"),
-            q = optionalString("q"),
-            dp = optionalString("dp"),
-            dq = optionalString("dq"),
-            qi = optionalString("qi")
+    fun exportJwk(privateKey: RSAPrivateCrtKey): String {
+        return buildJwk(
+            "decrypt",
+            listOf(
+                "n" to privateKey.modulus,
+                "e" to privateKey.publicExponent,
+                "d" to privateKey.privateExponent,
+                "p" to privateKey.primeP,
+                "q" to privateKey.primeQ,
+                "dp" to privateKey.primeExponentP,
+                "dq" to privateKey.primeExponentQ,
+                "qi" to privateKey.crtCoefficient
+            )
         )
     }
 
-    private fun readPem(pemKey: String): PemObject {
-        val keyReader = StringReader(pemKey)
-        val pemReader = PemReader(keyReader)
-        return pemReader.readPemObject()
-    }
-
-    private fun jwkToPublicPkcs1(jwk: JWK): String {
-        val nStr = jwk.n
-        val eStr = jwk.e
-        
-        // Decode and validate parameters
-        val modulusBytes = decodeSequence(nStr)
-        val exponentBytes = decodeSequence(eStr)
-        
-        if (modulusBytes.isEmpty()) throw Exception("Empty modulus bytes")
-        if (exponentBytes.isEmpty()) throw Exception("Empty exponent bytes")
-        
-        val modulus = toBigInteger(modulusBytes)
-        val publicExponent = toBigInteger(exponentBytes)
-        
-        // Validate that modulus and exponent are positive
-        if (modulus <= BigInteger.ZERO) throw Exception("Invalid modulus: must be positive")
-        if (publicExponent <= BigInteger.ZERO) throw Exception("Invalid public exponent: must be positive")
-        
-        // Validate common RSA constraints
-        if (modulus.bitLength() < 512) throw Exception("RSA modulus too small: ${modulus.bitLength()} bits")
-        if (publicExponent < BigInteger.valueOf(3)) throw Exception("Public exponent too small")
-
-        val factory = KeyFactory.getInstance("RSA")
-        val keySpec = RSAPublicKeySpec(modulus, publicExponent)
-        val key = factory.generatePublic(keySpec)
-
-        val pemObject = PemObject("RSA PUBLIC KEY", publicKeyToPkcs1(key))
-        val stringWriter = StringWriter()
-        val pemWriter = PemWriter(stringWriter)
-        pemWriter.writeObject(pemObject)
-        pemWriter.close()
-
-        return stringWriter.toString()
-    }
-
-    private fun jwkToPrivatePkcs1(jwk: JWK): String {
-        val nStr = jwk.n
-        val eStr = jwk.e
-        val dStr = jwk.d ?: throw Exception("Missing 'd' parameter")
-        val pStr = jwk.p ?: throw Exception("Missing 'p' parameter")
-        val qStr = jwk.q ?: throw Exception("Missing 'q' parameter")
-        val dpStr = jwk.dp ?: throw Exception("Missing 'dp' parameter")
-        val dqStr = jwk.dq ?: throw Exception("Missing 'dq' parameter")
-        val qiStr = jwk.qi ?: throw Exception("Missing 'qi' parameter")
-
-        val modulus = toBigInteger(decodeSequence(nStr))
-        val publicExponent = toBigInteger(decodeSequence(eStr))
-        val privateExponent = toBigInteger(decodeSequence(dStr))
-        val primeP = toBigInteger(decodeSequence(pStr))
-        val primeQ = toBigInteger(decodeSequence(qStr))
-        val primeExpP = toBigInteger(decodeSequence(dpStr))
-        val primeExpQ = toBigInteger(decodeSequence(dqStr))
-        val crtCoefficient = toBigInteger(decodeSequence(qiStr))
-
-        val factory = KeyFactory.getInstance("RSA")
-        val key = factory.generatePrivate(RSAPrivateCrtKeySpec(
-            modulus,
-            publicExponent,
-            privateExponent,
-            primeP,
-            primeQ,
-            primeExpP,
-            primeExpQ,
-            crtCoefficient
-        )) as RSAPrivateKey
-
-        val pemObject = PemObject("RSA PRIVATE KEY", privateKeyToPkcs1(key))
-        val stringWriter = StringWriter()
-        val pemWriter = PemWriter(stringWriter)
-        pemWriter.writeObject(pemObject)
-        pemWriter.close()
-
-        return stringWriter.toString()
-    }
-
-    private fun pkcs1ToPublicKey(obj: ASN1Primitive): JWK {
-        val keyStruct = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(obj)
-
-        return JWK(
-            kty = "RSA",
-            alg = "RSA-OAEP-256",
-            ext = true,
-            key_ops = arrayOf("encrypt"),
-            n = toBase64String(keyStruct.modulus, true),
-            e = toBase64String(keyStruct.publicExponent, false),
-            d = null,
-            p = null,
-            q = null,
-            dp = null,
-            dq = null,
-            qi = null
+    fun exportJwk(publicKey: RSAPublicKey): String {
+        return buildJwk(
+            "encrypt",
+            listOf(
+                "n" to publicKey.modulus,
+                "e" to publicKey.publicExponent
+            )
         )
     }
 
-    private fun pkcs1ToPrivateKey(obj: ASN1Primitive): JWK {
-        val keyStruct = org.bouncycastle.asn1.pkcs.RSAPrivateKey.getInstance(obj)
-
-        return JWK(
-            kty = "RSA",
-            alg = "RSA-OAEP-256",
-            ext = true,
-            key_ops = arrayOf("decrypt"),
-            n = toBase64String(keyStruct.modulus, true),
-            e = toBase64String(keyStruct.publicExponent, true),
-            d = toBase64String(keyStruct.privateExponent, true),
-            p = toBase64String(keyStruct.prime1, true),
-            q = toBase64String(keyStruct.prime2, true),
-            dp = toBase64String(keyStruct.exponent1, true),
-            dq = toBase64String(keyStruct.exponent2, true),
-            qi = toBase64String(keyStruct.coefficient, true)
-        )
+    private fun parseRsaJwk(jwkJson: String): JSONObject {
+        val jwk = JSONObject(jwkJson)
+        val keyType = jwk.getString("kty")
+        require(keyType == "RSA") { "JWK kty must be RSA, got $keyType" }
+        return jwk
     }
 
-    private fun publicKeyToPkcs1(publicKey: PublicKey): ByteArray {
-        val spkInfo = SubjectPublicKeyInfo.getInstance(publicKey.encoded)
-        val primitive = spkInfo.parsePublicKey()
-        return primitive.encoded
-    }
-
-    private fun privateKeyToPkcs1(privateKey: PrivateKey): ByteArray {
-        val pkInfo = PrivateKeyInfo.getInstance(privateKey.encoded)
-        val encodeable = pkInfo.parsePrivateKey()
-        val primitive = encodeable.toASN1Primitive()
-        return primitive.encoded
-    }
-
-    private fun toBase64String(bigInteger: BigInteger, positive: Boolean): String {
-        var array = bigInteger.toByteArray()
-        if (positive && array[0] == 0.toByte()) {
-            array = Arrays.copyOfRange(array, 1, array.size)
-        }
-        return Base64.encodeToString(array, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-    }
-
-    private fun toBigInteger(bytes: ByteArray): BigInteger {
+    private fun jwkComponent(jwk: JSONObject, name: String): BigInteger {
+        val bytes = CryptoUtils.decodeBase64Url(jwk.getString(name))
+        require(bytes.isNotEmpty()) { "JWK component '$name' is empty" }
         return BigInteger(1, bytes)
     }
 
-    private fun decodeSequence(encodedSequence: String): ByteArray {
-        return try {
-            Base64.decode(encodedSequence, Base64.URL_SAFE)
-        } catch (e: Exception) {
-            // Try with standard Base64 if URL_SAFE fails
-            try {
-                Base64.decode(encodedSequence, Base64.DEFAULT)
-            } catch (e2: Exception) {
-                throw Exception("Failed to decode Base64 sequence: $encodedSequence", e2)
+    private fun buildJwk(keyOperation: String, components: List<Pair<String, BigInteger>>): String {
+        return buildString {
+            append(JWK_HEADER_PREFIX)
+            append("[\"").append(keyOperation).append("\"]")
+            components.forEach { (name, value) ->
+                append(",\"").append(name).append("\":\"").append(encodeUnsigned(value)).append('"')
             }
+            append('}')
         }
+    }
+
+    private fun encodeUnsigned(value: BigInteger): String {
+        val signedBytes = value.toByteArray()
+        val unsignedBytes = if (signedBytes.size > 1 && signedBytes[0] == 0.toByte()) {
+            signedBytes.copyOfRange(1, signedBytes.size)
+        } else {
+            signedBytes
+        }
+        return CryptoUtils.encodeBase64Url(unsignedBytes)
     }
 }
