@@ -10,8 +10,7 @@ import type { SHAAlgorithm } from './specs/SHAAlgorithm';
 const MobileCrypto =
   NitroModules.createHybridObject<MobileCryptoSpec>('MobileCrypto');
 
-const nullWhenUndefined = (value: string | undefined) =>
-  (value ?? null) as string;
+const nullWhenUndefined = (value: string | undefined) => value ?? null;
 
 const SYNC_INPUT_LIMIT = 32 * 1024;
 
@@ -113,7 +112,7 @@ export function aesEncrypt(
   dataBase64: string,
   keyHex: string,
   ivHex: string
-): Promise<string> {
+): Promise<string | null> {
   const ciphertext = runBySize(
     [dataBase64],
     () => MobileCrypto.aesEncryptSync(dataBase64, keyHex, ivHex),
@@ -126,7 +125,7 @@ export function aesDecrypt(
   dataBase64: string,
   keyHex: string,
   ivHex: string
-): Promise<string> {
+): Promise<string | null> {
   const plaintext = runBySize(
     [dataBase64],
     () => MobileCrypto.aesDecryptSync(dataBase64, keyHex, ivHex),
@@ -139,7 +138,7 @@ export function aesGcmEncrypt(
   dataBase64: string,
   keyHex: string,
   ivHex: string
-): Promise<string> {
+): Promise<string | null> {
   const ciphertext = runBySize(
     [dataBase64],
     () => MobileCrypto.aesGcmEncryptSync(dataBase64, keyHex, ivHex),
@@ -152,7 +151,7 @@ export function aesGcmDecrypt(
   dataBase64: string,
   keyHex: string,
   ivHex: string
-): Promise<string> {
+): Promise<string | null> {
   const plaintext = runBySize(
     [dataBase64],
     () => MobileCrypto.aesGcmDecryptSync(dataBase64, keyHex, ivHex),

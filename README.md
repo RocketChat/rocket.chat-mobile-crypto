@@ -255,8 +255,8 @@ const checksum = await calculateFileChecksum('/path/to/file');
 
 ### Symmetric Encryption
 
-- `aesEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>` - AES encryption
-- `aesDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string>` - AES decryption
+- `aesEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string | null>` - AES encryption
+- `aesDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string | null>` - AES decryption
 - `aesEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>` - AES-CBC encryption
 - `aesDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>` - AES-CBC decryption
 - `aesGcmEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>` - AES-GCM encryption (ciphertext followed by the 16-byte tag)
