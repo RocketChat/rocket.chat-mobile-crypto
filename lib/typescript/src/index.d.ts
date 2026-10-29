@@ -1,10 +1,16 @@
 import type { JWK } from './specs/JWK';
 import type { PBKDF2HashAlgorithm } from './specs/PBKDF2HashAlgorithm';
 import type { RSAHashAlgorithm } from './specs/RSAHashAlgorithm';
-import type { RSAPrivateKey } from './specs/RSAPrivateKey.nitro';
-import type { RSAPublicKey } from './specs/RSAPublicKey.nitro';
 import type { SHAAlgorithm } from './specs/SHAAlgorithm';
-export type { JWK, PBKDF2HashAlgorithm, RSAHashAlgorithm, RSAPrivateKey, RSAPublicKey, SHAAlgorithm, };
+export interface RSAPrivateKey {
+    decrypt(ciphertext: ArrayBuffer): Promise<ArrayBuffer>;
+    sign(message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>;
+}
+export interface RSAPublicKey {
+    encrypt(plaintext: ArrayBuffer): Promise<ArrayBuffer>;
+    verify(signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<boolean>;
+}
+export type { JWK, PBKDF2HashAlgorithm, RSAHashAlgorithm, SHAAlgorithm };
 export declare function shaBase64(data: string, algorithm: SHAAlgorithm): Promise<string>;
 export declare function shaUtf8(data: string, algorithm: SHAAlgorithm): Promise<string>;
 export declare function pbkdf2Hash(pwdBase64: string, saltBase64: string, iterations: number, keyLen: number, hash: PBKDF2HashAlgorithm): Promise<string>;

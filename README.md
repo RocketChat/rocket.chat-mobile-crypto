@@ -183,11 +183,11 @@ import {
 const privateKey = await rsaImportPrivateKey(keyPair.private);
 const publicKey = await rsaImportPublicKey(keyPair.public);
 
-const ciphertext = publicKey.encrypt(plaintextBytes);
+const ciphertext = await publicKey.encrypt(plaintextBytes);
 const plaintext = await privateKey.decrypt(ciphertext);
 
 const signature = await privateKey.sign(messageBytes, 'SHA256');
-const isValid = publicKey.verify(signature, messageBytes, 'SHA256');
+const isValid = await publicKey.verify(signature, messageBytes, 'SHA256');
 ```
 
 ### ArrayBuffer Variants
@@ -269,7 +269,7 @@ const checksum = await calculateFileChecksum('/path/to/file');
 - `rsaDecrypt(encodedMessage: string, privateKey: string): Promise<string>` - RSA decryption
 - `rsaDecrypt64(encodedMessage: string, privateKey: string): Promise<string>` - RSA decryption (base64)
 - `rsaImportPrivateKey(pem: string): Promise<RSAPrivateKey>` - Parse a private key once; `decrypt(ciphertext)` and `sign(message, hash)` resolve `ArrayBuffer`s
-- `rsaImportPublicKey(pem: string): Promise<RSAPublicKey>` - Parse a public key once; `encrypt(plaintext)` returns an `ArrayBuffer`, `verify(signature, message, hash)` a boolean
+- `rsaImportPublicKey(pem: string): Promise<RSAPublicKey>` - Parse a public key once; `encrypt(plaintext)` resolves an `ArrayBuffer`, `verify(signature, message, hash)` a boolean
 
 ### Digital Signatures (RSA)
 

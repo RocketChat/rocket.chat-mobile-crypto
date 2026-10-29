@@ -215,7 +215,7 @@ describe('benchmark', () => {
     await measure('rsaImportPrivateKey 2048', 300, () =>
       rsaImportPrivateKey(keyPair.private)
     );
-    await measure('RSAPublicKey.encrypt 2048', 300, async () =>
+    await measure('RSAPublicKey.encrypt 2048', 300, () =>
       publicKey.encrypt(helloBuffer)
     );
     await measure('RSAPrivateKey.decrypt 2048', 100, () =>
@@ -224,7 +224,7 @@ describe('benchmark', () => {
     await measure('RSAPrivateKey.sign SHA256 2048', 100, () =>
       privateKey.sign(helloBuffer, 'SHA256')
     );
-    await measure('RSAPublicKey.verify SHA256 2048', 300, async () =>
+    await measure('RSAPublicKey.verify SHA256 2048', 300, () =>
       publicKey.verify(signatureBuffer, helloBuffer, 'SHA256')
     );
     await measureConcurrent('shaUtf8 x200 concurrent', 200, 20, () =>

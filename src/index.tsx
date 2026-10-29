@@ -3,8 +3,8 @@ import type { JWK } from './specs/JWK';
 import type { MobileCrypto as MobileCryptoSpec } from './specs/MobileCrypto.nitro';
 import type { PBKDF2HashAlgorithm } from './specs/PBKDF2HashAlgorithm';
 import type { RSAHashAlgorithm } from './specs/RSAHashAlgorithm';
-import type { RSAPrivateKey } from './specs/RSAPrivateKey.nitro';
-import type { RSAPublicKey } from './specs/RSAPublicKey.nitro';
+import type { RSAPrivateKey as HybridRSAPrivateKey } from './specs/RSAPrivateKey.nitro';
+import type { RSAPublicKey as HybridRSAPublicKey } from './specs/RSAPublicKey.nitro';
 import type { SHAAlgorithm } from './specs/SHAAlgorithm';
 
 const MobileCrypto =
@@ -40,14 +40,32 @@ const runBySize = <T,>(
       : runAsync()
   );
 
-export type {
-  JWK,
-  PBKDF2HashAlgorithm,
-  RSAHashAlgorithm,
-  RSAPrivateKey,
-  RSAPublicKey,
-  SHAAlgorithm,
-};
+export interface RSAPrivateKey {
+  decrypt(ciphertext: ArrayBuffer): Promise<ArrayBuffer>;
+  sign(message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>;
+}
+
+export interface RSAPublicKey {
+  encrypt(plaintext: ArrayBuffer): Promise<ArrayBuffer>;
+  verify(
+    signature: ArrayBuffer,
+    message: ArrayBuffer,
+    hash: RSAHashAlgorithm
+  ): Promise<boolean>;
+}
+
+const rejectingPrivateKey = (key: HybridRSAPrivateKey): RSAPrivateKey => ({
+  decrypt: (ciphertext) => rejectOnThrow(() => key.decrypt(ciphertext)),
+  sign: (message, hash) => rejectOnThrow(() => key.sign(message, hash)),
+});
+
+const rejectingPublicKey = (key: HybridRSAPublicKey): RSAPublicKey => ({
+  encrypt: (plaintext) => rejectOnThrow(() => key.encrypt(plaintext)),
+  verify: (signature, message, hash) =>
+    rejectOnThrow(() => key.verify(signature, message, hash)),
+});
+
+export type { JWK, PBKDF2HashAlgorithm, RSAHashAlgorithm, SHAAlgorithm };
 
 export function shaBase64(
   data: string,
@@ -287,11 +305,15 @@ export function getRandomValues(length: number): Promise<string> {
 }
 
 export function rsaImportPrivateKey(pem: string): Promise<RSAPrivateKey> {
-  return rejectOnThrow(() => MobileCrypto.rsaImportPrivateKey(pem));
+  return rejectOnThrow(() => MobileCrypto.rsaImportPrivateKey(pem)).then(
+    rejectingPrivateKey
+  );
 }
 
 export function rsaImportPublicKey(pem: string): Promise<RSAPublicKey> {
-  return rejectOnThrow(() => MobileCrypto.rsaImportPublicKey(pem));
+  return rejectOnThrow(() => MobileCrypto.rsaImportPublicKey(pem)).then(
+    rejectingPublicKey
+  );
 }
 
 export function shaBuffer(

@@ -8,6 +8,7 @@ import {
   rsaImportPublicKey,
   rsaSign64,
   rsaVerify64,
+  type RSAHashAlgorithm,
   type RSAPrivateKey,
   type RSAPublicKey,
 } from '@rocket.chat/mobile-crypto';
@@ -50,17 +51,17 @@ describe('Imported RSA key objects', () => {
     expect(base64FromBuffer(signature)).toBe(RSA_FIXED_SIGNATURE_B64);
   });
 
-  test('verifies the known signature and rejects a changed message', () => {
+  test('verifies the known signature and rejects a changed message', async () => {
     const signature = bufferFromBase64(RSA_FIXED_SIGNATURE_B64);
     expect(
-      fixedPublicKey.verify(
+      await fixedPublicKey.verify(
         signature,
         bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
         'SHA256'
       )
     ).toBe(true);
     expect(
-      fixedPublicKey.verify(
+      await fixedPublicKey.verify(
         signature,
         bufferFromAscii(`${RSA_FIXED_SIGN_MESSAGE} modified`),
         'SHA256'
@@ -71,11 +72,15 @@ describe('Imported RSA key objects', () => {
   test('rejects a signature made with a different hash', async () => {
     const message = bufferFromAscii('message');
     const signature = await fixedPrivateKey.sign(message, 'SHA1');
-    expect(fixedPublicKey.verify(signature, message, 'SHA256')).toBe(false);
+    expect(await fixedPublicKey.verify(signature, message, 'SHA256')).toBe(
+      false
+    );
   });
 
   test('encrypts ciphertext that the PEM string API decrypts', async () => {
-    const ciphertext = fixedPublicKey.encrypt(bufferFromBase64('AAF/gP7/'));
+    const ciphertext = await fixedPublicKey.encrypt(
+      bufferFromBase64('AAF/gP7/')
+    );
     expect(
       await rsaDecrypt64(base64FromBuffer(ciphertext), RSA_FIXED_PRIVATE_KEY)
     ).toBe('AAF/gP7/');
@@ -121,7 +126,7 @@ describe('Imported RSA key objects', () => {
       'LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ='
     );
     const signature = await fixedPrivateKey.sign(digest, 'Raw');
-    expect(fixedPublicKey.verify(signature, digest, 'Raw')).toBe(true);
+    expect(await fixedPublicKey.verify(signature, digest, 'Raw')).toBe(true);
   });
 
   test('stays usable across concurrent operations', async () => {
@@ -139,7 +144,9 @@ describe('Imported RSA key objects', () => {
     const privateKey = await rsaImportPrivateKey(keys.private);
     const publicKey = await rsaImportPublicKey(keys.public);
     const plaintext = bufferFromAscii('generated key');
-    const decrypted = await privateKey.decrypt(publicKey.encrypt(plaintext));
+    const decrypted = await privateKey.decrypt(
+      await publicKey.encrypt(plaintext)
+    );
     expect(base64FromBuffer(decrypted)).toBe(base64FromBuffer(plaintext));
   });
 
@@ -148,7 +155,7 @@ describe('Imported RSA key objects', () => {
       await rsaImportKey(RSA_FIXED_JWK)
     );
     expect(
-      publicKey.verify(
+      await publicKey.verify(
         bufferFromBase64(RSA_FIXED_SIGNATURE_B64),
         bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
         'SHA256'
@@ -164,8 +171,27 @@ describe('Imported RSA key objects', () => {
     ).rejects.toThrow();
   });
 
-  test('throws for plaintext larger than the OAEP block can hold', () => {
-    expect(() => fixedPublicKey.encrypt(new Uint8Array(256).buffer)).toThrow();
+  test('rejects plaintext larger than the OAEP block can hold', async () => {
+    await expect(
+      fixedPublicKey.encrypt(new Uint8Array(256).buffer)
+    ).rejects.toThrow();
+  });
+
+  test('rejects an unknown hash instead of throwing', async () => {
+    const message = bufferFromAscii('message');
+    const unknownHash = 'bogus' as RSAHashAlgorithm;
+    const signing = fixedPrivateKey.sign(message, unknownHash);
+    const verifying = fixedPublicKey.verify(message, message, unknownHash);
+    await expect(signing).rejects.toThrow();
+    await expect(verifying).rejects.toThrow();
+  });
+
+  test('rejects a non-buffer argument instead of throwing', async () => {
+    const notABuffer = 'not a buffer' as unknown as ArrayBuffer;
+    const decrypting = fixedPrivateKey.decrypt(notABuffer);
+    const encrypting = fixedPublicKey.encrypt(notABuffer);
+    await expect(decrypting).rejects.toThrow();
+    await expect(encrypting).rejects.toThrow();
   });
 
   test('rejects an invalid private key PEM', async () => {
