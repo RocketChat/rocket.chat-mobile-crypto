@@ -113,6 +113,22 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
+  abstract fun rsaEncrypt(publicKey: HybridRSAPublicKeySpec, plaintext: String): String
+  
+  @DoNotStrip
+  @Keep
+  abstract fun rsaDecrypt(privateKey: HybridRSAPrivateKeySpec, ciphertext: String): Promise<String>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun rsaSign(privateKey: HybridRSAPrivateKeySpec, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>
+  
+  @DoNotStrip
+  @Keep
+  abstract fun rsaVerify(publicKey: HybridRSAPublicKeySpec, signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Boolean
+  
+  @DoNotStrip
+  @Keep
   abstract fun randomUuid(): String
   
   @DoNotStrip

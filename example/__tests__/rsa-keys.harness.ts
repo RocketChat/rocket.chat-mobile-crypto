@@ -1,8 +1,11 @@
 import { describe, expect, test } from 'react-native-harness';
 import {
+  rsaDecrypt,
+  rsaEncrypt,
   rsaGenerateKeys,
   rsaImportPrivateKey,
   rsaImportPublicKey,
+  rsaVerify,
 } from '@rocket.chat/mobile-crypto';
 import {
   RSA_FIXED_PRIVATE_JWK,
@@ -37,7 +40,8 @@ describe('RSA keys as JWK', () => {
     );
     expect(publicKey.exportJwk()).toBe(RSA_FIXED_PUBLIC_JWK);
     expect(
-      await publicKey.verify(
+      await rsaVerify(
+        publicKey,
         bufferFromBase64(RSA_FIXED_SIGNATURE),
         bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
         'SHA256'
@@ -75,10 +79,13 @@ describe('RSA keys as JWK', () => {
     expect(privateKey.exportJwk()).toBe(privateJwk);
     expect(publicKey.exportJwk()).toBe(publicJwk);
     expect(
-      await privateKey.decrypt(await keys.publicKey.encrypt('generated'))
+      await rsaDecrypt(
+        privateKey,
+        await rsaEncrypt(keys.publicKey, 'generated')
+      )
     ).toBe('generated');
     expect(
-      await keys.privateKey.decrypt(await publicKey.encrypt('imported'))
+      await rsaDecrypt(keys.privateKey, await rsaEncrypt(publicKey, 'imported'))
     ).toBe('imported');
   });
 

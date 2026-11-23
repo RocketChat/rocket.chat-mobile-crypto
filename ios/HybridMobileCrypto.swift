@@ -115,6 +115,29 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
     }
   }
 
+  func rsaEncrypt(publicKey: (any HybridRSAPublicKeySpec), plaintext: String) throws -> String {
+    try RSACrypto.encrypt(plaintext, using: publicKey.secKey()).orThrow("Encryption failed")
+  }
+
+  func rsaDecrypt(privateKey: (any HybridRSAPrivateKeySpec), ciphertext: String) throws -> Promise<String> {
+    let key = try privateKey.secKey()
+    return Promise.parallel {
+      try RSACrypto.decrypt(ciphertext, using: key).orThrow("Decryption failed")
+    }
+  }
+
+  func rsaSign(privateKey: (any HybridRSAPrivateKeySpec), message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Promise<ArrayBuffer> {
+    let key = try privateKey.secKey()
+    let messageData = ArrayBuffer.copy(of: message).toData(copyIfNeeded: true)
+    return Promise.parallel {
+      ArrayBuffer.copying(try RSACrypto.sign(messageData, using: key, hash: hash.coreAlgorithm).orThrow("Signing failed"))
+    }
+  }
+
+  func rsaVerify(publicKey: (any HybridRSAPublicKeySpec), signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Bool {
+    RSACrypto.verify(signature.toData(copyIfNeeded: true), message: message.toData(copyIfNeeded: true), using: try publicKey.secKey(), hash: hash.coreAlgorithm)
+  }
+
   func randomUuid() throws -> String {
     RandomGenerator.uuid()
   }

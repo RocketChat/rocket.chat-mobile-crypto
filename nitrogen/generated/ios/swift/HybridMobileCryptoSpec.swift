@@ -33,6 +33,10 @@ public protocol HybridMobileCryptoSpec_protocol: HybridObject {
   func rsaGenerateKeys(keySize: Double?) throws -> Promise<RSAKeyPair>
   func rsaImportPrivateKey(jwk: String) throws -> Promise<(any HybridRSAPrivateKeySpec)>
   func rsaImportPublicKey(jwk: String) throws -> Promise<(any HybridRSAPublicKeySpec)>
+  func rsaEncrypt(publicKey: (any HybridRSAPublicKeySpec), plaintext: String) throws -> String
+  func rsaDecrypt(privateKey: (any HybridRSAPrivateKeySpec), ciphertext: String) throws -> Promise<String>
+  func rsaSign(privateKey: (any HybridRSAPrivateKeySpec), message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Promise<ArrayBuffer>
+  func rsaVerify(publicKey: (any HybridRSAPublicKeySpec), signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Bool
   func randomUuid() throws -> String
   func randomKey(length: Double) throws -> String
   func randomBytes(size: Double) throws -> ArrayBuffer

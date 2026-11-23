@@ -9,9 +9,13 @@ import {
   hmac256,
   randomBytes,
   randomUuid,
+  rsaDecrypt,
+  rsaEncrypt,
   rsaGenerateKeys,
   rsaImportPrivateKey,
   rsaImportPublicKey,
+  rsaSign,
+  rsaVerify,
   sha,
 } from '@rocket.chat/mobile-crypto';
 import { Dirs, FileSystem } from 'react-native-file-access';
@@ -97,8 +101,8 @@ describe('benchmark', () => {
     const { publicKey, privateKey } = await rsaGenerateKeys(2048);
     const privateJwk = privateKey.exportJwk();
     const publicJwk = publicKey.exportJwk();
-    const rsaCiphertext = await publicKey.encrypt('hello');
-    const signature = await privateKey.sign(helloBuffer, 'SHA256');
+    const rsaCiphertext = await rsaEncrypt(publicKey, 'hello');
+    const signature = await rsaSign(privateKey, helloBuffer, 'SHA256');
 
     await measure('randomUuid', 1000, async () => randomUuid());
     await measure('randomBytes(16)', 1000, async () => randomBytes(16));
@@ -135,17 +139,17 @@ describe('benchmark', () => {
     await measure('RSAPrivateKey.exportJwk 2048', 300, async () =>
       privateKey.exportJwk()
     );
-    await measure('RSAPublicKey.encrypt 2048', 300, async () =>
-      publicKey.encrypt('hello')
+    await measure('rsaEncrypt 2048', 300, async () =>
+      rsaEncrypt(publicKey, 'hello')
     );
-    await measure('RSAPrivateKey.decrypt 2048', 100, () =>
-      privateKey.decrypt(rsaCiphertext)
+    await measure('rsaDecrypt 2048', 100, () =>
+      rsaDecrypt(privateKey, rsaCiphertext)
     );
-    await measure('RSAPrivateKey.sign SHA256 2048', 100, () =>
-      privateKey.sign(helloBuffer, 'SHA256')
+    await measure('rsaSign SHA256 2048', 100, () =>
+      rsaSign(privateKey, helloBuffer, 'SHA256')
     );
-    await measure('RSAPublicKey.verify SHA256 2048', 300, async () =>
-      publicKey.verify(signature, helloBuffer, 'SHA256')
+    await measure('rsaVerify SHA256 2048', 300, async () =>
+      rsaVerify(publicKey, signature, helloBuffer, 'SHA256')
     );
     await measure('rsaGenerateKeys 2048', 10, () => rsaGenerateKeys(2048));
     await measureConcurrent('sha x200 concurrent', 200, 20, () =>

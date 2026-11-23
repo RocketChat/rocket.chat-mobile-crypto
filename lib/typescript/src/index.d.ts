@@ -3,22 +3,11 @@ import type { AESKey } from './specs/AESKey.nitro';
 import type { EncryptedFile } from './specs/EncryptedFile';
 import type { PBKDF2HashAlgorithm } from './specs/PBKDF2HashAlgorithm';
 import type { RSAHashAlgorithm } from './specs/RSAHashAlgorithm';
+import type { RSAKeyPair } from './specs/RSAKeyPair';
+import type { RSAPrivateKey } from './specs/RSAPrivateKey.nitro';
+import type { RSAPublicKey } from './specs/RSAPublicKey.nitro';
 import type { SHAAlgorithm } from './specs/SHAAlgorithm';
-export interface RSAPrivateKey {
-    decrypt(ciphertext: string): Promise<string>;
-    sign(message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>;
-    exportJwk(): string;
-}
-export interface RSAPublicKey {
-    encrypt(plaintext: string): Promise<string>;
-    verify(signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<boolean>;
-    exportJwk(): string;
-}
-export interface RSAKeyPair {
-    publicKey: RSAPublicKey;
-    privateKey: RSAPrivateKey;
-}
-export type { AESGCMCiphertext, AESKey, EncryptedFile, PBKDF2HashAlgorithm, RSAHashAlgorithm, SHAAlgorithm, };
+export type { AESGCMCiphertext, AESKey, EncryptedFile, PBKDF2HashAlgorithm, RSAHashAlgorithm, RSAKeyPair, RSAPrivateKey, RSAPublicKey, SHAAlgorithm, };
 export declare function sha(data: ArrayBuffer, algorithm: SHAAlgorithm): Promise<ArrayBuffer>;
 export declare function hmac256(data: ArrayBuffer, key: ArrayBuffer): Promise<ArrayBuffer>;
 export declare function aesGenerateKey(byteLength: number): AESKey;
@@ -33,6 +22,10 @@ export declare function aesDecryptFile(file: EncryptedFile): Promise<string>;
 export declare function rsaGenerateKeys(keySize?: number): Promise<RSAKeyPair>;
 export declare function rsaImportPrivateKey(jwk: string): Promise<RSAPrivateKey>;
 export declare function rsaImportPublicKey(jwk: string): Promise<RSAPublicKey>;
+export declare function rsaEncrypt(publicKey: RSAPublicKey, plaintext: string): Promise<string>;
+export declare function rsaDecrypt(privateKey: RSAPrivateKey, ciphertext: string): Promise<string>;
+export declare function rsaSign(privateKey: RSAPrivateKey, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>;
+export declare function rsaVerify(publicKey: RSAPublicKey, signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<boolean>;
 export declare function randomUuid(): string;
 export declare function randomKey(length: number): string;
 export declare function randomBytes(size: number): ArrayBuffer;

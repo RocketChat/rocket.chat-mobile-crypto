@@ -125,44 +125,6 @@ open class HybridRSAPrivateKeySpec_cxx {
 
   // Methods
   @inline(__always)
-  public final func decrypt(ciphertext: std.string) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
-    do {
-      let __result = try self.__implementation.decrypt(ciphertext: String(ciphertext))
-      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__string__ in
-        let __promise = bridge.create_std__shared_ptr_Promise_std__string__()
-        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__string__(__promise)
-        __result
-          .then({ __result in __promiseHolder.resolve(std.string(__result)) })
-          .catch({ __error in __promiseHolder.reject(__error.toCpp()) })
-        return __promise
-      }()
-      return bridge.create_Result_std__shared_ptr_Promise_std__string___(__resultCpp)
-    } catch (let __error) {
-      let __exceptionPtr = __error.toCpp()
-      return bridge.create_Result_std__shared_ptr_Promise_std__string___(__exceptionPtr)
-    }
-  }
-  
-  @inline(__always)
-  public final func sign(message: ArrayBuffer, hash: Int32) -> bridge.Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____ {
-    do {
-      let __result = try self.__implementation.sign(message: message, hash: margelo.nitro.mobilecrypto.RSAHashAlgorithm(rawValue: hash)!)
-      let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___ in
-        let __promise = bridge.create_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___()
-        let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer___(__promise)
-        __result
-          .then({ __result in __promiseHolder.resolve(__result.getArrayBuffer()) })
-          .catch({ __error in __promiseHolder.reject(__error.toCpp()) })
-        return __promise
-      }()
-      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__resultCpp)
-    } catch (let __error) {
-      let __exceptionPtr = __error.toCpp()
-      return bridge.create_Result_std__shared_ptr_Promise_std__shared_ptr_ArrayBuffer____(__exceptionPtr)
-    }
-  }
-  
-  @inline(__always)
   public final func exportJwk() -> bridge.Result_std__string_ {
     do {
       let __result = try self.__implementation.exportJwk()

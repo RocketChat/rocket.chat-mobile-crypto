@@ -5,9 +5,9 @@ import type { EncryptedFile } from './specs/EncryptedFile';
 import type { MobileCrypto as MobileCryptoSpec } from './specs/MobileCrypto.nitro';
 import type { PBKDF2HashAlgorithm } from './specs/PBKDF2HashAlgorithm';
 import type { RSAHashAlgorithm } from './specs/RSAHashAlgorithm';
-import type { RSAKeyPair as HybridRSAKeyPair } from './specs/RSAKeyPair';
-import type { RSAPrivateKey as HybridRSAPrivateKey } from './specs/RSAPrivateKey.nitro';
-import type { RSAPublicKey as HybridRSAPublicKey } from './specs/RSAPublicKey.nitro';
+import type { RSAKeyPair } from './specs/RSAKeyPair';
+import type { RSAPrivateKey } from './specs/RSAPrivateKey.nitro';
+import type { RSAPublicKey } from './specs/RSAPublicKey.nitro';
 import type { SHAAlgorithm } from './specs/SHAAlgorithm';
 
 const MobileCrypto =
@@ -40,54 +40,15 @@ const runBySize = <T,>(
       : runAsync()
   );
 
-export interface RSAPrivateKey {
-  decrypt(ciphertext: string): Promise<string>;
-  sign(message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>;
-  exportJwk(): string;
-}
-
-export interface RSAPublicKey {
-  encrypt(plaintext: string): Promise<string>;
-  verify(
-    signature: ArrayBuffer,
-    message: ArrayBuffer,
-    hash: RSAHashAlgorithm
-  ): Promise<boolean>;
-  exportJwk(): string;
-}
-
-export interface RSAKeyPair {
-  publicKey: RSAPublicKey;
-  privateKey: RSAPrivateKey;
-}
-
-const rejectingPrivateKey = (key: HybridRSAPrivateKey): RSAPrivateKey => ({
-  decrypt: (ciphertext) => rejectOnThrow(() => key.decrypt(ciphertext)),
-  sign: (message, hash) => rejectOnThrow(() => key.sign(message, hash)),
-  exportJwk: () => key.exportJwk(),
-});
-
-const rejectingPublicKey = (key: HybridRSAPublicKey): RSAPublicKey => ({
-  encrypt: (plaintext) => rejectOnThrow(() => key.encrypt(plaintext)),
-  verify: (signature, message, hash) =>
-    rejectOnThrow(() => key.verify(signature, message, hash)),
-  exportJwk: () => key.exportJwk(),
-});
-
-const rejectingKeyPair = ({
-  publicKey,
-  privateKey,
-}: HybridRSAKeyPair): RSAKeyPair => ({
-  publicKey: rejectingPublicKey(publicKey),
-  privateKey: rejectingPrivateKey(privateKey),
-});
-
 export type {
   AESGCMCiphertext,
   AESKey,
   EncryptedFile,
   PBKDF2HashAlgorithm,
   RSAHashAlgorithm,
+  RSAKeyPair,
+  RSAPrivateKey,
+  RSAPublicKey,
   SHAAlgorithm,
 };
 
@@ -189,20 +150,47 @@ export function aesDecryptFile(file: EncryptedFile): Promise<string> {
 }
 
 export function rsaGenerateKeys(keySize?: number): Promise<RSAKeyPair> {
-  return rejectOnThrow(() => MobileCrypto.rsaGenerateKeys(keySize)).then(
-    rejectingKeyPair
-  );
+  return rejectOnThrow(() => MobileCrypto.rsaGenerateKeys(keySize));
 }
 
 export function rsaImportPrivateKey(jwk: string): Promise<RSAPrivateKey> {
-  return rejectOnThrow(() => MobileCrypto.rsaImportPrivateKey(jwk)).then(
-    rejectingPrivateKey
-  );
+  return rejectOnThrow(() => MobileCrypto.rsaImportPrivateKey(jwk));
 }
 
 export function rsaImportPublicKey(jwk: string): Promise<RSAPublicKey> {
-  return rejectOnThrow(() => MobileCrypto.rsaImportPublicKey(jwk)).then(
-    rejectingPublicKey
+  return rejectOnThrow(() => MobileCrypto.rsaImportPublicKey(jwk));
+}
+
+export function rsaEncrypt(
+  publicKey: RSAPublicKey,
+  plaintext: string
+): Promise<string> {
+  return rejectOnThrow(() => MobileCrypto.rsaEncrypt(publicKey, plaintext));
+}
+
+export function rsaDecrypt(
+  privateKey: RSAPrivateKey,
+  ciphertext: string
+): Promise<string> {
+  return rejectOnThrow(() => MobileCrypto.rsaDecrypt(privateKey, ciphertext));
+}
+
+export function rsaSign(
+  privateKey: RSAPrivateKey,
+  message: ArrayBuffer,
+  hash: RSAHashAlgorithm
+): Promise<ArrayBuffer> {
+  return rejectOnThrow(() => MobileCrypto.rsaSign(privateKey, message, hash));
+}
+
+export function rsaVerify(
+  publicKey: RSAPublicKey,
+  signature: ArrayBuffer,
+  message: ArrayBuffer,
+  hash: RSAHashAlgorithm
+): Promise<boolean> {
+  return rejectOnThrow(() =>
+    MobileCrypto.rsaVerify(publicKey, signature, message, hash)
   );
 }
 

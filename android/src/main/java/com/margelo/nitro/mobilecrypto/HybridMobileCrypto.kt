@@ -102,6 +102,28 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
   override fun rsaImportPublicKey(jwk: String): Promise<HybridRSAPublicKeySpec> =
     Promise.async { HybridRSAPublicKey(RSACrypto.importPublicKey(jwk)) }
 
+  override fun rsaEncrypt(publicKey: HybridRSAPublicKeySpec, plaintext: String): String =
+    RSACrypto.encrypt(plaintext, publicKey.rsaPublicKey)
+
+  override fun rsaDecrypt(privateKey: HybridRSAPrivateKeySpec, ciphertext: String): Promise<String> {
+    val key = privateKey.rsaPrivateKey
+    return Promise.async { RSACrypto.decrypt(ciphertext, key) }
+  }
+
+  override fun rsaSign(privateKey: HybridRSAPrivateKeySpec, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer> {
+    val key = privateKey.rsaPrivateKey
+    val messageBytes = message.toByteArray()
+    return Promise.async { ArrayBuffer.copy(RSACrypto.sign(messageBytes, key, hash)) }
+  }
+
+  override fun rsaVerify(
+    publicKey: HybridRSAPublicKeySpec,
+    signature: ArrayBuffer,
+    message: ArrayBuffer,
+    hash: RSAHashAlgorithm
+  ): Boolean =
+    RSACrypto.verify(signature.toByteArray(), message.toByteArray(), publicKey.rsaPublicKey, hash)
+
   override fun randomUuid(): String =
     RandomUtils.generateUuid()
 
@@ -110,6 +132,14 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
 
   override fun randomBytes(size: Double): ArrayBuffer =
     ArrayBuffer.copy(RandomUtils.generateRandomBytes(size.toInt()))
+
+  private val HybridRSAPrivateKeySpec.rsaPrivateKey: RSAPrivateCrtKey
+    get() = (this as? HybridRSAPrivateKey)?.privateKey
+      ?: throw IllegalArgumentException("RSA private key must be created by MobileCrypto, got $this")
+
+  private val HybridRSAPublicKeySpec.rsaPublicKey: RSAPublicKey
+    get() = (this as? HybridRSAPublicKey)?.publicKey
+      ?: throw IllegalArgumentException("RSA public key must be created by MobileCrypto, got $this")
 
   private val HybridAESKeySpec.aesKey: AESKey
     get() = (this as? HybridAESKey)?.key

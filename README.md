@@ -51,7 +51,7 @@ On Android, a string argument passed from JavaScript stops at its first NUL
 character (`\0`); the rest is dropped without an error. iOS keeps the whole
 string. Rocket.Chat inputs can't contain a raw NUL (base64, file paths, JSON),
 but arbitrary text passed to `aesGcmEncrypt`, `aesCbcEncrypt` or
-`RSAPublicKey.encrypt` would be encrypted truncated on Android. Tracked in
+`rsaEncrypt` would be encrypted truncated on Android. Tracked in
 [NATIVE-1874](https://rocketchat.atlassian.net/browse/NATIVE-1874).
 
 ## Usage
@@ -136,9 +136,13 @@ mismatch it removes the decrypted output and rejects.
 
 ```ts
 import {
+  rsaDecrypt,
+  rsaEncrypt,
   rsaGenerateKeys,
   rsaImportPrivateKey,
   rsaImportPublicKey,
+  rsaSign,
+  rsaVerify,
 } from '@rocket.chat/mobile-crypto';
 
 const { publicKey, privateKey } = await rsaGenerateKeys(2048);
@@ -147,11 +151,12 @@ const storedPrivateKey = privateKey.exportJwk(); // JWK JSON string
 const restoredPrivateKey = await rsaImportPrivateKey(storedPrivateKey);
 const restoredPublicKey = await rsaImportPublicKey(publicJwkJson);
 
-const ciphertext = await restoredPublicKey.encrypt('Hello'); // base64, RSA-OAEP SHA-256
-const plaintext = await restoredPrivateKey.decrypt(ciphertext);
+const ciphertext = await rsaEncrypt(restoredPublicKey, 'Hello'); // base64, RSA-OAEP SHA-256
+const plaintext = await rsaDecrypt(restoredPrivateKey, ciphertext);
 
-const signature = await restoredPrivateKey.sign(messageBytes, 'SHA256');
-const isValid = await restoredPublicKey.verify(
+const signature = await rsaSign(restoredPrivateKey, messageBytes, 'SHA256');
+const isValid = await rsaVerify(
+  restoredPublicKey,
   signature,
   messageBytes,
   'SHA256'
@@ -205,15 +210,15 @@ and `hashes.sha256` to decrypt a received file.
 
 ### RSA
 
-- `rsaGenerateKeys(keySize = 2048): Promise<{ publicKey: RSAPublicKey; privateKey: RSAPrivateKey }>`
+- `rsaGenerateKeys(keySize = 2048): Promise<RSAKeyPair>` - `RSAKeyPair` is `{ publicKey: RSAPublicKey; privateKey: RSAPrivateKey }`
 - `rsaImportPrivateKey(jwk: string): Promise<RSAPrivateKey>`
 - `rsaImportPublicKey(jwk: string): Promise<RSAPublicKey>`
-- `RSAPrivateKey.decrypt(ciphertext: string): Promise<string>`
-- `RSAPrivateKey.sign(message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>` - PKCS#1 v1.5
 - `RSAPrivateKey.exportJwk(): string`
-- `RSAPublicKey.encrypt(plaintext: string): Promise<string>`
-- `RSAPublicKey.verify(signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<boolean>`
 - `RSAPublicKey.exportJwk(): string`
+- `rsaEncrypt(publicKey: RSAPublicKey, plaintext: string): Promise<string>`
+- `rsaDecrypt(privateKey: RSAPrivateKey, ciphertext: string): Promise<string>`
+- `rsaSign(privateKey: RSAPrivateKey, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>` - PKCS#1 v1.5
+- `rsaVerify(publicKey: RSAPublicKey, signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<boolean>`
 
 `RSAHashAlgorithm` is `'Raw' | 'SHA1' | 'SHA224' | 'SHA256' | 'SHA384' | 'SHA512'`. `Raw` signs the message as an already computed digest.
 
@@ -244,10 +249,10 @@ and failures reject or throw instead of resolving `null`.
 | `rsaGenerateKeys()` returning PEM `{ public, private }`                                   | `rsaGenerateKeys()` returning `{ publicKey, privateKey }` key objects; persist them with `exportJwk()`                                       |
 | `rsaImportPrivateKey(pem)`, `rsaImportPublicKey(pem)`                                     | the same functions, taking a JWK JSON string                                                                                                 |
 | `rsaImportKey(jwk)` (JWK to PEM), `rsaExportKey(pem)`, `rsaPemToJwk(pem)`                 | `rsaImportPrivateKey(jwkJson)` / `rsaImportPublicKey(jwkJson)` and `exportJwk()`                                                             |
-| `rsaEncrypt(text, publicKeyPem)`, `rsaEncrypt64`                                          | `publicKey.encrypt(text)`                                                                                                                    |
-| `rsaDecrypt(ciphertext, privateKeyPem)`, `rsaDecrypt64`                                   | `privateKey.decrypt(ciphertext)`, returning UTF-8                                                                                            |
-| `rsaSign(message, privateKeyPem, hash)`, `rsaSign64`                                      | `privateKey.sign(messageBytes, hash)`, returning an `ArrayBuffer`                                                                            |
-| `rsaVerify(signature, message, publicKeyPem, hash)`, `rsaVerify64`                        | `publicKey.verify(signatureBytes, messageBytes, hash)`                                                                                       |
+| `rsaEncrypt(text, publicKeyPem)`, `rsaEncrypt64`                                          | `rsaEncrypt(publicKey, text)`                                                                                                                |
+| `rsaDecrypt(ciphertext, privateKeyPem)`, `rsaDecrypt64`                                   | `rsaDecrypt(privateKey, ciphertext)`, returning UTF-8                                                                                        |
+| `rsaSign(message, privateKeyPem, hash)`, `rsaSign64`                                      | `rsaSign(privateKey, messageBytes, hash)`, returning an `ArrayBuffer`                                                                        |
+| `rsaVerify(signature, message, publicKeyPem, hash)`, `rsaVerify64`                        | `rsaVerify(publicKey, signatureBytes, messageBytes, hash)`                                                                                   |
 | `randomBytes(size)` (base64), `randomBytesBuffer(size)`                                   | `randomBytes(size)`, returning an `ArrayBuffer` synchronously                                                                                |
 | `randomUuid()`, `randomKey(length)`                                                       | unchanged values, now returned synchronously                                                                                                 |
 | `getRandomValues(length)`                                                                 | removed                                                                                                                                      |

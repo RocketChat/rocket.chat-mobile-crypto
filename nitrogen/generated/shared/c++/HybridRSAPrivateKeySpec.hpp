@@ -13,13 +13,9 @@
 #error NitroModules cannot be found! Are you sure you installed NitroModules properly?
 #endif
 
-// Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
-namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
+
 
 #include <string>
-#include <NitroModules/Promise.hpp>
-#include <NitroModules/ArrayBuffer.hpp>
-#include "RSAHashAlgorithm.hpp"
 
 namespace margelo::nitro::mobilecrypto {
 
@@ -52,8 +48,6 @@ namespace margelo::nitro::mobilecrypto {
 
     public:
       // Methods
-      virtual std::shared_ptr<Promise<std::string>> decrypt(const std::string& ciphertext) = 0;
-      virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> sign(const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) = 0;
       virtual std::string exportJwk() = 0;
 
     protected:

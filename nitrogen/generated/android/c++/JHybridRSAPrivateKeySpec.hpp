@@ -54,8 +54,6 @@ namespace margelo::nitro::mobilecrypto {
 
   public:
     // Methods
-    std::shared_ptr<Promise<std::string>> decrypt(const std::string& ciphertext) override;
-    std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> sign(const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) override;
     std::string exportJwk() override;
 
   private:

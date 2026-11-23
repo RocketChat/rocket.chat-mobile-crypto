@@ -3,19 +3,12 @@ package com.margelo.nitro.mobilecrypto
 import androidx.annotation.Keep
 import chat.rocket.mobilecrypto.algorithms.RSACrypto
 import com.facebook.proguard.annotations.DoNotStrip
-import com.margelo.nitro.core.ArrayBuffer
 import java.security.interfaces.RSAPublicKey
 
 @Keep
 @DoNotStrip
-class HybridRSAPublicKey(private val publicKey: RSAPublicKey) : HybridRSAPublicKeySpec() {
+class HybridRSAPublicKey(val publicKey: RSAPublicKey) : HybridRSAPublicKeySpec() {
   override val memorySize: Long = publicKey.modulus.bitLength().toLong() / 8
-
-  override fun encrypt(plaintext: String): String =
-    RSACrypto.encrypt(plaintext, publicKey)
-
-  override fun verify(signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Boolean =
-    RSACrypto.verify(signature.toByteArray(), message.toByteArray(), publicKey, hash)
 
   override fun exportJwk(): String =
     RSACrypto.exportJwk(publicKey)

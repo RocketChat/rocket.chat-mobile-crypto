@@ -30,6 +30,8 @@ namespace margelo::nitro::mobilecrypto { struct RSAKeyPair; }
 namespace margelo::nitro::mobilecrypto { class HybridRSAPublicKeySpec; }
 // Forward declaration of `HybridRSAPrivateKeySpec` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
+// Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
 
 #include <NitroModules/ArrayBuffer.hpp>
 #include <NitroModules/Promise.hpp>
@@ -45,6 +47,7 @@ namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
 #include "HybridRSAPublicKeySpec.hpp"
 #include "HybridRSAPrivateKeySpec.hpp"
 #include <optional>
+#include "RSAHashAlgorithm.hpp"
 
 #include "MobileCrypto-Swift-Cxx-Umbrella.hpp"
 
@@ -250,6 +253,38 @@ namespace margelo::nitro::mobilecrypto {
     }
     inline std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> rsaImportPublicKey(const std::string& jwk) override {
       auto __result = _swiftPart.rsaImportPublicKey(jwk);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::string rsaEncrypt(const std::shared_ptr<HybridRSAPublicKeySpec>& publicKey, const std::string& plaintext) override {
+      auto __result = _swiftPart.rsaEncrypt(publicKey, plaintext);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::shared_ptr<Promise<std::string>> rsaDecrypt(const std::shared_ptr<HybridRSAPrivateKeySpec>& privateKey, const std::string& ciphertext) override {
+      auto __result = _swiftPart.rsaDecrypt(privateKey, ciphertext);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> rsaSign(const std::shared_ptr<HybridRSAPrivateKeySpec>& privateKey, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) override {
+      auto __result = _swiftPart.rsaSign(privateKey, ArrayBufferHolder(message), static_cast<int>(hash));
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline bool rsaVerify(const std::shared_ptr<HybridRSAPublicKeySpec>& publicKey, const std::shared_ptr<ArrayBuffer>& signature, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) override {
+      auto __result = _swiftPart.rsaVerify(publicKey, ArrayBufferHolder(signature), ArrayBufferHolder(message), static_cast<int>(hash));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

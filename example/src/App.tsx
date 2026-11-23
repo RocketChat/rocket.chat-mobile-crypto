@@ -12,9 +12,13 @@ import {
   randomBytes,
   randomKey,
   randomUuid,
+  rsaDecrypt,
+  rsaEncrypt,
   rsaGenerateKeys,
   rsaImportPrivateKey,
   rsaImportPublicKey,
+  rsaSign,
+  rsaVerify,
   sha,
 } from '@rocket.chat/mobile-crypto';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -148,7 +152,8 @@ const checks: Check[] = [
     label: 'RSA OAEP-SHA256 decrypt (fixed vector)',
     expected: RSA_FIXED_PLAINTEXT,
     run: async () =>
-      (await rsaImportPrivateKey(RSA_FIXED_PRIVATE_JWK)).decrypt(
+      rsaDecrypt(
+        await rsaImportPrivateKey(RSA_FIXED_PRIVATE_JWK),
         RSA_FIXED_OAEP_CIPHERTEXT
       ),
   },
@@ -157,9 +162,11 @@ const checks: Check[] = [
     expected: RSA_FIXED_SIGNATURE,
     run: async () =>
       base64FromBuffer(
-        await (
-          await rsaImportPrivateKey(RSA_FIXED_PRIVATE_JWK)
-        ).sign(bufferFromAscii(RSA_FIXED_SIGN_MESSAGE), 'SHA256')
+        await rsaSign(
+          await rsaImportPrivateKey(RSA_FIXED_PRIVATE_JWK),
+          bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
+          'SHA256'
+        )
       ),
   },
   {
@@ -167,9 +174,8 @@ const checks: Check[] = [
     expected: 'true',
     run: async () =>
       String(
-        await (
-          await rsaImportPublicKey(RSA_FIXED_PUBLIC_JWK)
-        ).verify(
+        await rsaVerify(
+          await rsaImportPublicKey(RSA_FIXED_PUBLIC_JWK),
           bufferFromBase64(RSA_FIXED_SIGNATURE),
           bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
           'SHA256'
@@ -187,7 +193,10 @@ const checks: Check[] = [
     expected: unicodeVector.text,
     run: async () => {
       const { publicKey, privateKey } = await rsaGenerateKeys(2048);
-      return privateKey.decrypt(await publicKey.encrypt(unicodeVector.text));
+      return rsaDecrypt(
+        privateKey,
+        await rsaEncrypt(publicKey, unicodeVector.text)
+      );
     },
   },
   {

@@ -74,6 +74,10 @@ namespace margelo::nitro::mobilecrypto {
     std::shared_ptr<Promise<RSAKeyPair>> rsaGenerateKeys(std::optional<double> keySize) override;
     std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>> rsaImportPrivateKey(const std::string& jwk) override;
     std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> rsaImportPublicKey(const std::string& jwk) override;
+    std::string rsaEncrypt(const std::shared_ptr<HybridRSAPublicKeySpec>& publicKey, const std::string& plaintext) override;
+    std::shared_ptr<Promise<std::string>> rsaDecrypt(const std::shared_ptr<HybridRSAPrivateKeySpec>& privateKey, const std::string& ciphertext) override;
+    std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> rsaSign(const std::shared_ptr<HybridRSAPrivateKeySpec>& privateKey, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) override;
+    bool rsaVerify(const std::shared_ptr<HybridRSAPublicKeySpec>& publicKey, const std::shared_ptr<ArrayBuffer>& signature, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) override;
     std::string randomUuid() override;
     std::string randomKey(double length) override;
     std::shared_ptr<ArrayBuffer> randomBytes(double size) override;

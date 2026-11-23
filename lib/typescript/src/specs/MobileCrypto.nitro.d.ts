@@ -3,6 +3,7 @@ import type { AESGCMCiphertext } from './AESGCMCiphertext';
 import type { AESKey } from './AESKey.nitro';
 import type { EncryptedFile } from './EncryptedFile';
 import type { PBKDF2HashAlgorithm } from './PBKDF2HashAlgorithm';
+import type { RSAHashAlgorithm } from './RSAHashAlgorithm';
 import type { RSAKeyPair } from './RSAKeyPair';
 import type { RSAPrivateKey } from './RSAPrivateKey.nitro';
 import type { RSAPublicKey } from './RSAPublicKey.nitro';
@@ -38,6 +39,14 @@ export interface MobileCrypto extends HybridObject<{
     rsaGenerateKeys(keySize?: number): Promise<RSAKeyPair>;
     rsaImportPrivateKey(jwk: string): Promise<RSAPrivateKey>;
     rsaImportPublicKey(jwk: string): Promise<RSAPublicKey>;
+    /** Encrypts a UTF-8 string with RSA-OAEP (SHA-256) into base64 ciphertext. */
+    rsaEncrypt(publicKey: RSAPublicKey, plaintext: string): string;
+    /** Decrypts base64 RSA-OAEP (SHA-256) ciphertext into a UTF-8 string. */
+    rsaDecrypt(privateKey: RSAPrivateKey, ciphertext: string): Promise<string>;
+    /** Creates a PKCS#1 v1.5 signature over `message`. */
+    rsaSign(privateKey: RSAPrivateKey, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>;
+    /** Checks a PKCS#1 v1.5 `signature` over `message`. */
+    rsaVerify(publicKey: RSAPublicKey, signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): boolean;
     randomUuid(): string;
     randomKey(length: number): string;
     randomBytes(size: number): ArrayBuffer;

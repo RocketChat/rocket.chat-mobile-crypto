@@ -23,6 +23,8 @@ namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
 namespace margelo::nitro::mobilecrypto { enum class SHAAlgorithm; }
 // Forward declaration of `PBKDF2HashAlgorithm` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { enum class PBKDF2HashAlgorithm; }
+// Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
 
 #include <NitroModules/ArrayBuffer.hpp>
 #include <NitroModules/Promise.hpp>
@@ -47,6 +49,8 @@ namespace margelo::nitro::mobilecrypto { enum class PBKDF2HashAlgorithm; }
 #include "PBKDF2HashAlgorithm.hpp"
 #include "JPBKDF2HashAlgorithm.hpp"
 #include <optional>
+#include "RSAHashAlgorithm.hpp"
+#include "JRSAHashAlgorithm.hpp"
 
 namespace margelo::nitro::mobilecrypto {
 
@@ -312,6 +316,48 @@ namespace margelo::nitro::mobilecrypto {
       });
       return __promise;
     }();
+  }
+  std::string JHybridMobileCryptoSpec::rsaEncrypt(const std::shared_ptr<HybridRSAPublicKeySpec>& publicKey, const std::string& plaintext) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>(jni::alias_ref<JHybridRSAPublicKeySpec::JavaPart> /* publicKey */, jni::alias_ref<jni::JString> /* plaintext */)>("rsaEncrypt");
+    auto __result = method(_javaPart, std::dynamic_pointer_cast<JHybridRSAPublicKeySpec>(publicKey)->getJavaPart(), jni::make_jstring(plaintext));
+    return __result->toStdString();
+  }
+  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::rsaDecrypt(const std::shared_ptr<HybridRSAPrivateKeySpec>& privateKey, const std::string& ciphertext) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JHybridRSAPrivateKeySpec::JavaPart> /* privateKey */, jni::alias_ref<jni::JString> /* ciphertext */)>("rsaDecrypt");
+    auto __result = method(_javaPart, std::dynamic_pointer_cast<JHybridRSAPrivateKeySpec>(privateKey)->getJavaPart(), jni::make_jstring(ciphertext));
+    return [&]() {
+      auto __promise = Promise<std::string>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
+        auto __result = jni::static_ref_cast<jni::JString>(__boxedResult);
+        __promise->resolve(__result->toStdString());
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
+  std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> JHybridMobileCryptoSpec::rsaSign(const std::shared_ptr<HybridRSAPrivateKeySpec>& privateKey, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JHybridRSAPrivateKeySpec::JavaPart> /* privateKey */, jni::alias_ref<JArrayBuffer::javaobject> /* message */, jni::alias_ref<JRSAHashAlgorithm> /* hash */)>("rsaSign");
+    auto __result = method(_javaPart, std::dynamic_pointer_cast<JHybridRSAPrivateKeySpec>(privateKey)->getJavaPart(), JArrayBuffer::wrap(message), JRSAHashAlgorithm::fromCpp(hash));
+    return [&]() {
+      auto __promise = Promise<std::shared_ptr<ArrayBuffer>>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
+        auto __result = jni::static_ref_cast<JArrayBuffer::javaobject>(__boxedResult);
+        __promise->resolve(__result->cthis()->getArrayBuffer());
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
+  bool JHybridMobileCryptoSpec::rsaVerify(const std::shared_ptr<HybridRSAPublicKeySpec>& publicKey, const std::shared_ptr<ArrayBuffer>& signature, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jboolean(jni::alias_ref<JHybridRSAPublicKeySpec::JavaPart> /* publicKey */, jni::alias_ref<JArrayBuffer::javaobject> /* signature */, jni::alias_ref<JArrayBuffer::javaobject> /* message */, jni::alias_ref<JRSAHashAlgorithm> /* hash */)>("rsaVerify");
+    auto __result = method(_javaPart, std::dynamic_pointer_cast<JHybridRSAPublicKeySpec>(publicKey)->getJavaPart(), JArrayBuffer::wrap(signature), JArrayBuffer::wrap(message), JRSAHashAlgorithm::fromCpp(hash));
+    return static_cast<bool>(__result);
   }
   std::string JHybridMobileCryptoSpec::randomUuid() {
     static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>()>("randomUuid");

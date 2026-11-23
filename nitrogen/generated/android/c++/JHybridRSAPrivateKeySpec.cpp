@@ -7,16 +7,9 @@
 
 #include "JHybridRSAPrivateKeySpec.hpp"
 
-// Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
-namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
+
 
 #include <string>
-#include <NitroModules/Promise.hpp>
-#include <NitroModules/JPromise.hpp>
-#include <NitroModules/ArrayBuffer.hpp>
-#include <NitroModules/JArrayBuffer.hpp>
-#include "RSAHashAlgorithm.hpp"
-#include "JRSAHashAlgorithm.hpp"
 
 namespace margelo::nitro::mobilecrypto {
 
@@ -51,38 +44,6 @@ namespace margelo::nitro::mobilecrypto {
   
 
   // Methods
-  std::shared_ptr<Promise<std::string>> JHybridRSAPrivateKeySpec::decrypt(const std::string& ciphertext) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* ciphertext */)>("decrypt");
-    auto __result = method(_javaPart, jni::make_jstring(ciphertext));
-    return [&]() {
-      auto __promise = Promise<std::string>::create();
-      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
-        auto __result = jni::static_ref_cast<jni::JString>(__boxedResult);
-        __promise->resolve(__result->toStdString());
-      });
-      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
-        jni::JniException __jniError(__throwable);
-        __promise->reject(std::make_exception_ptr(__jniError));
-      });
-      return __promise;
-    }();
-  }
-  std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> JHybridRSAPrivateKeySpec::sign(const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JArrayBuffer::javaobject> /* message */, jni::alias_ref<JRSAHashAlgorithm> /* hash */)>("sign");
-    auto __result = method(_javaPart, JArrayBuffer::wrap(message), JRSAHashAlgorithm::fromCpp(hash));
-    return [&]() {
-      auto __promise = Promise<std::shared_ptr<ArrayBuffer>>::create();
-      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
-        auto __result = jni::static_ref_cast<JArrayBuffer::javaobject>(__boxedResult);
-        __promise->resolve(__result->cthis()->getArrayBuffer());
-      });
-      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
-        jni::JniException __jniError(__throwable);
-        __promise->reject(std::make_exception_ptr(__jniError));
-      });
-      return __promise;
-    }();
-  }
   std::string JHybridRSAPrivateKeySpec::exportJwk() {
     static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>()>("exportJwk");
     auto __result = method(_javaPart);

@@ -29,6 +29,8 @@ namespace margelo::nitro::mobilecrypto { struct RSAKeyPair; }
 namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
 // Forward declaration of `HybridRSAPublicKeySpec` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { class HybridRSAPublicKeySpec; }
+// Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
 
 #include <NitroModules/ArrayBuffer.hpp>
 #include <NitroModules/Promise.hpp>
@@ -43,6 +45,7 @@ namespace margelo::nitro::mobilecrypto { class HybridRSAPublicKeySpec; }
 #include <optional>
 #include "HybridRSAPrivateKeySpec.hpp"
 #include "HybridRSAPublicKeySpec.hpp"
+#include "RSAHashAlgorithm.hpp"
 
 namespace margelo::nitro::mobilecrypto {
 
@@ -95,6 +98,10 @@ namespace margelo::nitro::mobilecrypto {
       virtual std::shared_ptr<Promise<RSAKeyPair>> rsaGenerateKeys(std::optional<double> keySize) = 0;
       virtual std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>> rsaImportPrivateKey(const std::string& jwk) = 0;
       virtual std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> rsaImportPublicKey(const std::string& jwk) = 0;
+      virtual std::string rsaEncrypt(const std::shared_ptr<HybridRSAPublicKeySpec>& publicKey, const std::string& plaintext) = 0;
+      virtual std::shared_ptr<Promise<std::string>> rsaDecrypt(const std::shared_ptr<HybridRSAPrivateKeySpec>& privateKey, const std::string& ciphertext) = 0;
+      virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> rsaSign(const std::shared_ptr<HybridRSAPrivateKeySpec>& privateKey, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) = 0;
+      virtual bool rsaVerify(const std::shared_ptr<HybridRSAPublicKeySpec>& publicKey, const std::shared_ptr<ArrayBuffer>& signature, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) = 0;
       virtual std::string randomUuid() = 0;
       virtual std::string randomKey(double length) = 0;
       virtual std::shared_ptr<ArrayBuffer> randomBytes(double size) = 0;

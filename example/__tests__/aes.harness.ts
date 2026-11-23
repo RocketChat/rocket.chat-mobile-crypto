@@ -337,6 +337,7 @@ describe('AES-CBC with PKCS7 padding', () => {
       aesCbcDecrypt(aesImportKey(zeroKey), 'AAAAAAAAAAAAAAAAAAAAAA==')
     ).rejects.toThrow();
   });
+
   for (const vector of malformedPaddingCbcVectors) {
     test(`rejects ${vector.name}`, async () => {
       await expect(
