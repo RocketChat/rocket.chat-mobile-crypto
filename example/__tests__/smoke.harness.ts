@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'react-native-harness';
 import { randomUuid, sha } from '@rocket.chat/mobile-crypto';
-import { base64FromBuffer, bufferFromAscii } from './__fixtures__/bytes';
+import { base64FromBuffer, bufferFromAscii } from '../fixtures/bytes';
 
 describe('Mobile Crypto native smoke tests', () => {
   test('hashes bytes through the native module', async () => {

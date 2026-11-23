@@ -3,44 +3,27 @@ import CryptoKit
 
 package enum AESGCMCrypto {
   private static let nonceLength = 12
-  private static let tagLength = 16
 
   package static func encrypt(_ plaintext: String, key: Data) -> (iv: String, ciphertext: String)? {
-    guard let nonce = RandomGenerator.bytes(count: nonceLength),
-          let ciphertextAndTag = encrypt(Data(plaintext.utf8), key: key, nonce: nonce) else {
+    guard AESKeyFactory.isValid(key),
+          let sealedBox = try? AES.GCM.seal(Data(plaintext.utf8), using: SymmetricKey(data: key)) else {
       return nil
     }
-    return (iv: nonce.base64EncodedString(), ciphertext: ciphertextAndTag.base64EncodedString())
+    return (
+      iv: Data(sealedBox.nonce).base64EncodedString(),
+      ciphertext: (sealedBox.ciphertext + sealedBox.tag).base64EncodedString()
+    )
   }
 
   package static func decrypt(_ ciphertextBase64: String, ivBase64: String, key: Data) -> String? {
-    guard let ciphertextAndTag = Data(canonicalBase64: ciphertextBase64),
+    guard AESKeyFactory.isValid(key),
+          let ciphertextAndTag = Data(canonicalBase64: ciphertextBase64),
           let nonce = Data(canonicalBase64: ivBase64),
-          let plaintext = decrypt(ciphertextAndTag, key: key, nonce: nonce) else {
+          nonce.count == nonceLength,
+          let sealedBox = try? AES.GCM.SealedBox(combined: nonce + ciphertextAndTag),
+          let plaintext = try? AES.GCM.open(sealedBox, using: SymmetricKey(data: key)) else {
       return nil
     }
     return String(strictUTF8: plaintext)
-  }
-
-  private static func encrypt(_ plaintext: Data, key: Data, nonce: Data) -> Data? {
-    guard let gcmNonce = try? AES.GCM.Nonce(data: nonce),
-          let sealedBox = try? AES.GCM.seal(plaintext, using: SymmetricKey(data: key), nonce: gcmNonce) else {
-      return nil
-    }
-    return sealedBox.ciphertext + sealedBox.tag
-  }
-
-  private static func decrypt(_ ciphertextAndTag: Data, key: Data, nonce: Data) -> Data? {
-    guard nonce.count == nonceLength,
-          ciphertextAndTag.count >= tagLength,
-          let gcmNonce = try? AES.GCM.Nonce(data: nonce),
-          let sealedBox = try? AES.GCM.SealedBox(
-            nonce: gcmNonce,
-            ciphertext: ciphertextAndTag.prefix(ciphertextAndTag.count - tagLength),
-            tag: ciphertextAndTag.suffix(tagLength)
-          ) else {
-      return nil
-    }
-    return try? AES.GCM.open(sealedBox, using: SymmetricKey(data: key))
   }
 }

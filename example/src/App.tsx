@@ -25,8 +25,21 @@ import {
   RSA_FIXED_PUBLIC_JWK,
   RSA_FIXED_SIGNATURE,
   RSA_FIXED_SIGN_MESSAGE,
-  RSA_UNICODE_PLAINTEXT,
 } from '../fixtures/rsa';
+import {
+  base64FromBuffer,
+  bufferFromAscii,
+  bufferFromBase64,
+} from '../fixtures/bytes';
+import {
+  cbcVectors,
+  gcmVectors,
+  hashVectors,
+  passwordBase64,
+  pbkdf2Vectors,
+  saltBase64,
+  unicodeVector,
+} from '../fixtures/crypto';
 
 type Check = {
   label: string;
@@ -34,54 +47,48 @@ type Check = {
   run: () => Promise<string>;
 };
 
-const bufferFromBinaryString = (binary: string) =>
-  Uint8Array.from(binary, (character) => character.charCodeAt(0)).buffer;
-
-const base64FromBuffer = (buffer: ArrayBuffer) =>
-  btoa(String.fromCharCode(...new Uint8Array(buffer)));
-
-const gcmKey = 'ASNFZ4mrze8BI0VniavN7wEjRWeJq83vASNFZ4mrze8';
-const cbcKey = 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8';
+const gcmVector = gcmVectors[1]!;
+const cbcVector = cbcVectors[1]!;
+const pbkdf2Vector = pbkdf2Vectors[2];
 
 const checks: Check[] = [
-  {
-    label: 'SHA-256 ("hello")',
-    expected: 'LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=',
-    run: async () =>
-      base64FromBuffer(await sha(bufferFromBinaryString('hello'), 'SHA-256')),
-  },
-  {
-    label: 'SHA-1 ("hello")',
-    expected: 'qvTGHdzF6KLavt4PO0gs2a6pQ00=',
-    run: async () =>
-      base64FromBuffer(await sha(bufferFromBinaryString('hello'), 'SHA-1')),
-  },
+  ...hashVectors.map(
+    (vector): Check => ({
+      label: `${vector.algorithm} ("hello")`,
+      expected: vector.base64,
+      run: async () =>
+        base64FromBuffer(await sha(bufferFromAscii('hello'), vector.algorithm)),
+    })
+  ),
   {
     label: 'HMAC-SHA256 (data "Hello", key "key")',
     expected: 'xwufTWZb1il0r8g1gt6BDnKkGljbgsU4qdc0ySZtMh4=',
     run: async () =>
       base64FromBuffer(
-        await hmac256(
-          bufferFromBinaryString('Hello'),
-          bufferFromBinaryString('key')
-        )
+        await hmac256(bufferFromAscii('Hello'), bufferFromAscii('key'))
       ),
   },
   {
-    label: 'PBKDF2-SHA256 ("password", "salt", 1000, 32)',
-    expected: 'YywoEuRtRgQQK6dhjp1tfS-BKPYma0oDJk0qBGC33LM',
+    label: `PBKDF2-${pbkdf2Vector.algorithm} ("password", "salt", 1000, ${pbkdf2Vector.byteLength})`,
+    expected: pbkdf2Vector.expected,
     run: async () =>
       (
-        await aesDeriveKey('cGFzc3dvcmQ=', 'c2FsdA==', 1000, 32, 'SHA256')
+        await aesDeriveKey(
+          passwordBase64,
+          saltBase64,
+          1000,
+          pbkdf2Vector.byteLength,
+          pbkdf2Vector.algorithm
+        )
       ).exportBase64Url(),
   },
   {
     label: 'AES-256-GCM decrypt (fixed vector)',
-    expected: 'Rocket.Chat 🔐 — olá',
+    expected: gcmVector.plaintext,
     run: () =>
-      aesGcmDecrypt(aesImportKey(gcmKey), {
-        ciphertext: 'gMAoyVojTQcl91A2ld1ZbbXghQIyFfo23dnjqUV9y+VuHgtrDw+P1+w=',
-        iv: '/ty6mHZUMhD+3LqY',
+      aesGcmDecrypt(aesImportKey(gcmVector.key), {
+        ciphertext: gcmVector.ciphertext,
+        iv: gcmVector.iv,
       }),
   },
   {
@@ -89,19 +96,15 @@ const checks: Check[] = [
     expected: 'Hello World',
     run: async () => {
       const key = aesGenerateKey(32);
-      const { ciphertext, iv } = await aesGcmEncrypt(key, 'Hello World');
-      return aesGcmDecrypt(key, { ciphertext, iv });
+      return aesGcmDecrypt(key, await aesGcmEncrypt(key, 'Hello World'));
     },
   },
   {
     label: 'AES-256-GCM decrypt with the wrong key',
     expected: 'rejected',
     run: async () => {
-      const { ciphertext, iv } = await aesGcmEncrypt(
-        aesGenerateKey(32),
-        'Hello World'
-      );
-      return aesGcmDecrypt(aesGenerateKey(32), { ciphertext, iv }).then(
+      const encrypted = await aesGcmEncrypt(aesGenerateKey(32), 'Hello World');
+      return aesGcmDecrypt(aesGenerateKey(32), encrypted).then(
         () => 'accepted',
         () => 'rejected'
       );
@@ -109,12 +112,9 @@ const checks: Check[] = [
   },
   {
     label: 'AES-256-CBC decrypt (fixed vector)',
-    expected: 'Hello World',
+    expected: cbcVector.plaintext,
     run: () =>
-      aesCbcDecrypt(
-        aesImportKey(cbcKey),
-        '/ty6mHZUMhD+3LqYdlQyEM+WSbej8fGGWDDETqcS0bw='
-      ),
+      aesCbcDecrypt(aesImportKey(cbcVector.key), cbcVector.ivAndCiphertext),
   },
   {
     label: 'AES-256-CBC encrypt then decrypt',
@@ -159,7 +159,7 @@ const checks: Check[] = [
       base64FromBuffer(
         await (
           await rsaImportPrivateKey(RSA_FIXED_PRIVATE_JWK)
-        ).sign(bufferFromBinaryString(RSA_FIXED_SIGN_MESSAGE), 'SHA256')
+        ).sign(bufferFromAscii(RSA_FIXED_SIGN_MESSAGE), 'SHA256')
       ),
   },
   {
@@ -170,8 +170,8 @@ const checks: Check[] = [
         await (
           await rsaImportPublicKey(RSA_FIXED_PUBLIC_JWK)
         ).verify(
-          bufferFromBinaryString(atob(RSA_FIXED_SIGNATURE)),
-          bufferFromBinaryString(RSA_FIXED_SIGN_MESSAGE),
+          bufferFromBase64(RSA_FIXED_SIGNATURE),
+          bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
           'SHA256'
         )
       ),
@@ -184,10 +184,10 @@ const checks: Check[] = [
   },
   {
     label: 'RSA generated keys encrypt then decrypt',
-    expected: RSA_UNICODE_PLAINTEXT,
+    expected: unicodeVector.text,
     run: async () => {
       const { publicKey, privateKey } = await rsaGenerateKeys(2048);
-      return privateKey.decrypt(await publicKey.encrypt(RSA_UNICODE_PLAINTEXT));
+      return privateKey.decrypt(await publicKey.encrypt(unicodeVector.text));
     },
   },
   {

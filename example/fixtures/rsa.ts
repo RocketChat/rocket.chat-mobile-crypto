@@ -57,7 +57,6 @@ export const RSA_FIXED_PUBLIC_JWK = JSON.stringify({
 
 export const RSA_FIXED_PLAINTEXT = 'Hello RSA fixed vector!';
 export const RSA_FIXED_SIGN_MESSAGE = 'Hello RSA signature fixed vector!';
-export const RSA_UNICODE_PLAINTEXT = 'Rocket.Chat 🔐 — olá';
 
 export const RSA_FIXED_OAEP_CIPHERTEXT =
   'i08WpnMEqWx2wLI85uir06hnBpUgMM/zO1y/XWgue/tIz6Nb28MFTBuDPMshhpoz' +

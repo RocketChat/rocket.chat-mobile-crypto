@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'react-native-harness';
 import { randomBytes, randomKey, randomUuid } from '@rocket.chat/mobile-crypto';
-import { hexFromBuffer } from './__fixtures__/bytes';
+import { hexFromBuffer } from '../fixtures/bytes';
 
 describe('Native random generation', () => {
   test('generates distinct version 4 UUIDs', () => {

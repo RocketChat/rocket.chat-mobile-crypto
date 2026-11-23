@@ -10,7 +10,7 @@ import {
   RSA_FIXED_SIGNATURE,
   RSA_FIXED_SIGN_MESSAGE,
 } from '../fixtures/rsa';
-import { bufferFromAscii, bufferFromBase64 } from './__fixtures__/bytes';
+import { bufferFromAscii, bufferFromBase64 } from '../fixtures/bytes';
 
 const privateFields = ['d', 'p', 'q', 'dp', 'dq', 'qi'];
 const { n, e } = JSON.parse(RSA_FIXED_PUBLIC_JWK);

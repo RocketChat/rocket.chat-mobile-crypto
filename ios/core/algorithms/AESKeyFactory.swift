@@ -3,13 +3,17 @@ import Foundation
 package enum AESKeyFactory {
   private static let validByteLengths: Set<Int> = [16, 32]
 
+  package static func isValid(_ key: Data) -> Bool {
+    validByteLengths.contains(key.count)
+  }
+
   package static func generate(byteLength: Int) -> Data? {
     guard validByteLengths.contains(byteLength) else { return nil }
     return RandomGenerator.bytes(count: byteLength)
   }
 
   package static func importBase64URL(_ base64URL: String) -> Data? {
-    guard let key = Data(base64URLEncoded: base64URL), validByteLengths.contains(key.count) else { return nil }
+    guard let key = Data(base64URLEncoded: base64URL), isValid(key) else { return nil }
     return key
   }
 

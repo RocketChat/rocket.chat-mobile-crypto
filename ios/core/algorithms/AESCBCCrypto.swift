@@ -27,7 +27,7 @@ package enum AESCBCCrypto {
   }
 
   private static func crypt(_ operation: CCOperation, input: Data, key: Data, initializationVector: Data) -> Data? {
-    guard initializationVector.count == kCCBlockSizeAES128 else { return nil }
+    guard AESKeyFactory.isValid(key), initializationVector.count == kCCBlockSizeAES128 else { return nil }
     var output = Data(count: input.count + kCCBlockSizeAES128)
     let outputCapacity = output.count
     var outputLength = 0

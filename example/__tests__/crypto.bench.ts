@@ -15,7 +15,7 @@ import {
   sha,
 } from '@rocket.chat/mobile-crypto';
 import { Dirs, FileSystem } from 'react-native-file-access';
-import { bufferFromAscii } from './__fixtures__/bytes';
+import { bufferFromAscii } from '../fixtures/bytes';
 
 const keyBase64Url = 'ASNFZ4mrze8BI0VniavN7wEjRWeJq83vASNFZ4mrze8';
 

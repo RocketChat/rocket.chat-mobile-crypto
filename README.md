@@ -28,14 +28,15 @@ end
 
 ## Encodings
 
-- **base64**: standard alphabet with padding. Used for ciphertexts, IVs and signatures on the wire.
+- **base64**: standard alphabet with padding. Used for ciphertexts and IVs on the wire.
 - **base64url**: URL-safe alphabet. Output has no padding; input is accepted with or without it. Used for AES keys (the JWK `k` format) and JWK components.
 - **UTF-8**: every plaintext string. Decrypted text keeps a leading byte order mark (U+FEFF).
-- **hex**: only the file SHA-256, in lowercase.
+- **hex**: the file SHA-256 and `randomKey` output, in lowercase.
 
 Encoded input is decoded strictly, the same way on iOS and Android. It is
 rejected when it contains whitespace or line breaks, uses the other base64
-alphabet, has missing or extra padding, or does not re-encode to the same text.
+alphabet, has wrong padding (base64 must be padded; base64url may omit it), or
+does not re-encode to the same text.
 
 ## Errors
 

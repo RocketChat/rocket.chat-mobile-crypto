@@ -16,13 +16,13 @@ import {
   RSA_FIXED_SIGNATURE,
   RSA_FIXED_SIGN_MESSAGE,
   RSA_UNICODE_OAEP_CIPHERTEXT,
-  RSA_UNICODE_PLAINTEXT,
 } from '../fixtures/rsa';
+import { unicodeVector } from '../fixtures/crypto';
 import {
   base64FromBuffer,
   bufferFromAscii,
   bufferFromBase64,
-} from './__fixtures__/bytes';
+} from '../fixtures/bytes';
 
 describe('RSA encryption and signatures', () => {
   let fixedPrivateKey: RSAPrivateKey;
@@ -43,16 +43,14 @@ describe('RSA encryption and signatures', () => {
 
   test('decrypts an independent OAEP-SHA256 ciphertext of UTF-8 text', async () => {
     expect(await fixedPrivateKey.decrypt(RSA_UNICODE_OAEP_CIPHERTEXT)).toBe(
-      RSA_UNICODE_PLAINTEXT
+      unicodeVector.text
     );
   });
 
   test('round-trips UTF-8 text with the fixed keys', async () => {
-    const ciphertext = await fixedPublicKey.encrypt(RSA_UNICODE_PLAINTEXT);
+    const ciphertext = await fixedPublicKey.encrypt(unicodeVector.text);
     expect(atob(ciphertext)).toHaveLength(256);
-    expect(await fixedPrivateKey.decrypt(ciphertext)).toBe(
-      RSA_UNICODE_PLAINTEXT
-    );
+    expect(await fixedPrivateKey.decrypt(ciphertext)).toBe(unicodeVector.text);
   });
 
   test('keeps a leading byte order mark', async () => {
@@ -69,10 +67,10 @@ describe('RSA encryption and signatures', () => {
 
   test('round-trips UTF-8 text with generated keys', async () => {
     const ciphertext = await generatedKeys.publicKey.encrypt(
-      RSA_UNICODE_PLAINTEXT
+      unicodeVector.text
     );
     expect(await generatedKeys.privateKey.decrypt(ciphertext)).toBe(
-      RSA_UNICODE_PLAINTEXT
+      unicodeVector.text
     );
   });
 

@@ -15,13 +15,14 @@ package enum AESCTRFileCrypto {
       return nil
     }
     let outputPath = outputPath(for: inputPath)
-    guard let plaintextDigest = transform(
+    guard let plaintextDigest = crypt(
       inputPath: inputPath,
       outputPath: outputPath,
       operation: CCOperation(kCCEncrypt),
       key: key,
       initializationVector: initializationVector
     ) else {
+      try? FileManager.default.removeItem(atPath: outputPath)
       return nil
     }
     return EncryptedFile(
@@ -35,13 +36,14 @@ package enum AESCTRFileCrypto {
   package static func decryptFile(_ file: EncryptedFile) -> String? {
     let inputPath = file.path.normalizedFilePath
     guard let key = Data(base64URLEncoded: file.key),
+          key.count == keyLength,
           let initializationVector = Data(canonicalBase64: file.iv),
           initializationVector.count == kCCBlockSizeAES128 else {
       return nil
     }
     let outputPath = outputPath(for: inputPath)
     defer { try? FileManager.default.removeItem(atPath: outputPath) }
-    guard let plaintextDigest = transform(
+    guard let plaintextDigest = crypt(
       inputPath: inputPath,
       outputPath: outputPath,
       operation: CCOperation(kCCDecrypt),
@@ -64,26 +66,6 @@ package enum AESCTRFileCrypto {
     let inputPathString = inputPath as NSString
     return (inputPathString.deletingLastPathComponent as NSString)
       .appendingPathComponent("\(outputFilePrefix)\(UUID().uuidString)")
-  }
-
-  private static func transform(
-    inputPath: String,
-    outputPath: String,
-    operation: CCOperation,
-    key: Data,
-    initializationVector: Data
-  ) -> Data? {
-    guard let plaintextDigest = crypt(
-      inputPath: inputPath,
-      outputPath: outputPath,
-      operation: operation,
-      key: key,
-      initializationVector: initializationVector
-    ) else {
-      try? FileManager.default.removeItem(atPath: outputPath)
-      return nil
-    }
-    return plaintextDigest
   }
 
   private static func crypt(

@@ -175,4 +175,7 @@ export const fileVector = {
   sha256: 'd1960c02a724b54ba53df3e4e6ae97b8d72b874e4007839aaf37bf8112067b9a',
   largeSha256:
     'f48e09796d08b5a636390ce7aa35a16a283ac5c5d1d1be208bf2dc04151cab0e',
+  aes128Key: 'AAECAwQFBgcICQoLDA0ODw',
+  aes128Ciphertext:
+    'DWZ5ChoSrt5+bKAWQIW6hxysXVepnZAxOhocFyszkbviuY4Q3wcPjB56SkBVmAeehkdCH+Pww1D6RkJjqQwAig==',
 };

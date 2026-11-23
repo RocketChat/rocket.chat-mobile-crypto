@@ -10,24 +10,20 @@ package enum RSAJWKConverter {
 
   package static func privateKey(fromJson json: String) -> SecKey? {
     guard let jwk = decode(json),
-          let modulus = Data(base64URLEncoded: jwk.n),
-          let publicExponent = Data(base64URLEncoded: jwk.e) else {
+          let integers = decodedIntegers([jwk.n, jwk.e, jwk.d, jwk.p, jwk.q, jwk.dp, jwk.dq, jwk.qi]) else {
       return nil
     }
-    let encodedPrivateComponents = [jwk.d, jwk.p, jwk.q, jwk.dp, jwk.dq, jwk.qi]
-    let privateComponents = encodedPrivateComponents.compactMap { $0.flatMap(Data.init(base64URLEncoded:)) }
-    guard privateComponents.count == encodedPrivateComponents.count else { return nil }
-    let integers = [privateKeyVersion, modulus, publicExponent] + privateComponents
-    return key(from: ASN1DER.sequence(ofIntegers: integers), keyClass: kSecAttrKeyClassPrivate)
+    return key(from: ASN1DER.sequence(ofIntegers: [privateKeyVersion] + integers), keyClass: kSecAttrKeyClassPrivate)
   }
 
   package static func publicKey(fromJson json: String) -> SecKey? {
-    guard let jwk = decode(json),
-          let modulus = Data(base64URLEncoded: jwk.n),
-          let publicExponent = Data(base64URLEncoded: jwk.e) else {
-      return nil
-    }
-    return key(from: ASN1DER.sequence(ofIntegers: [modulus, publicExponent]), keyClass: kSecAttrKeyClassPublic)
+    guard let jwk = decode(json), let integers = decodedIntegers([jwk.n, jwk.e]) else { return nil }
+    return key(from: ASN1DER.sequence(ofIntegers: integers), keyClass: kSecAttrKeyClassPublic)
+  }
+
+  private static func decodedIntegers(_ encodedIntegers: [String?]) -> [Data]? {
+    let integers = encodedIntegers.compactMap { $0.flatMap(Data.init(base64URLEncoded:)) }
+    return integers.count == encodedIntegers.count ? integers : nil
   }
 
   package static func json(ofPrivateKey key: SecKey) -> String? {

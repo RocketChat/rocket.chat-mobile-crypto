@@ -7,7 +7,7 @@ import {
 } from 'react-native-harness';
 import { aesDecryptFile, aesEncryptFile } from '@rocket.chat/mobile-crypto';
 import { Dirs, FileSystem } from 'react-native-file-access';
-import { fileVector } from './__fixtures__/crypto';
+import { fileVector } from '../fixtures/crypto';
 
 const pathFromUri = (uri: string) =>
   decodeURIComponent(uri.replace(/^file:\/\//, ''));
@@ -137,6 +137,16 @@ describe('Native file encryption', () => {
       fileVector.key.replace(/-/g, '+').replace(/_/g, '/'),
     ],
     ['an IV without padding', 'iv', fileVector.iv.replace(/[=]+$/, '')],
+    [
+      'an IV wrapped across lines',
+      'iv',
+      `${fileVector.iv.slice(0, 8)}\n${fileVector.iv.slice(8)}`,
+    ],
+    [
+      'an IV in the base64url alphabet',
+      'iv',
+      fileVector.iv.replace(/\+/g, '-').replace(/\//g, '_'),
+    ],
   ] as const) {
     test(`rejects ${description} and leaves the file unchanged`, async () => {
       await FileSystem.writeFile(inputPath, fileVector.ciphertext, 'base64');
@@ -157,6 +167,27 @@ describe('Native file encryption', () => {
       );
     });
   }
+
+  test('rejects a 16-byte key even when the SHA-256 matches', async () => {
+    await FileSystem.writeFile(
+      inputPath,
+      fileVector.aes128Ciphertext,
+      'base64'
+    );
+
+    await expect(
+      aesDecryptFile({
+        path: inputPath,
+        key: fileVector.aes128Key,
+        iv: fileVector.iv,
+        sha256: fileVector.sha256,
+      })
+    ).rejects.toThrow();
+
+    expect(await FileSystem.readFile(inputPath, 'base64')).toBe(
+      fileVector.aes128Ciphertext
+    );
+  });
 
   test('round-trips a file larger than the native buffer from an encoded URI', async () => {
     const plaintext = '0123456789abcdef'.repeat(600);

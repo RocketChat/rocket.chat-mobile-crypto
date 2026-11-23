@@ -143,6 +143,7 @@ internal object AESCrypto {
 
     fun decryptFile(file: EncryptedFile, context: Context): String {
         val key = CryptoUtils.decodeBase64Url(file.key)
+        require(key.size == FILE_KEY_LENGTH) { "File key must be $FILE_KEY_LENGTH bytes, got ${key.size}" }
         val iv = CryptoUtils.decodeBase64(file.iv)
         val targetUri = Uri.parse(file.path)
         val isPlainFilePath = targetUri.scheme == null || targetUri.scheme == "file"

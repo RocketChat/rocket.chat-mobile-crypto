@@ -11,13 +11,13 @@ import {
   bufferFromBase64,
   bufferFromHex,
   hexFromBuffer,
-} from './__fixtures__/bytes';
+} from '../fixtures/bytes';
 import {
   binaryHashVector,
   hashVectors,
   hmacVectors,
   unicodeVector,
-} from './__fixtures__/crypto';
+} from '../fixtures/crypto';
 
 const unsupportedAlgorithm = 'unsupported' as SHAAlgorithm;
 const largeInput = () => bufferFromBase64('A'.repeat(49152));
