@@ -1,12 +1,13 @@
 import { describe, expect, test } from 'react-native-harness';
 import { randomUuid, sha } from '@rocket.chat/mobile-crypto';
-import { base64FromBuffer, bufferFromAscii } from './__fixtures__/bytes';
+import { bufferFromAscii, hexFromBuffer } from './__fixtures__/bytes';
+import { sha256OfHelloHex } from './__fixtures__/crypto';
 
 describe('Mobile Crypto native smoke tests', () => {
   test('hashes bytes through the native module', async () => {
-    expect(
-      base64FromBuffer(await sha(bufferFromAscii('hello'), 'SHA-256'))
-    ).toBe('LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=');
+    expect(hexFromBuffer(await sha(bufferFromAscii('hello'), 'SHA-256'))).toBe(
+      sha256OfHelloHex
+    );
   });
 
   test('generates a version 4 UUID through the native module', () => {

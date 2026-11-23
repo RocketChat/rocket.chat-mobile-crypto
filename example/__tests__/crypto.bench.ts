@@ -20,6 +20,7 @@ import {
 } from '@rocket.chat/mobile-crypto';
 import { Dirs, FileSystem } from 'react-native-file-access';
 import { bufferFromAscii } from './__fixtures__/bytes';
+import { passwordBase64, saltBase64 } from './__fixtures__/crypto';
 
 const keyBase64Url = 'ASNFZ4mrze8BI0VniavN7wEjRWeJq83vASNFZ4mrze8';
 
@@ -128,7 +129,11 @@ describe('benchmark', () => {
       aesCbcEncrypt(key, oneMegabyte)
     );
     await measure('aesDeriveKey SHA256 1000 iterations', 100, () =>
-      aesDeriveKey('cGFzc3dvcmQ=', 'c2FsdA==', 1000, 32, 'SHA256')
+      aesDeriveKey(passwordBase64, saltBase64, {
+        iterations: 1000,
+        byteLength: 32,
+        hash: 'SHA256',
+      })
     );
     await measure('rsaImportPrivateKey 2048', 300, () =>
       rsaImportPrivateKey(privateJwk)

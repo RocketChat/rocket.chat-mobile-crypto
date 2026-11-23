@@ -76,13 +76,11 @@ import {
 
 const generated = aesGenerateKey(32); // 16 or 32 bytes
 const imported = aesImportKey(jwk.k); // base64url
-const derived = await aesDeriveKey(
-  passwordBase64,
-  saltBase64,
-  1000,
-  32,
-  'SHA256'
-);
+const derived = await aesDeriveKey(passwordBase64, saltBase64, {
+  iterations: 1000,
+  byteLength: 32,
+  hash: 'SHA256',
+});
 
 const k = generated.exportBase64Url();
 ```
@@ -191,7 +189,7 @@ const bytes = randomBytes(32); // ArrayBuffer
 
 - `aesGenerateKey(byteLength: number): AESKey`
 - `aesImportKey(base64Url: string): AESKey`
-- `aesDeriveKey(passwordBase64: string, saltBase64: string, iterations: number, byteLength: number, hash: PBKDF2HashAlgorithm): Promise<AESKey>` - `byteLength` must be 16 or 32
+- `aesDeriveKey(passwordBase64: string, saltBase64: string, options: { iterations: number; byteLength: number; hash: PBKDF2HashAlgorithm }): Promise<AESKey>` - `byteLength` must be 16 or 32
 - `AESKey.exportBase64Url(): string`
 - `aesGcmEncrypt(key: AESKey, plaintext: string): Promise<AESGCMCiphertext>`
 - `aesGcmDecrypt(key: AESKey, encrypted: AESGCMCiphertext): Promise<string>`
@@ -238,7 +236,7 @@ and failures reject or throw instead of resolving `null`.
 | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `shaUtf8(text, algorithm)`, `shaBase64(base64, algorithm)`, `shaBuffer(bytes, algorithm)` | `sha(bytes, algorithm)`, returning an `ArrayBuffer`                                                                                          |
 | `hmac256(dataHex, keyHex)`, `hmac256Buffer(data, key)`                                    | `hmac256(data, key)` on `ArrayBuffer`s                                                                                                       |
-| `pbkdf2Hash(passwordBase64, saltBase64, iterations, keyLength, hash)`                     | `aesDeriveKey(passwordBase64, saltBase64, iterations, byteLength, hash)` with `byteLength` 16 or 32; read the bytes with `exportBase64Url()` |
+| `pbkdf2Hash(passwordBase64, saltBase64, iterations, keyLength, hash)`                     | `aesDeriveKey(passwordBase64, saltBase64, { iterations, byteLength, hash })` with `byteLength` 16 or 32; read the bytes with `exportBase64Url()` |
 | `aesGcmEncrypt(dataBase64, keyHex, ivHex)`, `aesGcmEncryptBuffer`                         | `aesGcmEncrypt(key, plaintext)`, returning `{ iv, ciphertext }`                                                                              |
 | `aesGcmDecrypt(dataBase64, keyHex, ivHex)`, `aesGcmDecryptBuffer`                         | `aesGcmDecrypt(key, { iv, ciphertext })`, returning UTF-8                                                                                    |
 | `aesEncrypt(dataBase64, keyHex, ivHex)`, `aesEncryptBuffer` (AES-CBC)                     | `aesCbcEncrypt(key, plaintext)`, returning `base64(iv ‖ ciphertext)`                                                                         |
@@ -247,7 +245,6 @@ and failures reject or throw instead of resolving `null`.
 | `aesDecryptFile(path, key, iv)`                                                           | `aesDecryptFile({ path, key, iv, sha256 })`                                                                                                  |
 | `calculateFileChecksum(path)`                                                             | the `sha256` returned by `aesEncryptFile`, verified by `aesDecryptFile`                                                                      |
 | `rsaGenerateKeys()` returning PEM `{ public, private }`                                   | `rsaGenerateKeys()` returning `{ publicKey, privateKey }` key objects; persist them with `exportJwk()`                                       |
-| `rsaImportPrivateKey(pem)`, `rsaImportPublicKey(pem)`                                     | the same functions, taking a JWK JSON string                                                                                                 |
 | `rsaImportKey(jwk)` (JWK to PEM), `rsaExportKey(pem)`, `rsaPemToJwk(pem)`                 | `rsaImportPrivateKey(jwkJson)` / `rsaImportPublicKey(jwkJson)` and `exportJwk()`                                                             |
 | `rsaEncrypt(text, publicKeyPem)`, `rsaEncrypt64`                                          | `rsaEncrypt(publicKey, text)`                                                                                                                |
 | `rsaDecrypt(ciphertext, privateKeyPem)`, `rsaDecrypt64`                                   | `rsaDecrypt(privateKey, ciphertext)`, returning UTF-8                                                                                        |
@@ -266,7 +263,8 @@ The rows above are not all one-to-one:
 - v1 `rsaSign` and `rsaVerify` took an optional `hash` that defaulted to SHA-1
   on Android and SHA-512 on iOS. v2 requires it: pass the hash v1 used to get
   the same signatures.
-- v1 AES keys were hex. Import them with `aesImportKey`, which takes base64url.
+- v1 AES functions took the key as hex. Pass the JWK `k` value to `aesImportKey`
+  as it is, without converting it to hex.
 
 Deterministic outputs are byte-compatible with v1: the same password, salt
 and parameters derive the same key bytes, RSA signatures and JWK components

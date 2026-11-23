@@ -12,7 +12,12 @@ export declare function sha(data: ArrayBuffer, algorithm: SHAAlgorithm): Promise
 export declare function hmac256(data: ArrayBuffer, key: ArrayBuffer): Promise<ArrayBuffer>;
 export declare function aesGenerateKey(byteLength: number): AESKey;
 export declare function aesImportKey(base64Url: string): AESKey;
-export declare function aesDeriveKey(passwordBase64: string, saltBase64: string, iterations: number, byteLength: number, hash: PBKDF2HashAlgorithm): Promise<AESKey>;
+export interface AESDeriveKeyOptions {
+    iterations: number;
+    byteLength: number;
+    hash: PBKDF2HashAlgorithm;
+}
+export declare function aesDeriveKey(passwordBase64: string, saltBase64: string, options: AESDeriveKeyOptions): Promise<AESKey>;
 export declare function aesGcmEncrypt(key: AESKey, plaintext: string): Promise<AESGCMCiphertext>;
 export declare function aesGcmDecrypt(key: AESKey, encrypted: AESGCMCiphertext): Promise<string>;
 export declare function aesCbcEncrypt(key: AESKey, plaintext: string): Promise<string>;

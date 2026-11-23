@@ -21,11 +21,17 @@ import {
   RSA_FIXED_SIGN_MESSAGE,
   RSA_UNICODE_OAEP_CIPHERTEXT,
 } from './__fixtures__/rsa';
-import { unicodeVector } from './__fixtures__/crypto';
+import {
+  binaryHashVector,
+  byteOrderMarkPlaintext,
+  sha256OfHelloHex,
+  unicodeVector,
+} from './__fixtures__/crypto';
 import {
   base64FromBuffer,
   bufferFromAscii,
   bufferFromBase64,
+  bufferFromHex,
 } from './__fixtures__/bytes';
 
 describe('RSA encryption and signatures', () => {
@@ -60,9 +66,10 @@ describe('RSA encryption and signatures', () => {
   });
 
   test('keeps a leading byte order mark', async () => {
-    const plaintext = '\uFEFFRocket.Chat';
-    const ciphertext = await rsaEncrypt(fixedPublicKey, plaintext);
-    expect(await rsaDecrypt(fixedPrivateKey, ciphertext)).toBe(plaintext);
+    const ciphertext = await rsaEncrypt(fixedPublicKey, byteOrderMarkPlaintext);
+    expect(await rsaDecrypt(fixedPrivateKey, ciphertext)).toBe(
+      byteOrderMarkPlaintext
+    );
   });
 
   test('encrypts with randomized OAEP padding', async () => {
@@ -152,7 +159,7 @@ describe('RSA encryption and signatures', () => {
     'SHA512',
   ] as const) {
     test(`signs and verifies non-UTF-8 bytes using ${hash}`, async () => {
-      const message = bufferFromBase64('AAF/gP7/');
+      const message = bufferFromBase64(binaryHashVector.base64);
       const signature = await rsaSign(generatedKeys.privateKey, message, hash);
       expect(
         await rsaVerify(generatedKeys.publicKey, signature, message, hash)
@@ -161,9 +168,7 @@ describe('RSA encryption and signatures', () => {
   }
 
   test('signs and verifies a precomputed digest with Raw', async () => {
-    const digest = bufferFromBase64(
-      'LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ='
-    );
+    const digest = bufferFromHex(sha256OfHelloHex);
     const signature = await rsaSign(fixedPrivateKey, digest, 'Raw');
     expect(await rsaVerify(fixedPublicKey, signature, digest, 'Raw')).toBe(
       true

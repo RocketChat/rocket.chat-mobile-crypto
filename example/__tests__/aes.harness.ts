@@ -15,6 +15,7 @@ import {
 import {
   aes192Key,
   binaryPbkdf2Vector,
+  byteOrderMarkPlaintext,
   cbcVectors,
   emptyPlaintextVectors,
   fileVector,
@@ -30,17 +31,19 @@ import {
   unicodeVector,
   zeroKey,
 } from './__fixtures__/crypto';
+import {
+  toBase64UrlAlphabet,
+  toStandardAlphabet,
+  withoutPadding,
+  wrapLines,
+} from './__fixtures__/bytes';
 
 const decodedLength = (base64: string) => atob(base64).length;
 const otherKey = 'ERERERERERERERERERERERERERERERERERERERERERE';
 const largePlaintext = 'Rocket.Chat 🔐 '.repeat(4000);
-const byteOrderMarkPlaintext = '\uFEFFRocket.Chat';
-const toBase64Url = (base64: string) =>
-  base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/[=]+$/, '');
-const toStandardAlphabet = (base64Url: string) =>
-  base64Url.replace(/-/g, '+').replace(/_/g, '/');
-const wrapLines = (base64: string) =>
-  `${base64.slice(0, 8)}\n${base64.slice(8)}`;
+// https://rocketchat.atlassian.net/browse/NATIVE-1874
+const isTruncatedOnAndroid = (plaintext: string) =>
+  Platform.OS === 'android' && plaintext.includes('\0');
 
 describe('AES keys', () => {
   for (const byteLength of [16, 32]) {
@@ -100,19 +103,21 @@ describe('AES keys', () => {
 describe('PBKDF2 key derivation', () => {
   for (const vector of pbkdf2Vectors) {
     test(`derives ${vector.byteLength} bytes with ${vector.algorithm}`, async () => {
-      const key = await aesDeriveKey(
-        passwordBase64,
-        saltBase64,
-        1000,
-        vector.byteLength,
-        vector.algorithm
-      );
+      const key = await aesDeriveKey(passwordBase64, saltBase64, {
+        iterations: 1000,
+        byteLength: vector.byteLength,
+        hash: vector.algorithm,
+      });
       expect(key.exportBase64Url()).toBe(vector.expected);
     });
   }
 
   test('matches the single-iteration RFC 6070 SHA-1 vector', async () => {
-    const key = await aesDeriveKey(passwordBase64, saltBase64, 1, 16, 'SHA1');
+    const key = await aesDeriveKey(passwordBase64, saltBase64, {
+      iterations: 1,
+      byteLength: 16,
+      hash: 'SHA1',
+    });
     expect(key.exportBase64Url()).toBe(rfc6070Pbkdf2Vector);
   });
 
@@ -120,21 +125,17 @@ describe('PBKDF2 key derivation', () => {
     const key = await aesDeriveKey(
       binaryPbkdf2Vector.passwordBase64,
       binaryPbkdf2Vector.saltBase64,
-      4096,
-      16,
-      'SHA256'
+      { iterations: 4096, byteLength: 16, hash: 'SHA256' }
     );
     expect(key.exportBase64Url()).toBe(binaryPbkdf2Vector.expected);
   });
 
   test('derives from UTF-8 password bytes', async () => {
-    const key = await aesDeriveKey(
-      unicodeVector.base64,
-      saltBase64,
-      1000,
-      32,
-      'SHA256'
-    );
+    const key = await aesDeriveKey(unicodeVector.base64, saltBase64, {
+      iterations: 1000,
+      byteLength: 32,
+      hash: 'SHA256',
+    });
     expect(key.exportBase64Url()).toBe(unicodePbkdf2Vector);
   });
 
@@ -142,46 +143,48 @@ describe('PBKDF2 key derivation', () => {
     const key = await aesDeriveKey(
       latin1Pbkdf2Vector.passwordBase64,
       saltBase64,
-      1000,
-      32,
-      'SHA256'
+      { iterations: 1000, byteLength: 32, hash: 'SHA256' }
     );
     expect(key.exportBase64Url()).toBe(latin1Pbkdf2Vector.expected);
   });
 
   test('rejects a 24-byte key length', async () => {
     await expect(
-      aesDeriveKey(passwordBase64, saltBase64, 1000, 24, 'SHA256')
+      aesDeriveKey(passwordBase64, saltBase64, {
+        iterations: 1000,
+        byteLength: 24,
+        hash: 'SHA256',
+      })
     ).rejects.toThrow();
   });
 
   test('rejects a password that is not base64', async () => {
     await expect(
-      aesDeriveKey('not base64!', saltBase64, 1000, 32, 'SHA256')
+      aesDeriveKey('not base64!', saltBase64, {
+        iterations: 1000,
+        byteLength: 32,
+        hash: 'SHA256',
+      })
     ).rejects.toThrow();
   });
 
   test('derives a key that encrypts and decrypts', async () => {
-    const key = await aesDeriveKey(
-      passwordBase64,
-      saltBase64,
-      1000,
-      32,
-      'SHA256'
-    );
+    const key = await aesDeriveKey(passwordBase64, saltBase64, {
+      iterations: 1000,
+      byteLength: 32,
+      hash: 'SHA256',
+    });
     const encrypted = await aesGcmEncrypt(key, 'derived');
     expect(await aesGcmDecrypt(key, encrypted)).toBe('derived');
   });
 
   test('rejects an unsupported hash algorithm', async () => {
     await expect(
-      aesDeriveKey(
-        passwordBase64,
-        saltBase64,
-        1000,
-        32,
-        'unsupported' as PBKDF2HashAlgorithm
-      )
+      aesDeriveKey(passwordBase64, saltBase64, {
+        iterations: 1000,
+        byteLength: 32,
+        hash: 'unsupported' as PBKDF2HashAlgorithm,
+      })
     ).rejects.toThrow();
   });
 });
@@ -233,16 +236,17 @@ describe('AES-GCM', () => {
       ).rejects.toThrow();
     });
 
-    if (Platform.OS === 'ios' || !vector.plaintext.includes('\0')) {
-      test(`round-trips the ${vector.name} plaintext`, async () => {
-        const key = aesImportKey(vector.key);
-        const encrypted = await aesGcmEncrypt(key, vector.plaintext);
-        expect(decodedLength(encrypted.ciphertext)).toBe(
-          decodedLength(vector.ciphertext)
-        );
-        expect(await aesGcmDecrypt(key, encrypted)).toBe(vector.plaintext);
-      });
-    }
+    const roundTripTest = isTruncatedOnAndroid(vector.plaintext)
+      ? test.skip
+      : test;
+    roundTripTest(`round-trips the ${vector.name} plaintext`, async () => {
+      const key = aesImportKey(vector.key);
+      const encrypted = await aesGcmEncrypt(key, vector.plaintext);
+      expect(decodedLength(encrypted.ciphertext)).toBe(
+        decodedLength(vector.ciphertext)
+      );
+      expect(await aesGcmDecrypt(key, encrypted)).toBe(vector.plaintext);
+    });
   }
 
   test('uses a fresh 12-byte IV on every call', async () => {
@@ -378,12 +382,9 @@ const base64Inputs = [
 
 const base64Malformations = [
   ['that is not base64', () => 'not base64!'],
-  ['without padding', (base64: string) => base64.replace(/[=]+$/, '')],
+  ['without padding', withoutPadding],
   ['wrapped across lines', wrapLines],
-  [
-    'in the base64url alphabet',
-    (base64: string) => toBase64Url(base64).padEnd(base64.length, '='),
-  ],
+  ['in the base64url alphabet', toBase64UrlAlphabet],
 ] as const;
 
 describe('strict base64 decoding', () => {

@@ -1,4 +1,3 @@
-import { Platform } from 'react-native';
 import { describe, expect, test } from 'react-native-harness';
 import {
   aesDeriveKey,
@@ -6,11 +5,12 @@ import {
   randomKey,
   rsaGenerateKeys,
 } from '@rocket.chat/mobile-crypto';
+import { passwordBase64, saltBase64 } from './__fixtures__/crypto';
 
-const describeOnIOS = Platform.OS === 'ios' ? describe : describe.skip;
+const invalidCounts = [-1, NaN, 2 ** 31, 1e15, 1e19, 1e20];
 
-describeOnIOS('Counts beyond the native integer range', () => {
-  for (const count of [1e19, 1e20]) {
+describe('Counts outside 0 to 2^31 - 1', () => {
+  for (const count of invalidCounts) {
     test(`randomKey throws for ${count}`, () => {
       expect(() => randomKey(count)).toThrow();
     });
@@ -25,26 +25,24 @@ describeOnIOS('Counts beyond the native integer range', () => {
 
     test(`aesDeriveKey rejects a ${count}-byte key length`, async () => {
       await expect(
-        aesDeriveKey('cGFzc3dvcmQ=', 'c2FsdA==', 1, count, 'SHA256')
-      ).rejects.toThrow();
-    });
-
-    test(`aesDeriveKey rejects ${count} iterations`, async () => {
-      await expect(
-        aesDeriveKey('cGFzc3dvcmQ=', 'c2FsdA==', count, 32, 'SHA256')
+        aesDeriveKey(passwordBase64, saltBase64, {
+          iterations: 1,
+          byteLength: count,
+          hash: 'SHA256',
+        })
       ).rejects.toThrow();
     });
   }
-});
 
-describeOnIOS('Counts above the 32-bit integer range', () => {
-  for (const count of [2 ** 31, 1e15]) {
-    test(`randomBytes throws for ${count} bytes`, () => {
-      expect(() => randomBytes(count)).toThrow();
-    });
-
-    test(`randomKey throws for ${count} bytes`, () => {
-      expect(() => randomKey(count)).toThrow();
+  for (const iterations of [0, ...invalidCounts]) {
+    test(`aesDeriveKey rejects ${iterations} iterations`, async () => {
+      await expect(
+        aesDeriveKey(passwordBase64, saltBase64, {
+          iterations,
+          byteLength: 32,
+          hash: 'SHA256',
+        })
+      ).rejects.toThrow();
     });
   }
 });

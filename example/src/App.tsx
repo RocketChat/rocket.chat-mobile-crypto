@@ -55,7 +55,11 @@ const checks: Check[] = [
     expected: 'YywoEuRtRgQQK6dhjp1tfS-BKPYma0oDJk0qBGC33LM',
     run: async () =>
       (
-        await aesDeriveKey(btoa('password'), btoa('salt'), 1000, 32, 'SHA256')
+        await aesDeriveKey(btoa('password'), btoa('salt'), {
+          iterations: 1000,
+          byteLength: 32,
+          hash: 'SHA256',
+        })
       ).exportBase64Url(),
   },
   {

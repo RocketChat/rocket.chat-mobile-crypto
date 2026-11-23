@@ -15,7 +15,7 @@ describe('Native random generation', () => {
     test(`returns ${size} random key bytes as hexadecimal`, () => {
       const key = randomKey(size);
       expect(key).toHaveLength(size * 2);
-      expect(key).toMatch(/^[0-9a-f]+$/i);
+      expect(key).toMatch(/^[0-9a-f]+$/);
     });
   }
 

@@ -82,20 +82,24 @@ export function aesImportKey(base64Url: string): AESKey {
   return MobileCrypto.aesImportKey(base64Url);
 }
 
+export interface AESDeriveKeyOptions {
+  iterations: number;
+  byteLength: number;
+  hash: PBKDF2HashAlgorithm;
+}
+
 export function aesDeriveKey(
   passwordBase64: string,
   saltBase64: string,
-  iterations: number,
-  byteLength: number,
-  hash: PBKDF2HashAlgorithm
+  options: AESDeriveKeyOptions
 ): Promise<AESKey> {
   return rejectOnThrow(() =>
     MobileCrypto.aesDeriveKey(
       passwordBase64,
       saltBase64,
-      iterations,
-      byteLength,
-      hash
+      options.iterations,
+      options.byteLength,
+      options.hash
     )
   );
 }
