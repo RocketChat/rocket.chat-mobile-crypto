@@ -29,7 +29,7 @@ import {
   unicodePbkdf2Vector,
   unicodeVector,
   zeroKey,
-} from '../fixtures/crypto';
+} from './__fixtures__/crypto';
 
 const decodedLength = (base64: string) => atob(base64).length;
 const otherKey = 'ERERERERERERERERERERERERERERERERERERERERERE';

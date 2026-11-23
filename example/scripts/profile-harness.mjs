@@ -57,7 +57,6 @@ for (const file of [
   ...filesIn(path.join(repositoryRoot, 'android/src')),
   ...filesIn(path.join(repositoryRoot, 'nitrogen')),
   ...filesIn(path.join(projectRoot, '__tests__')),
-  ...filesIn(path.join(projectRoot, 'fixtures')),
   path.join(repositoryRoot, 'yarn.lock'),
   path.join(projectRoot, 'rn-harness.config.mjs'),
   path.join(projectRoot, 'jest.harness.config.mjs'),

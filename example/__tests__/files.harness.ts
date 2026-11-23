@@ -7,7 +7,7 @@ import {
 } from 'react-native-harness';
 import { aesDecryptFile, aesEncryptFile } from '@rocket.chat/mobile-crypto';
 import { Dirs, FileSystem } from 'react-native-file-access';
-import { fileVector } from '../fixtures/crypto';
+import { fileVector } from './__fixtures__/crypto';
 
 const pathFromUri = (uri: string) =>
   decodeURIComponent(uri.replace(/^file:\/\//, ''));

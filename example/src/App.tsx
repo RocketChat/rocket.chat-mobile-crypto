@@ -7,7 +7,6 @@ import {
   aesGcmDecrypt,
   aesGcmEncrypt,
   aesGenerateKey,
-  aesImportKey,
   hmac256,
   randomBytes,
   randomKey,
@@ -16,34 +15,11 @@ import {
   rsaEncrypt,
   rsaGenerateKeys,
   rsaImportPrivateKey,
-  rsaImportPublicKey,
   rsaSign,
   rsaVerify,
   sha,
 } from '@rocket.chat/mobile-crypto';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import {
-  RSA_FIXED_OAEP_CIPHERTEXT,
-  RSA_FIXED_PLAINTEXT,
-  RSA_FIXED_PRIVATE_JWK,
-  RSA_FIXED_PUBLIC_JWK,
-  RSA_FIXED_SIGNATURE,
-  RSA_FIXED_SIGN_MESSAGE,
-} from '../fixtures/rsa';
-import {
-  base64FromBuffer,
-  bufferFromAscii,
-  bufferFromBase64,
-} from '../fixtures/bytes';
-import {
-  cbcVectors,
-  gcmVectors,
-  hashVectors,
-  passwordBase64,
-  pbkdf2Vectors,
-  saltBase64,
-  unicodeVector,
-} from '../fixtures/crypto';
 
 type Check = {
   label: string;
@@ -51,81 +27,78 @@ type Check = {
   run: () => Promise<string>;
 };
 
-const gcmVector = gcmVectors[1]!;
-const cbcVector = cbcVectors[1]!;
-const pbkdf2Vector = pbkdf2Vectors[2];
+const message = 'Rocket.Chat 🔐';
+
+const bufferFromText = (text: string): ArrayBuffer =>
+  new TextEncoder().encode(text).buffer as ArrayBuffer;
+
+const base64FromBuffer = (buffer: ArrayBuffer): string =>
+  btoa(String.fromCharCode(...new Uint8Array(buffer)));
 
 const checks: Check[] = [
-  ...hashVectors.map(
-    (vector): Check => ({
-      label: `${vector.algorithm} ("hello")`,
-      expected: vector.base64,
-      run: async () =>
-        base64FromBuffer(await sha(bufferFromAscii('hello'), vector.algorithm)),
-    })
-  ),
+  {
+    label: 'SHA-256 ("hello")',
+    expected: 'LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=',
+    run: async () =>
+      base64FromBuffer(await sha(bufferFromText('hello'), 'SHA-256')),
+  },
   {
     label: 'HMAC-SHA256 (data "Hello", key "key")',
     expected: 'xwufTWZb1il0r8g1gt6BDnKkGljbgsU4qdc0ySZtMh4=',
     run: async () =>
       base64FromBuffer(
-        await hmac256(bufferFromAscii('Hello'), bufferFromAscii('key'))
+        await hmac256(bufferFromText('Hello'), bufferFromText('key'))
       ),
   },
   {
-    label: `PBKDF2-${pbkdf2Vector.algorithm} ("password", "salt", 1000, ${pbkdf2Vector.byteLength})`,
-    expected: pbkdf2Vector.expected,
+    label: 'PBKDF2-SHA256 ("password", "salt", 1000, 32 bytes)',
+    expected: 'YywoEuRtRgQQK6dhjp1tfS-BKPYma0oDJk0qBGC33LM',
     run: async () =>
       (
-        await aesDeriveKey(
-          passwordBase64,
-          saltBase64,
-          1000,
-          pbkdf2Vector.byteLength,
-          pbkdf2Vector.algorithm
-        )
+        await aesDeriveKey(btoa('password'), btoa('salt'), 1000, 32, 'SHA256')
       ).exportBase64Url(),
   },
   {
-    label: 'AES-256-GCM decrypt (fixed vector)',
-    expected: gcmVector.plaintext,
-    run: () =>
-      aesGcmDecrypt(aesImportKey(gcmVector.key), {
-        ciphertext: gcmVector.ciphertext,
-        iv: gcmVector.iv,
-      }),
-  },
-  {
     label: 'AES-256-GCM encrypt then decrypt',
-    expected: 'Hello World',
+    expected: message,
     run: async () => {
       const key = aesGenerateKey(32);
-      return aesGcmDecrypt(key, await aesGcmEncrypt(key, 'Hello World'));
+      return aesGcmDecrypt(key, await aesGcmEncrypt(key, message));
     },
-  },
-  {
-    label: 'AES-256-GCM decrypt with the wrong key',
-    expected: 'rejected',
-    run: async () => {
-      const encrypted = await aesGcmEncrypt(aesGenerateKey(32), 'Hello World');
-      return aesGcmDecrypt(aesGenerateKey(32), encrypted).then(
-        () => 'accepted',
-        () => 'rejected'
-      );
-    },
-  },
-  {
-    label: 'AES-256-CBC decrypt (fixed vector)',
-    expected: cbcVector.plaintext,
-    run: () =>
-      aesCbcDecrypt(aesImportKey(cbcVector.key), cbcVector.ivAndCiphertext),
   },
   {
     label: 'AES-256-CBC encrypt then decrypt',
-    expected: 'Hello World',
+    expected: message,
     run: async () => {
       const key = aesGenerateKey(32);
-      return aesCbcDecrypt(key, await aesCbcEncrypt(key, 'Hello World'));
+      return aesCbcDecrypt(key, await aesCbcEncrypt(key, message));
+    },
+  },
+  {
+    label: 'RSA-OAEP encrypt then decrypt',
+    expected: message,
+    run: async () => {
+      const { publicKey, privateKey } = await rsaGenerateKeys(2048);
+      return rsaDecrypt(privateKey, await rsaEncrypt(publicKey, message));
+    },
+  },
+  {
+    label: 'RSA PKCS#1 v1.5 sign then verify',
+    expected: 'true',
+    run: async () => {
+      const { publicKey, privateKey } = await rsaGenerateKeys(2048);
+      const bytes = bufferFromText(message);
+      const signature = await rsaSign(privateKey, bytes, 'SHA256');
+      return String(await rsaVerify(publicKey, signature, bytes, 'SHA256'));
+    },
+  },
+  {
+    label: 'RSA private key JWK export then import',
+    expected: 'true',
+    run: async () => {
+      const { privateKey } = await rsaGenerateKeys(2048);
+      const jwk = privateKey.exportJwk();
+      return String((await rsaImportPrivateKey(jwk)).exportJwk() === jwk);
     },
   },
   {
@@ -139,74 +112,14 @@ const checks: Check[] = [
       ),
   },
   {
-    label: 'Random key (16 bytes) as hexadecimal',
+    label: 'Random key (16 bytes) as lowercase hex',
     expected: 'true',
-    run: async () => String(/^[0-9a-f]{32}$/i.test(randomKey(16))),
+    run: async () => String(/^[0-9a-f]{32}$/.test(randomKey(16))),
   },
   {
     label: 'Random bytes (32)',
     expected: '32',
     run: async () => String(randomBytes(32).byteLength),
-  },
-  {
-    label: 'RSA OAEP-SHA256 decrypt (fixed vector)',
-    expected: RSA_FIXED_PLAINTEXT,
-    run: async () =>
-      rsaDecrypt(
-        await rsaImportPrivateKey(RSA_FIXED_PRIVATE_JWK),
-        RSA_FIXED_OAEP_CIPHERTEXT
-      ),
-  },
-  {
-    label: 'RSA PKCS#1 v1.5 SHA-256 sign (fixed vector)',
-    expected: RSA_FIXED_SIGNATURE,
-    run: async () =>
-      base64FromBuffer(
-        await rsaSign(
-          await rsaImportPrivateKey(RSA_FIXED_PRIVATE_JWK),
-          bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
-          'SHA256'
-        )
-      ),
-  },
-  {
-    label: 'RSA PKCS#1 v1.5 SHA-256 verify (fixed vector)',
-    expected: 'true',
-    run: async () =>
-      String(
-        await rsaVerify(
-          await rsaImportPublicKey(RSA_FIXED_PUBLIC_JWK),
-          bufferFromBase64(RSA_FIXED_SIGNATURE),
-          bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
-          'SHA256'
-        )
-      ),
-  },
-  {
-    label: 'RSA private key JWK export (fixed key)',
-    expected: RSA_FIXED_PRIVATE_JWK,
-    run: async () =>
-      (await rsaImportPrivateKey(RSA_FIXED_PRIVATE_JWK)).exportJwk(),
-  },
-  {
-    label: 'RSA generated keys encrypt then decrypt',
-    expected: unicodeVector.text,
-    run: async () => {
-      const { publicKey, privateKey } = await rsaGenerateKeys(2048);
-      return rsaDecrypt(
-        privateKey,
-        await rsaEncrypt(publicKey, unicodeVector.text)
-      );
-    },
-  },
-  {
-    label: 'RSA generated key JWK export then import',
-    expected: 'true',
-    run: async () => {
-      const { privateKey } = await rsaGenerateKeys(2048);
-      const jwk = privateKey.exportJwk();
-      return String((await rsaImportPrivateKey(jwk)).exportJwk() === jwk);
-    },
   },
 ];
 
@@ -243,7 +156,7 @@ export default function App() {
           style={styles.container}
           contentContainerStyle={styles.content}
         >
-          <Text style={styles.title}>Mobile Crypto Known Answers</Text>
+          <Text style={styles.title}>Mobile Crypto</Text>
           {checks.map((check) => (
             <CheckRow
               key={check.label}

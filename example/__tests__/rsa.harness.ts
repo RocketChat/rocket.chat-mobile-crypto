@@ -20,13 +20,13 @@ import {
   RSA_FIXED_SIGNATURE,
   RSA_FIXED_SIGN_MESSAGE,
   RSA_UNICODE_OAEP_CIPHERTEXT,
-} from '../fixtures/rsa';
-import { unicodeVector } from '../fixtures/crypto';
+} from './__fixtures__/rsa';
+import { unicodeVector } from './__fixtures__/crypto';
 import {
   base64FromBuffer,
   bufferFromAscii,
   bufferFromBase64,
-} from '../fixtures/bytes';
+} from './__fixtures__/bytes';
 
 describe('RSA encryption and signatures', () => {
   let fixedPrivateKey: RSAPrivateKey;
