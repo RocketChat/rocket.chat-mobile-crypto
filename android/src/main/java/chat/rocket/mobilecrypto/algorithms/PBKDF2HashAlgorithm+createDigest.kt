@@ -8,7 +8,7 @@ import org.bouncycastle.crypto.digests.SHA256Digest
 import org.bouncycastle.crypto.digests.SHA384Digest
 import org.bouncycastle.crypto.digests.SHA512Digest
 
-fun PBKDF2HashAlgorithm.createDigest(): ExtendedDigest =
+internal fun PBKDF2HashAlgorithm.createDigest(): ExtendedDigest =
     when (this) {
         PBKDF2HashAlgorithm.SHA1 -> SHA1Digest()
         PBKDF2HashAlgorithm.SHA224 -> SHA224Digest()

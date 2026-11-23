@@ -278,13 +278,13 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func aesGcmDecrypt(key: bridge.std__shared_ptr_HybridAESKeySpec_, ciphertext: std.string, iv: std.string) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
+  public final func aesGcmDecrypt(key: bridge.std__shared_ptr_HybridAESKeySpec_, encrypted: AESGCMCiphertext) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
     do {
       let __result = try self.__implementation.aesGcmDecrypt(key: { () -> any HybridAESKeySpec in
         let __unsafePointer = bridge.get_std__shared_ptr_HybridAESKeySpec_(key)
         let __instance = HybridAESKeySpec_cxx.fromUnsafe(__unsafePointer)
         return __instance.getHybridAESKeySpec()
-      }(), ciphertext: String(ciphertext), iv: String(iv))
+      }(), encrypted: encrypted)
       let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__string__ in
         let __promise = bridge.create_std__shared_ptr_Promise_std__string__()
         let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__string__(__promise)
@@ -301,13 +301,13 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func aesGcmDecryptSync(key: bridge.std__shared_ptr_HybridAESKeySpec_, ciphertext: std.string, iv: std.string) -> bridge.Result_std__string_ {
+  public final func aesGcmDecryptSync(key: bridge.std__shared_ptr_HybridAESKeySpec_, encrypted: AESGCMCiphertext) -> bridge.Result_std__string_ {
     do {
       let __result = try self.__implementation.aesGcmDecryptSync(key: { () -> any HybridAESKeySpec in
         let __unsafePointer = bridge.get_std__shared_ptr_HybridAESKeySpec_(key)
         let __instance = HybridAESKeySpec_cxx.fromUnsafe(__unsafePointer)
         return __instance.getHybridAESKeySpec()
-      }(), ciphertext: String(ciphertext), iv: String(iv))
+      }(), encrypted: encrypted)
       let __resultCpp = std.string(__result)
       return bridge.create_Result_std__string_(__resultCpp)
     } catch (let __error) {
@@ -414,9 +414,9 @@ open class HybridMobileCryptoSpec_cxx {
   }
   
   @inline(__always)
-  public final func aesDecryptFile(filePath: std.string, key: std.string, iv: std.string, sha256: std.string) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
+  public final func aesDecryptFile(file: EncryptedFile) -> bridge.Result_std__shared_ptr_Promise_std__string___ {
     do {
-      let __result = try self.__implementation.aesDecryptFile(filePath: String(filePath), key: String(key), iv: String(iv), sha256: String(sha256))
+      let __result = try self.__implementation.aesDecryptFile(file: file)
       let __resultCpp = { () -> bridge.std__shared_ptr_Promise_std__string__ in
         let __promise = bridge.create_std__shared_ptr_Promise_std__string__()
         let __promiseHolder = bridge.wrap_std__shared_ptr_Promise_std__string__(__promise)

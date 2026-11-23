@@ -77,12 +77,7 @@ describe('Native file encryption', () => {
     expect(await FileSystem.readFile(encryptedPath, 'base64')).not.toBe(
       fileVector.plaintext
     );
-    const decrypted = await aesDecryptFile(
-      encrypted.path,
-      encrypted.key,
-      encrypted.iv,
-      encrypted.sha256
-    );
+    const decrypted = await aesDecryptFile(encrypted);
     expect(pathFromUri(decrypted)).toBe(encryptedPath);
     expect(await FileSystem.readFile(encryptedPath, 'base64')).toBe(
       fileVector.plaintext
@@ -91,12 +86,12 @@ describe('Native file encryption', () => {
 
   test('decrypts the independent NIST AES-256-CTR vector in place', async () => {
     await FileSystem.writeFile(inputPath, fileVector.ciphertext, 'base64');
-    const decrypted = await aesDecryptFile(
-      `file://${inputPath}`,
-      fileVector.key,
-      fileVector.iv,
-      fileVector.sha256
-    );
+    const decrypted = await aesDecryptFile({
+      path: `file://${inputPath}`,
+      key: fileVector.key,
+      iv: fileVector.iv,
+      sha256: fileVector.sha256,
+    });
     expect(pathFromUri(decrypted)).toBe(inputPath);
     expect(await FileSystem.readFile(inputPath, 'base64')).toBe(
       fileVector.plaintext
@@ -105,12 +100,12 @@ describe('Native file encryption', () => {
 
   test('compares the SHA-256 case-insensitively', async () => {
     await FileSystem.writeFile(inputPath, fileVector.ciphertext, 'base64');
-    await aesDecryptFile(
-      inputPath,
-      fileVector.key,
-      fileVector.iv,
-      fileVector.sha256.toUpperCase()
-    );
+    await aesDecryptFile({
+      path: inputPath,
+      key: fileVector.key,
+      iv: fileVector.iv,
+      sha256: fileVector.sha256.toUpperCase(),
+    });
     expect(await FileSystem.readFile(inputPath, 'base64')).toBe(
       fileVector.plaintext
     );
@@ -120,7 +115,12 @@ describe('Native file encryption', () => {
     await FileSystem.writeFile(inputPath, fileVector.ciphertext, 'base64');
 
     await expect(
-      aesDecryptFile(inputPath, fileVector.key, fileVector.iv, emptySha256)
+      aesDecryptFile({
+        path: inputPath,
+        key: fileVector.key,
+        iv: fileVector.iv,
+        sha256: emptySha256,
+      })
     ).rejects.toThrow();
 
     for (const name of await FileSystem.ls(directory)) {
@@ -130,18 +130,41 @@ describe('Native file encryption', () => {
     }
   });
 
+  for (const [description, field, value] of [
+    [
+      'a key in the standard base64 alphabet',
+      'key',
+      fileVector.key.replace(/-/g, '+').replace(/_/g, '/'),
+    ],
+    ['an IV without padding', 'iv', fileVector.iv.replace(/[=]+$/, '')],
+  ] as const) {
+    test(`rejects ${description} and leaves the file unchanged`, async () => {
+      await FileSystem.writeFile(inputPath, fileVector.ciphertext, 'base64');
+      const file = {
+        path: inputPath,
+        key: fileVector.key,
+        iv: fileVector.iv,
+        sha256: fileVector.sha256,
+        [field]: value,
+      };
+      expect(file[field]).not.toBe(fileVector[field]);
+
+      await expect(aesDecryptFile(file)).rejects.toThrow();
+
+      expect(await FileSystem.ls(directory)).toHaveLength(1);
+      expect(await FileSystem.readFile(inputPath, 'base64')).toBe(
+        fileVector.ciphertext
+      );
+    });
+  }
+
   test('round-trips a file larger than the native buffer from an encoded URI', async () => {
     const plaintext = '0123456789abcdef'.repeat(600);
     await FileSystem.writeFile(inputPath, plaintext);
     const encrypted = await encrypt(encodeURI(`file://${inputPath}`));
 
     expect(encrypted.sha256).toBe(fileVector.largeSha256);
-    await aesDecryptFile(
-      encrypted.path,
-      encrypted.key,
-      encrypted.iv,
-      encrypted.sha256
-    );
+    await aesDecryptFile(encrypted);
     expect(await FileSystem.readFile(pathFromUri(encrypted.path))).toBe(
       plaintext
     );
@@ -154,12 +177,7 @@ describe('Native file encryption', () => {
 
     expect(encrypted.sha256).toBe(emptySha256);
     expect((await FileSystem.stat(encryptedPath)).size).toBe(0);
-    await aesDecryptFile(
-      encrypted.path,
-      encrypted.key,
-      encrypted.iv,
-      encrypted.sha256
-    );
+    await aesDecryptFile(encrypted);
     expect(await FileSystem.readFile(encryptedPath)).toBe('');
   });
 
@@ -169,12 +187,7 @@ describe('Native file encryption', () => {
     const encrypted = await encrypt(longInputPath);
     const encryptedPath = pathFromUri(encrypted.path);
 
-    await aesDecryptFile(
-      encrypted.path,
-      encrypted.key,
-      encrypted.iv,
-      encrypted.sha256
-    );
+    await aesDecryptFile(encrypted);
     expect(await FileSystem.readFile(encryptedPath, 'base64')).toBe(
       fileVector.plaintext
     );
@@ -191,14 +204,7 @@ describe('Native file encryption', () => {
 
     expect(first.path).not.toBe(second.path);
     await Promise.all(
-      [first, second].map((encrypted) =>
-        aesDecryptFile(
-          encrypted.path,
-          encrypted.key,
-          encrypted.iv,
-          encrypted.sha256
-        )
-      )
+      [first, second].map((encrypted) => aesDecryptFile(encrypted))
     );
     expect(await FileSystem.readFile(pathFromUri(first.path))).toBe(plaintext);
     expect(await FileSystem.readFile(pathFromUri(second.path))).toBe(plaintext);
@@ -210,12 +216,12 @@ describe('Native file encryption', () => {
 
   test('rejects a missing decryption source', async () => {
     await expect(
-      aesDecryptFile(
-        `${directory}/missing.bin`,
-        fileVector.key,
-        fileVector.iv,
-        fileVector.sha256
-      )
+      aesDecryptFile({
+        path: `${directory}/missing.bin`,
+        key: fileVector.key,
+        iv: fileVector.iv,
+        sha256: fileVector.sha256,
+      })
     ).rejects.toThrow();
   });
 });

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.margelo.nitro.mobilecrypto.AESGCMCiphertext
 import com.margelo.nitro.mobilecrypto.EncryptedFile
+import com.margelo.nitro.mobilecrypto.PBKDF2HashAlgorithm
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -18,7 +19,7 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-object AESCrypto {
+internal object AESCrypto {
 
     private const val CBC_CIPHER_ALGORITHM = "AES/CBC/PKCS7Padding"
     private const val GCM_CIPHER_ALGORITHM = "AES/GCM/NoPadding"
@@ -48,7 +49,24 @@ object AESCrypto {
         return CryptoUtils.encodeBase64Url(key)
     }
 
-    fun requireKeyLength(byteLength: Int) {
+    fun deriveKey(
+        passwordBase64: String,
+        saltBase64: String,
+        iterations: Int,
+        byteLength: Int,
+        hash: PBKDF2HashAlgorithm
+    ): ByteArray {
+        requireKeyLength(byteLength)
+        return PBKDF2Crypto.deriveKey(
+            CryptoUtils.decodeBase64(passwordBase64),
+            CryptoUtils.decodeBase64(saltBase64),
+            iterations,
+            byteLength,
+            hash
+        )
+    }
+
+    private fun requireKeyLength(byteLength: Int) {
         require(byteLength in AES_KEY_LENGTHS) { "AES key must be 16, 24 or 32 bytes, got $byteLength" }
     }
 
@@ -123,12 +141,12 @@ object AESCrypto {
         )
     }
 
-    fun decryptFile(inputFile: String, base64UrlKey: String, base64Iv: String, expectedSha256: String, context: Context): String {
-        val key = CryptoUtils.decodeBase64Url(base64UrlKey)
-        val iv = CryptoUtils.decodeBase64(base64Iv)
-        val targetUri = Uri.parse(inputFile)
+    fun decryptFile(file: EncryptedFile, context: Context): String {
+        val key = CryptoUtils.decodeBase64Url(file.key)
+        val iv = CryptoUtils.decodeBase64(file.iv)
+        val targetUri = Uri.parse(file.path)
         val isPlainFilePath = targetUri.scheme == null || targetUri.scheme == "file"
-        val targetFile = File(normalizeFilePath(inputFile))
+        val targetFile = File(normalizeFilePath(file.path))
         val outputDirectory = if (isPlainFilePath) {
             targetFile.absoluteFile.parentFile?.takeIf { it.canWrite() } ?: context.cacheDir
         } else {
@@ -138,24 +156,18 @@ object AESCrypto {
         val plaintextDigest = MessageDigest.getInstance(FILE_DIGEST_ALGORITHM)
 
         try {
-            openInputStream(inputFile, context).use { inputStream ->
+            openInputStream(file.path, context).use { inputStream ->
                 DigestOutputStream(FileOutputStream(outputFile), plaintextDigest).use { outputStream ->
                     runCtr(Cipher.DECRYPT_MODE, key, iv, inputStream, outputStream)
                 }
             }
             val actualSha256 = CryptoUtils.bytesToHex(plaintextDigest.digest())
-            if (!actualSha256.equals(expectedSha256, ignoreCase = true)) {
-                throw SecurityException("Decrypted file SHA-256 $actualSha256 does not match expected $expectedSha256")
+            if (!actualSha256.equals(file.sha256, ignoreCase = true)) {
+                throw SecurityException("Decrypted file SHA-256 $actualSha256 does not match expected ${file.sha256}")
             }
-        } catch (exception: Exception) {
-            outputFile.delete()
-            throw exception
-        }
-
-        if (isPlainFilePath && outputFile.renameTo(targetFile)) {
-            return inputFile
-        }
-        try {
+            if (isPlainFilePath && outputFile.renameTo(targetFile)) {
+                return file.path
+            }
             FileInputStream(outputFile).use { inputStream ->
                 val outputStream = if (isPlainFilePath) {
                     FileOutputStream(targetFile)
@@ -165,10 +177,10 @@ object AESCrypto {
                 }
                 outputStream.use { inputStream.copyTo(it, BUFFER_SIZE) }
             }
+            return file.path
         } finally {
             outputFile.delete()
         }
-        return inputFile
     }
 
     private fun runCtr(mode: Int, key: ByteArray, iv: ByteArray, inputStream: InputStream, outputStream: OutputStream) {

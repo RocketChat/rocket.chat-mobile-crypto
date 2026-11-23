@@ -13,7 +13,7 @@ package enum AESCBCCrypto {
   }
 
   package static func decrypt(_ ivAndCiphertextBase64: String, key: Data) -> String? {
-    guard let ivAndCiphertext = Data(base64Encoded: ivAndCiphertextBase64),
+    guard let ivAndCiphertext = Data(canonicalBase64: ivAndCiphertextBase64),
           ivAndCiphertext.count >= initializationVectorLength * 2 else {
       return nil
     }
@@ -23,7 +23,7 @@ package enum AESCBCCrypto {
           let plaintext = crypt(CCOperation(kCCDecrypt), input: ciphertext, key: key, initializationVector: initializationVector) else {
       return nil
     }
-    return String(data: plaintext, encoding: .utf8)
+    return String(strictUTF8: plaintext)
   }
 
   private static func crypt(_ operation: CCOperation, input: Data, key: Data, initializationVector: Data) -> Data? {

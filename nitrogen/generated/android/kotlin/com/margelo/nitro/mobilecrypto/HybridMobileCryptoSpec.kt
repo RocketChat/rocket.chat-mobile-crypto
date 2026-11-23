@@ -69,11 +69,11 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
-  abstract fun aesGcmDecrypt(key: HybridAESKeySpec, ciphertext: String, iv: String): Promise<String>
+  abstract fun aesGcmDecrypt(key: HybridAESKeySpec, encrypted: AESGCMCiphertext): Promise<String>
   
   @DoNotStrip
   @Keep
-  abstract fun aesGcmDecryptSync(key: HybridAESKeySpec, ciphertext: String, iv: String): String
+  abstract fun aesGcmDecryptSync(key: HybridAESKeySpec, encrypted: AESGCMCiphertext): String
   
   @DoNotStrip
   @Keep
@@ -97,7 +97,7 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
-  abstract fun aesDecryptFile(filePath: String, key: String, iv: String, sha256: String): Promise<String>
+  abstract fun aesDecryptFile(file: EncryptedFile): Promise<String>
   
   @DoNotStrip
   @Keep

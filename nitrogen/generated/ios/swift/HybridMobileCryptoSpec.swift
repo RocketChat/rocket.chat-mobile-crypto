@@ -22,14 +22,14 @@ public protocol HybridMobileCryptoSpec_protocol: HybridObject {
   func aesDeriveKey(passwordBase64: String, saltBase64: String, iterations: Double, byteLength: Double, hash: PBKDF2HashAlgorithm) throws -> Promise<(any HybridAESKeySpec)>
   func aesGcmEncrypt(key: (any HybridAESKeySpec), plaintext: String) throws -> Promise<AESGCMCiphertext>
   func aesGcmEncryptSync(key: (any HybridAESKeySpec), plaintext: String) throws -> AESGCMCiphertext
-  func aesGcmDecrypt(key: (any HybridAESKeySpec), ciphertext: String, iv: String) throws -> Promise<String>
-  func aesGcmDecryptSync(key: (any HybridAESKeySpec), ciphertext: String, iv: String) throws -> String
+  func aesGcmDecrypt(key: (any HybridAESKeySpec), encrypted: AESGCMCiphertext) throws -> Promise<String>
+  func aesGcmDecryptSync(key: (any HybridAESKeySpec), encrypted: AESGCMCiphertext) throws -> String
   func aesCbcEncrypt(key: (any HybridAESKeySpec), plaintext: String) throws -> Promise<String>
   func aesCbcEncryptSync(key: (any HybridAESKeySpec), plaintext: String) throws -> String
   func aesCbcDecrypt(key: (any HybridAESKeySpec), ivAndCiphertext: String) throws -> Promise<String>
   func aesCbcDecryptSync(key: (any HybridAESKeySpec), ivAndCiphertext: String) throws -> String
   func aesEncryptFile(filePath: String) throws -> Promise<EncryptedFile>
-  func aesDecryptFile(filePath: String, key: String, iv: String, sha256: String) throws -> Promise<String>
+  func aesDecryptFile(file: EncryptedFile) throws -> Promise<String>
   func rsaGenerateKeys(keySize: Double?) throws -> Promise<RSAKeyPair>
   func rsaImportPrivateKey(jwk: String) throws -> Promise<(any HybridRSAPrivateKeySpec)>
   func rsaImportPublicKey(jwk: String) throws -> Promise<(any HybridRSAPublicKeySpec)>

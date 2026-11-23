@@ -170,9 +170,9 @@ namespace margelo::nitro::mobilecrypto {
     auto __result = method(_javaPart, std::dynamic_pointer_cast<JHybridAESKeySpec>(key)->getJavaPart(), jni::make_jstring(plaintext));
     return __result->toCpp();
   }
-  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::aesGcmDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ciphertext, const std::string& iv) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JHybridAESKeySpec::JavaPart> /* key */, jni::alias_ref<jni::JString> /* ciphertext */, jni::alias_ref<jni::JString> /* iv */)>("aesGcmDecrypt");
-    auto __result = method(_javaPart, std::dynamic_pointer_cast<JHybridAESKeySpec>(key)->getJavaPart(), jni::make_jstring(ciphertext), jni::make_jstring(iv));
+  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::aesGcmDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const AESGCMCiphertext& encrypted) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JHybridAESKeySpec::JavaPart> /* key */, jni::alias_ref<JAESGCMCiphertext> /* encrypted */)>("aesGcmDecrypt");
+    auto __result = method(_javaPart, std::dynamic_pointer_cast<JHybridAESKeySpec>(key)->getJavaPart(), JAESGCMCiphertext::fromCpp(encrypted));
     return [&]() {
       auto __promise = Promise<std::string>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
@@ -186,9 +186,9 @@ namespace margelo::nitro::mobilecrypto {
       return __promise;
     }();
   }
-  std::string JHybridMobileCryptoSpec::aesGcmDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ciphertext, const std::string& iv) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>(jni::alias_ref<JHybridAESKeySpec::JavaPart> /* key */, jni::alias_ref<jni::JString> /* ciphertext */, jni::alias_ref<jni::JString> /* iv */)>("aesGcmDecryptSync");
-    auto __result = method(_javaPart, std::dynamic_pointer_cast<JHybridAESKeySpec>(key)->getJavaPart(), jni::make_jstring(ciphertext), jni::make_jstring(iv));
+  std::string JHybridMobileCryptoSpec::aesGcmDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const AESGCMCiphertext& encrypted) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>(jni::alias_ref<JHybridAESKeySpec::JavaPart> /* key */, jni::alias_ref<JAESGCMCiphertext> /* encrypted */)>("aesGcmDecryptSync");
+    auto __result = method(_javaPart, std::dynamic_pointer_cast<JHybridAESKeySpec>(key)->getJavaPart(), JAESGCMCiphertext::fromCpp(encrypted));
     return __result->toStdString();
   }
   std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::aesCbcEncrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) {
@@ -249,9 +249,9 @@ namespace margelo::nitro::mobilecrypto {
       return __promise;
     }();
   }
-  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::aesDecryptFile(const std::string& filePath, const std::string& key, const std::string& iv, const std::string& sha256) {
-    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<jni::JString> /* filePath */, jni::alias_ref<jni::JString> /* key */, jni::alias_ref<jni::JString> /* iv */, jni::alias_ref<jni::JString> /* sha256 */)>("aesDecryptFile");
-    auto __result = method(_javaPart, jni::make_jstring(filePath), jni::make_jstring(key), jni::make_jstring(iv), jni::make_jstring(sha256));
+  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::aesDecryptFile(const EncryptedFile& file) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JEncryptedFile> /* file */)>("aesDecryptFile");
+    auto __result = method(_javaPart, JEncryptedFile::fromCpp(file));
     return [&]() {
       auto __promise = Promise<std::string>::create();
       __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {

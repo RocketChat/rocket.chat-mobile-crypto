@@ -152,13 +152,12 @@ export function aesGcmEncrypt(
 
 export function aesGcmDecrypt(
   key: AESKey,
-  ciphertext: string,
-  iv: string
+  encrypted: AESGCMCiphertext
 ): Promise<string> {
   return runBySize(
-    [ciphertext],
-    () => MobileCrypto.aesGcmDecryptSync(key, ciphertext, iv),
-    () => MobileCrypto.aesGcmDecrypt(key, ciphertext, iv)
+    [encrypted.ciphertext],
+    () => MobileCrypto.aesGcmDecryptSync(key, encrypted),
+    () => MobileCrypto.aesGcmDecrypt(key, encrypted)
   );
 }
 
@@ -185,15 +184,8 @@ export function aesEncryptFile(filePath: string): Promise<EncryptedFile> {
   return rejectOnThrow(() => MobileCrypto.aesEncryptFile(filePath));
 }
 
-export function aesDecryptFile(
-  filePath: string,
-  key: string,
-  iv: string,
-  sha256: string
-): Promise<string> {
-  return rejectOnThrow(() =>
-    MobileCrypto.aesDecryptFile(filePath, key, iv, sha256)
-  );
+export function aesDecryptFile(file: EncryptedFile): Promise<string> {
+  return rejectOnThrow(() => MobileCrypto.aesDecryptFile(file));
 }
 
 export function rsaGenerateKeys(keySize?: number): Promise<RSAKeyPair> {

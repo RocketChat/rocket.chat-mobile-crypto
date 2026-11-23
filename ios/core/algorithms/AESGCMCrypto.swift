@@ -14,12 +14,12 @@ package enum AESGCMCrypto {
   }
 
   package static func decrypt(_ ciphertextBase64: String, ivBase64: String, key: Data) -> String? {
-    guard let ciphertextAndTag = Data(base64Encoded: ciphertextBase64),
-          let nonce = Data(base64Encoded: ivBase64),
+    guard let ciphertextAndTag = Data(canonicalBase64: ciphertextBase64),
+          let nonce = Data(canonicalBase64: ivBase64),
           let plaintext = decrypt(ciphertextAndTag, key: key, nonce: nonce) else {
       return nil
     }
-    return String(data: plaintext, encoding: .utf8)
+    return String(strictUTF8: plaintext)
   }
 
   private static func encrypt(_ plaintext: Data, key: Data, nonce: Data) -> Data? {

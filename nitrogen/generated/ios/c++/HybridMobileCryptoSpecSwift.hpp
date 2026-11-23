@@ -168,16 +168,16 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> aesGcmDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ciphertext, const std::string& iv) override {
-      auto __result = _swiftPart.aesGcmDecrypt(key, ciphertext, iv);
+    inline std::shared_ptr<Promise<std::string>> aesGcmDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const AESGCMCiphertext& encrypted) override {
+      auto __result = _swiftPart.aesGcmDecrypt(key, std::forward<decltype(encrypted)>(encrypted));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::string aesGcmDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ciphertext, const std::string& iv) override {
-      auto __result = _swiftPart.aesGcmDecryptSync(key, ciphertext, iv);
+    inline std::string aesGcmDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const AESGCMCiphertext& encrypted) override {
+      auto __result = _swiftPart.aesGcmDecryptSync(key, std::forward<decltype(encrypted)>(encrypted));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }
@@ -224,8 +224,8 @@ namespace margelo::nitro::mobilecrypto {
       auto __value = std::move(__result.value());
       return __value;
     }
-    inline std::shared_ptr<Promise<std::string>> aesDecryptFile(const std::string& filePath, const std::string& key, const std::string& iv, const std::string& sha256) override {
-      auto __result = _swiftPart.aesDecryptFile(filePath, key, iv, sha256);
+    inline std::shared_ptr<Promise<std::string>> aesDecryptFile(const EncryptedFile& file) override {
+      auto __result = _swiftPart.aesDecryptFile(std::forward<decltype(file)>(file));
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

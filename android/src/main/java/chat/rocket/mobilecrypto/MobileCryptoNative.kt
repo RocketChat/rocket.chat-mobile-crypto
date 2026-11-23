@@ -2,29 +2,37 @@ package chat.rocket.mobilecrypto
 
 import chat.rocket.mobilecrypto.algorithms.AESCrypto
 import chat.rocket.mobilecrypto.algorithms.RSACrypto
-import com.margelo.nitro.mobilecrypto.AESGCMCiphertext
 import java.security.PrivateKey
 
 object MobileCryptoNative {
 
+  data class EncryptedText(val iv: String, val ciphertext: String)
+
   fun rsaImportPrivateKey(jwkJson: String): PrivateKey? =
-    runCatching { RSACrypto.importPrivateKey(jwkJson) }.getOrNull()
+    orNull { RSACrypto.importPrivateKey(jwkJson) }
 
   fun rsaDecrypt(ciphertext: String, privateKey: PrivateKey): String? =
-    runCatching { RSACrypto.decrypt(ciphertext, privateKey) }.getOrNull()
+    orNull { RSACrypto.decrypt(ciphertext, privateKey) }
 
   fun aesImportKey(base64Url: String): ByteArray? =
-    runCatching { AESCrypto.importKey(base64Url) }.getOrNull()
+    orNull { AESCrypto.importKey(base64Url) }
 
   fun aesGcmDecrypt(ciphertext: String, iv: String, key: ByteArray): String? =
-    runCatching { AESCrypto.gcmDecrypt(key, ciphertext, iv) }.getOrNull()
+    orNull { AESCrypto.gcmDecrypt(key, ciphertext, iv) }
 
-  fun aesGcmEncrypt(plaintext: String, key: ByteArray): AESGCMCiphertext? =
-    runCatching { AESCrypto.gcmEncrypt(key, plaintext) }.getOrNull()
+  fun aesGcmEncrypt(plaintext: String, key: ByteArray): EncryptedText? =
+    orNull { AESCrypto.gcmEncrypt(key, plaintext).let { EncryptedText(it.iv, it.ciphertext) } }
 
   fun aesCbcDecrypt(ivAndCiphertext: String, key: ByteArray): String? =
-    runCatching { AESCrypto.cbcDecrypt(key, ivAndCiphertext) }.getOrNull()
+    orNull { AESCrypto.cbcDecrypt(key, ivAndCiphertext) }
 
   fun aesCbcEncrypt(plaintext: String, key: ByteArray): String? =
-    runCatching { AESCrypto.cbcEncrypt(key, plaintext) }.getOrNull()
+    orNull { AESCrypto.cbcEncrypt(key, plaintext) }
+
+  private inline fun <T> orNull(operation: () -> T): T? =
+    try {
+      operation()
+    } catch (exception: Exception) {
+      null
+    }
 }

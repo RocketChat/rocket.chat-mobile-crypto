@@ -22,7 +22,6 @@ package enum AESCTRFileCrypto {
       key: key,
       initializationVector: initializationVector
     ) else {
-      try? FileManager.default.removeItem(atPath: outputPath)
       return nil
     }
     return EncryptedFile(
@@ -33,14 +32,15 @@ package enum AESCTRFileCrypto {
     )
   }
 
-  package static func decryptFile(_ filePath: String, base64URLKey: String, base64InitializationVector: String, sha256: String) -> String? {
-    let inputPath = filePath.normalizedFilePath
-    guard let key = Data(base64URLEncoded: base64URLKey),
-          let initializationVector = Data(base64Encoded: base64InitializationVector),
+  package static func decryptFile(_ file: EncryptedFile) -> String? {
+    let inputPath = file.path.normalizedFilePath
+    guard let key = Data(base64URLEncoded: file.key),
+          let initializationVector = Data(canonicalBase64: file.iv),
           initializationVector.count == kCCBlockSizeAES128 else {
       return nil
     }
     let outputPath = outputPath(for: inputPath)
+    defer { try? FileManager.default.removeItem(atPath: outputPath) }
     guard let plaintextDigest = transform(
       inputPath: inputPath,
       outputPath: outputPath,
@@ -48,19 +48,13 @@ package enum AESCTRFileCrypto {
       key: key,
       initializationVector: initializationVector
     ),
-      plaintextDigest.lowercaseHexString == sha256.lowercased() else {
-      try? FileManager.default.removeItem(atPath: outputPath)
-      return nil
-    }
-    do {
-      _ = try FileManager.default.replaceItemAt(
+      plaintextDigest.lowercaseHexString == file.sha256.lowercased(),
+      (try? FileManager.default.replaceItemAt(
         URL(fileURLWithPath: inputPath),
         withItemAt: URL(fileURLWithPath: outputPath),
         backupItemName: nil,
         options: .usingNewMetadataOnly
-      )
-    } catch {
-      try? FileManager.default.removeItem(atPath: outputPath)
+      )) != nil else {
       return nil
     }
     return fileScheme + inputPath
@@ -73,6 +67,26 @@ package enum AESCTRFileCrypto {
   }
 
   private static func transform(
+    inputPath: String,
+    outputPath: String,
+    operation: CCOperation,
+    key: Data,
+    initializationVector: Data
+  ) -> Data? {
+    guard let plaintextDigest = crypt(
+      inputPath: inputPath,
+      outputPath: outputPath,
+      operation: operation,
+      key: key,
+      initializationVector: initializationVector
+    ) else {
+      try? FileManager.default.removeItem(atPath: outputPath)
+      return nil
+    }
+    return plaintextDigest
+  }
+
+  private static func crypt(
     inputPath: String,
     outputPath: String,
     operation: CCOperation,
@@ -131,11 +145,7 @@ package enum AESCTRFileCrypto {
       }
       var finalBytesMoved = 0
       guard CCCryptorFinal(cryptor, &outputBuffer, chunkSize, &finalBytesMoved) == kCCSuccess else { return nil }
-      let finalChunk = outputBuffer[..<finalBytesMoved]
-      if !isEncrypting {
-        plaintextHasher.update(data: finalChunk)
-      }
-      try output.write(contentsOf: finalChunk)
+      try output.write(contentsOf: outputBuffer[..<finalBytesMoved])
       return Data(plaintextHasher.finalize())
     } catch {
       return nil

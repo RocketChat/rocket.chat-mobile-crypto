@@ -100,6 +100,35 @@ describe('RSA keys as JWK', () => {
     });
   }
 
+  test('rejects a modulus in the standard base64 alphabet', async () => {
+    const standardModulus = n.replace(/-/g, '+').replace(/_/g, '/');
+    expect(standardModulus).not.toBe(n);
+    const jwk = JSON.stringify({ kty: 'RSA', n: standardModulus, e });
+    await expect(rsaImportPublicKey(jwk)).rejects.toThrow();
+  });
+
+  test('rejects a private key component in the standard base64 alphabet', async () => {
+    const privateJwk = JSON.parse(RSA_FIXED_PRIVATE_JWK);
+    const field = privateFields.find((name) => /[-_]/.test(privateJwk[name]))!;
+    privateJwk[field] = privateJwk[field].replace(/-/g, '+').replace(/_/g, '/');
+    await expect(
+      rsaImportPrivateKey(JSON.stringify(privateJwk))
+    ).rejects.toThrow();
+  });
+
+  for (const kty of ['EC', 'oct', 'rsa']) {
+    test(`rejects a JWK whose kty is ${kty}`, async () => {
+      await expect(
+        rsaImportPublicKey(JSON.stringify({ kty, n, e }))
+      ).rejects.toThrow();
+      await expect(
+        rsaImportPrivateKey(
+          JSON.stringify({ ...JSON.parse(RSA_FIXED_PRIVATE_JWK), kty })
+        )
+      ).rejects.toThrow();
+    });
+  }
+
   test('rejects a public JWK as a private key', async () => {
     await expect(rsaImportPrivateKey(RSA_FIXED_PUBLIC_JWK)).rejects.toThrow();
   });

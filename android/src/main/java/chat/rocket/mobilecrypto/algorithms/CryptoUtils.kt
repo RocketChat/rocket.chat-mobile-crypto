@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction
 import java.nio.charset.StandardCharsets
 
-object CryptoUtils {
+internal object CryptoUtils {
 
     private val HEX_DIGITS = "0123456789abcdef".toCharArray()
 
@@ -24,7 +24,9 @@ object CryptoUtils {
     }
 
     fun decodeBase64(base64: String): ByteArray {
-        return Base64.decode(base64, Base64.DEFAULT)
+        val bytes = Base64.decode(base64, Base64.NO_WRAP)
+        require(encodeBase64(bytes) == base64) { "Expected padded base64 without whitespace" }
+        return bytes
     }
 
     fun encodeBase64Url(bytes: ByteArray): String {
@@ -32,7 +34,12 @@ object CryptoUtils {
     }
 
     fun decodeBase64Url(base64Url: String): ByteArray {
-        return Base64.decode(base64Url, Base64.URL_SAFE or Base64.NO_WRAP)
+        val unpadded = base64Url.trimEnd('=')
+        val padding = "=".repeat((4 - unpadded.length % 4) % 4)
+        require(base64Url == unpadded || base64Url == unpadded + padding) { "Expected base64url with correct padding" }
+        val bytes = Base64.decode(unpadded, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+        require(encodeBase64Url(bytes) == unpadded) { "Expected base64url without whitespace" }
+        return bytes
     }
 
     fun encodeUtf8(text: String): ByteArray {

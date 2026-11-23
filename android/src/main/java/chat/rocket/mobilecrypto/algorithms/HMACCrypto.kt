@@ -3,7 +3,7 @@ package chat.rocket.mobilecrypto.algorithms
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-object HMACCrypto {
+internal object HMACCrypto {
 
     private const val HMAC_SHA256 = "HmacSHA256"
 

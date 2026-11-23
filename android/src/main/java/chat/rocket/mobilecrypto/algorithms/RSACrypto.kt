@@ -16,7 +16,7 @@ import java.security.spec.RSAPublicKeySpec
 import javax.crypto.Cipher
 import org.json.JSONObject
 
-object RSACrypto {
+internal object RSACrypto {
 
     private const val KEY_ALGORITHM = "RSA"
     private const val CIPHER_ALGORITHM = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding"

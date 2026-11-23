@@ -13,6 +13,7 @@ import {
   binaryPbkdf2Vector,
   cbcVectors,
   emptyPlaintextVectors,
+  fileVector,
   gcmVectors,
   invalidUtf8Vectors,
   latin1Pbkdf2Vector,
@@ -28,6 +29,13 @@ import {
 const decodedLength = (base64: string) => atob(base64).length;
 const otherKey = 'ERERERERERERERERERERERERERERERERERERERERERE';
 const largePlaintext = 'Rocket.Chat 🔐 '.repeat(4000);
+const byteOrderMarkPlaintext = '\uFEFFRocket.Chat';
+const toBase64Url = (base64: string) =>
+  base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/[=]+$/, '');
+const toStandardAlphabet = (base64Url: string) =>
+  base64Url.replace(/-/g, '+').replace(/_/g, '/');
+const wrapLines = (base64: string) =>
+  `${base64.slice(0, 8)}\n${base64.slice(8)}`;
 
 describe('AES keys', () => {
   for (const byteLength of [16, 24, 32]) {
@@ -63,6 +71,20 @@ describe('AES keys', () => {
 
   test('refuses to import a key that is not base64url', () => {
     expect(() => aesImportKey('not base64url!')).toThrow();
+  });
+
+  test('refuses to import a key in the standard base64 alphabet', () => {
+    const standardKey = toStandardAlphabet(fileVector.key);
+    expect(standardKey).not.toBe(fileVector.key);
+    expect(() => aesImportKey(standardKey)).toThrow();
+  });
+
+  test('refuses to import a key with the wrong padding', () => {
+    expect(() => aesImportKey(`${cbcVectors[0]!.key}=`)).toThrow();
+  });
+
+  test('refuses to import a key with whitespace', () => {
+    expect(() => aesImportKey(` ${cbcVectors[0]!.key}`)).toThrow();
   });
 });
 
@@ -133,7 +155,7 @@ describe('PBKDF2 key derivation', () => {
       'SHA256'
     );
     const { ciphertext, iv } = await aesGcmEncrypt(key, 'derived');
-    expect(await aesGcmDecrypt(key, ciphertext, iv)).toBe('derived');
+    expect(await aesGcmDecrypt(key, { ciphertext, iv })).toBe('derived');
   });
 
   test('rejects an unsupported hash algorithm', async () => {
@@ -153,43 +175,46 @@ describe('AES-GCM', () => {
   for (const vector of gcmVectors) {
     test(`decrypts the ${vector.name}`, async () => {
       expect(
-        await aesGcmDecrypt(
-          aesImportKey(vector.key),
-          vector.ciphertext,
-          vector.iv
-        )
+        await aesGcmDecrypt(aesImportKey(vector.key), {
+          ciphertext: vector.ciphertext,
+          iv: vector.iv,
+        })
       ).toBe(vector.plaintext);
     });
 
     test(`rejects modified ciphertext for the ${vector.name}`, async () => {
       await expect(
-        aesGcmDecrypt(
-          aesImportKey(vector.key),
-          vector.tamperedCiphertext,
-          vector.iv
-        )
+        aesGcmDecrypt(aesImportKey(vector.key), {
+          ciphertext: vector.tamperedCiphertext,
+          iv: vector.iv,
+        })
       ).rejects.toThrow();
     });
 
     test(`rejects a modified authentication tag for the ${vector.name}`, async () => {
       await expect(
-        aesGcmDecrypt(aesImportKey(vector.key), vector.tamperedTag, vector.iv)
+        aesGcmDecrypt(aesImportKey(vector.key), {
+          ciphertext: vector.tamperedTag,
+          iv: vector.iv,
+        })
       ).rejects.toThrow();
     });
 
     test(`rejects the wrong key for the ${vector.name}`, async () => {
       await expect(
-        aesGcmDecrypt(aesImportKey(otherKey), vector.ciphertext, vector.iv)
+        aesGcmDecrypt(aesImportKey(otherKey), {
+          ciphertext: vector.ciphertext,
+          iv: vector.iv,
+        })
       ).rejects.toThrow();
     });
 
     test(`rejects the wrong IV for the ${vector.name}`, async () => {
       await expect(
-        aesGcmDecrypt(
-          aesImportKey(vector.key),
-          vector.ciphertext,
-          'ERERERERERERERER'
-        )
+        aesGcmDecrypt(aesImportKey(vector.key), {
+          ciphertext: vector.ciphertext,
+          iv: 'ERERERERERERERER',
+        })
       ).rejects.toThrow();
     });
 
@@ -200,7 +225,9 @@ describe('AES-GCM', () => {
         expect(decodedLength(ciphertext)).toBe(
           decodedLength(vector.ciphertext)
         );
-        expect(await aesGcmDecrypt(key, ciphertext, iv)).toBe(vector.plaintext);
+        expect(await aesGcmDecrypt(key, { ciphertext, iv })).toBe(
+          vector.plaintext
+        );
       });
     }
   }
@@ -217,11 +244,10 @@ describe('AES-GCM', () => {
 
   test('decrypts an empty plaintext from only the authentication tag', async () => {
     expect(
-      await aesGcmDecrypt(
-        aesImportKey(zeroKey),
-        emptyPlaintextVectors.gcmCiphertext,
-        emptyPlaintextVectors.gcmIv
-      )
+      await aesGcmDecrypt(aesImportKey(zeroKey), {
+        ciphertext: emptyPlaintextVectors.gcmCiphertext,
+        iv: emptyPlaintextVectors.gcmIv,
+      })
     ).toBe('');
   });
 
@@ -232,33 +258,82 @@ describe('AES-GCM', () => {
 
   test('rejects ciphertext shorter than an authentication tag', async () => {
     await expect(
-      aesGcmDecrypt(aesImportKey(zeroKey), 'aGVsbG8=', 'AAAAAAAAAAAAAAAA')
+      aesGcmDecrypt(aesImportKey(zeroKey), {
+        ciphertext: 'aGVsbG8=',
+        iv: 'AAAAAAAAAAAAAAAA',
+      })
     ).rejects.toThrow();
   });
 
   test('rejects ciphertext that is not base64', async () => {
     await expect(
-      aesGcmDecrypt(aesImportKey(zeroKey), 'not base64!', 'AAAAAAAAAAAAAAAA')
+      aesGcmDecrypt(aesImportKey(zeroKey), {
+        ciphertext: 'not base64!',
+        iv: 'AAAAAAAAAAAAAAAA',
+      })
     ).rejects.toThrow();
   });
 
   test('rejects an IV that is not base64', async () => {
     await expect(
-      aesGcmDecrypt(
-        aesImportKey(zeroKey),
-        emptyPlaintextVectors.gcmCiphertext,
-        'not base64!'
-      )
+      aesGcmDecrypt(aesImportKey(zeroKey), {
+        ciphertext: emptyPlaintextVectors.gcmCiphertext,
+        iv: 'not base64!',
+      })
+    ).rejects.toThrow();
+  });
+
+  test('round-trips with a 24-byte key', async () => {
+    const key = aesGenerateKey(24);
+    const encrypted = await aesGcmEncrypt(key, 'AES-192');
+    expect(await aesGcmDecrypt(key, encrypted)).toBe('AES-192');
+  });
+
+  test('keeps a leading byte order mark', async () => {
+    const key = aesImportKey(zeroKey);
+    const encrypted = await aesGcmEncrypt(key, byteOrderMarkPlaintext);
+    expect(decodedLength(encrypted.ciphertext)).toBe(
+      16 + byteOrderMarkPlaintext.length + 2
+    );
+    expect(await aesGcmDecrypt(key, encrypted)).toBe(byteOrderMarkPlaintext);
+  });
+
+  test('rejects base64 without padding', async () => {
+    await expect(
+      aesGcmDecrypt(aesImportKey(zeroKey), {
+        ciphertext: emptyPlaintextVectors.gcmCiphertext.replace(/[=]+$/, ''),
+        iv: emptyPlaintextVectors.gcmIv,
+      })
+    ).rejects.toThrow();
+  });
+
+  test('rejects base64 wrapped across lines', async () => {
+    await expect(
+      aesGcmDecrypt(aesImportKey(zeroKey), {
+        ciphertext: wrapLines(emptyPlaintextVectors.gcmCiphertext),
+        iv: emptyPlaintextVectors.gcmIv,
+      })
+    ).rejects.toThrow();
+  });
+
+  test('rejects base64 in the base64url alphabet', async () => {
+    const ciphertext = emptyPlaintextVectors.gcmCiphertext;
+    const urlAlphabet = toBase64Url(ciphertext).padEnd(ciphertext.length, '=');
+    expect(urlAlphabet).not.toBe(ciphertext);
+    await expect(
+      aesGcmDecrypt(aesImportKey(zeroKey), {
+        ciphertext: urlAlphabet,
+        iv: emptyPlaintextVectors.gcmIv,
+      })
     ).rejects.toThrow();
   });
 
   test('rejects plaintext that is not valid UTF-8', async () => {
     await expect(
-      aesGcmDecrypt(
-        aesImportKey(zeroKey),
-        invalidUtf8Vectors.gcmCiphertext,
-        invalidUtf8Vectors.gcmIv
-      )
+      aesGcmDecrypt(aesImportKey(zeroKey), {
+        ciphertext: invalidUtf8Vectors.gcmCiphertext,
+        iv: invalidUtf8Vectors.gcmIv,
+      })
     ).rejects.toThrow();
   });
 });
@@ -322,6 +397,41 @@ describe('AES-CBC with PKCS7 padding', () => {
     ).rejects.toThrow();
   });
 
+  test('keeps a leading byte order mark', async () => {
+    const key = aesImportKey(zeroKey);
+    const ivAndCiphertext = await aesCbcEncrypt(key, byteOrderMarkPlaintext);
+    expect(await aesCbcDecrypt(key, ivAndCiphertext)).toBe(
+      byteOrderMarkPlaintext
+    );
+  });
+
+  test('rejects base64 without padding', async () => {
+    await expect(
+      aesCbcDecrypt(
+        aesImportKey(zeroKey),
+        emptyPlaintextVectors.cbcIvAndCiphertext.replace(/[=]+$/, '')
+      )
+    ).rejects.toThrow();
+  });
+
+  test('rejects base64 wrapped across lines', async () => {
+    await expect(
+      aesCbcDecrypt(
+        aesImportKey(zeroKey),
+        wrapLines(emptyPlaintextVectors.cbcIvAndCiphertext)
+      )
+    ).rejects.toThrow();
+  });
+
+  test('rejects base64 in the base64url alphabet', async () => {
+    const input = emptyPlaintextVectors.cbcIvAndCiphertext;
+    const urlAlphabet = toBase64Url(input).padEnd(input.length, '=');
+    expect(urlAlphabet).not.toBe(input);
+    await expect(
+      aesCbcDecrypt(aesImportKey(zeroKey), urlAlphabet)
+    ).rejects.toThrow();
+  });
+
   test('rejects plaintext that is not valid UTF-8', async () => {
     await expect(
       aesCbcDecrypt(
@@ -336,7 +446,7 @@ describe('inputs above the synchronous size limit', () => {
   test('round-trips large input with AES-GCM', async () => {
     const key = aesGenerateKey(32);
     const { ciphertext, iv } = await aesGcmEncrypt(key, largePlaintext);
-    expect(await aesGcmDecrypt(key, ciphertext, iv)).toBe(largePlaintext);
+    expect(await aesGcmDecrypt(key, { ciphertext, iv })).toBe(largePlaintext);
   });
 
   test('round-trips large input with AES-CBC', async () => {
@@ -349,6 +459,8 @@ describe('inputs above the synchronous size limit', () => {
     const key = aesGenerateKey(32);
     const { ciphertext, iv } = await aesGcmEncrypt(key, largePlaintext);
     const tampered = `${ciphertext[0] === 'A' ? 'B' : 'A'}${ciphertext.slice(1)}`;
-    await expect(aesGcmDecrypt(key, tampered, iv)).rejects.toThrow();
+    await expect(
+      aesGcmDecrypt(key, { ciphertext: tampered, iv })
+    ).rejects.toThrow();
   });
 });

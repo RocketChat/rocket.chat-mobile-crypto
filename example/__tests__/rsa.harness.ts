@@ -55,6 +55,12 @@ describe('RSA encryption and signatures', () => {
     );
   });
 
+  test('keeps a leading byte order mark', async () => {
+    const plaintext = '\uFEFFRocket.Chat';
+    const ciphertext = await fixedPublicKey.encrypt(plaintext);
+    expect(await fixedPrivateKey.decrypt(ciphertext)).toBe(plaintext);
+  });
+
   test('encrypts with randomized OAEP padding', async () => {
     expect(await fixedPublicKey.encrypt('hello')).not.toBe(
       await fixedPublicKey.encrypt('hello')

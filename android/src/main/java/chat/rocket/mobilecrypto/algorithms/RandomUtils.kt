@@ -3,7 +3,7 @@ package chat.rocket.mobilecrypto.algorithms
 import java.security.SecureRandom
 import java.util.UUID
 
-object RandomUtils {
+internal object RandomUtils {
 
     private val secureRandom = SecureRandom()
 

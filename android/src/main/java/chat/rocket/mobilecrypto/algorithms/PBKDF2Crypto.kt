@@ -4,7 +4,7 @@ import com.margelo.nitro.mobilecrypto.PBKDF2HashAlgorithm
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator
 import org.bouncycastle.crypto.params.KeyParameter
 
-object PBKDF2Crypto {
+internal object PBKDF2Crypto {
 
     fun deriveKey(
         password: ByteArray,

@@ -21,8 +21,8 @@ package enum AESKeyFactory {
     hash: PBKDF2HashAlgorithm
   ) -> Data? {
     guard validByteLengths.contains(byteLength),
-          let password = Data(base64Encoded: passwordBase64),
-          let salt = Data(base64Encoded: saltBase64) else { return nil }
+          let password = Data(canonicalBase64: passwordBase64),
+          let salt = Data(canonicalBase64: saltBase64) else { return nil }
     return PBKDF2Crypto.deriveKey(password: password, salt: salt, iterations: iterations, keyLength: byteLength, hash: hash)
   }
 }

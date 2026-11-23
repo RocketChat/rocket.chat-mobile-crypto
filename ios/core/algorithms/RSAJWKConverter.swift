@@ -18,7 +18,7 @@ package enum RSAJWKConverter {
     let privateComponents = encodedPrivateComponents.compactMap { $0.flatMap(Data.init(base64URLEncoded:)) }
     guard privateComponents.count == encodedPrivateComponents.count else { return nil }
     let integers = [privateKeyVersion, modulus, publicExponent] + privateComponents
-    return RSAKeyLoader.key(from: ASN1DER.sequence(ofIntegers: integers), keyClass: kSecAttrKeyClassPrivate)
+    return key(from: ASN1DER.sequence(ofIntegers: integers), keyClass: kSecAttrKeyClassPrivate)
   }
 
   package static func publicKey(fromJson json: String) -> SecKey? {
@@ -27,7 +27,7 @@ package enum RSAJWKConverter {
           let publicExponent = Data(base64URLEncoded: jwk.e) else {
       return nil
     }
-    return RSAKeyLoader.key(from: ASN1DER.sequence(ofIntegers: [modulus, publicExponent]), keyClass: kSecAttrKeyClassPublic)
+    return key(from: ASN1DER.sequence(ofIntegers: [modulus, publicExponent]), keyClass: kSecAttrKeyClassPublic)
   }
 
   package static func json(ofPrivateKey key: SecKey) -> String? {
@@ -46,7 +46,15 @@ package enum RSAJWKConverter {
   }
 
   private static func integers(of key: SecKey, count: Int) -> [Data]? {
-    RSACrypto.externalRepresentation(of: key).flatMap { ASN1DER.integers(inSequence: $0, count: count) }
+    (SecKeyCopyExternalRepresentation(key, nil) as Data?).flatMap { ASN1DER.integers(inSequence: $0, count: count) }
+  }
+
+  private static func key(from keyData: Data, keyClass: CFString) -> SecKey? {
+    let attributes: [CFString: Any] = [
+      kSecAttrKeyType: kSecAttrKeyTypeRSA,
+      kSecAttrKeyClass: keyClass,
+    ]
+    return SecKeyCreateWithData(keyData as CFData, attributes as CFDictionary, nil)
   }
 
   private static func makeJWK(keyOperation: String, integers: [Data]) -> JWK {

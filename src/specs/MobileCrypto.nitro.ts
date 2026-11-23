@@ -33,19 +33,14 @@ export interface MobileCrypto
   ): Promise<AESKey>;
   aesGcmEncrypt(key: AESKey, plaintext: string): Promise<AESGCMCiphertext>;
   aesGcmEncryptSync(key: AESKey, plaintext: string): AESGCMCiphertext;
-  aesGcmDecrypt(key: AESKey, ciphertext: string, iv: string): Promise<string>;
-  aesGcmDecryptSync(key: AESKey, ciphertext: string, iv: string): string;
+  aesGcmDecrypt(key: AESKey, encrypted: AESGCMCiphertext): Promise<string>;
+  aesGcmDecryptSync(key: AESKey, encrypted: AESGCMCiphertext): string;
   aesCbcEncrypt(key: AESKey, plaintext: string): Promise<string>;
   aesCbcEncryptSync(key: AESKey, plaintext: string): string;
   aesCbcDecrypt(key: AESKey, ivAndCiphertext: string): Promise<string>;
   aesCbcDecryptSync(key: AESKey, ivAndCiphertext: string): string;
   aesEncryptFile(filePath: string): Promise<EncryptedFile>;
-  aesDecryptFile(
-    filePath: string,
-    key: string,
-    iv: string,
-    sha256: string
-  ): Promise<string>;
+  aesDecryptFile(file: EncryptedFile): Promise<string>;
 
   rsaGenerateKeys(keySize?: number): Promise<RSAKeyPair>;
   rsaImportPrivateKey(jwk: string): Promise<RSAPrivateKey>;

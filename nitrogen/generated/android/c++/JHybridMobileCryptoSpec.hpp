@@ -63,14 +63,14 @@ namespace margelo::nitro::mobilecrypto {
     std::shared_ptr<Promise<std::shared_ptr<HybridAESKeySpec>>> aesDeriveKey(const std::string& passwordBase64, const std::string& saltBase64, double iterations, double byteLength, PBKDF2HashAlgorithm hash) override;
     std::shared_ptr<Promise<AESGCMCiphertext>> aesGcmEncrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) override;
     AESGCMCiphertext aesGcmEncryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) override;
-    std::shared_ptr<Promise<std::string>> aesGcmDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ciphertext, const std::string& iv) override;
-    std::string aesGcmDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ciphertext, const std::string& iv) override;
+    std::shared_ptr<Promise<std::string>> aesGcmDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const AESGCMCiphertext& encrypted) override;
+    std::string aesGcmDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const AESGCMCiphertext& encrypted) override;
     std::shared_ptr<Promise<std::string>> aesCbcEncrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) override;
     std::string aesCbcEncryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) override;
     std::shared_ptr<Promise<std::string>> aesCbcDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ivAndCiphertext) override;
     std::string aesCbcDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ivAndCiphertext) override;
     std::shared_ptr<Promise<EncryptedFile>> aesEncryptFile(const std::string& filePath) override;
-    std::shared_ptr<Promise<std::string>> aesDecryptFile(const std::string& filePath, const std::string& key, const std::string& iv, const std::string& sha256) override;
+    std::shared_ptr<Promise<std::string>> aesDecryptFile(const EncryptedFile& file) override;
     std::shared_ptr<Promise<RSAKeyPair>> rsaGenerateKeys(std::optional<double> keySize) override;
     std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>> rsaImportPrivateKey(const std::string& jwk) override;
     std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> rsaImportPublicKey(const std::string& jwk) override;

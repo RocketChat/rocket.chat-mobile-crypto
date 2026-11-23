@@ -17,10 +17,6 @@ package enum RSACrypto {
     return RSAKeyPair(publicKey: publicKey, privateKey: privateKey)
   }
 
-  package static func externalRepresentation(of key: SecKey) -> Data? {
-    SecKeyCopyExternalRepresentation(key, nil) as Data?
-  }
-
   package static func encrypt(_ plaintext: String, using publicKey: SecKey) -> String? {
     guard SecKeyIsAlgorithmSupported(publicKey, .encrypt, encryptionAlgorithm),
           let ciphertext = SecKeyCreateEncryptedData(publicKey, encryptionAlgorithm, Data(plaintext.utf8) as CFData, nil) as Data? else {
@@ -31,11 +27,11 @@ package enum RSACrypto {
 
   package static func decrypt(_ ciphertextBase64: String, using privateKey: SecKey) -> String? {
     guard SecKeyIsAlgorithmSupported(privateKey, .decrypt, encryptionAlgorithm),
-          let ciphertext = Data(base64Encoded: ciphertextBase64),
+          let ciphertext = Data(canonicalBase64: ciphertextBase64),
           let plaintext = SecKeyCreateDecryptedData(privateKey, encryptionAlgorithm, ciphertext as CFData, nil) as Data? else {
       return nil
     }
-    return String(data: plaintext, encoding: .utf8)
+    return String(strictUTF8: plaintext)
   }
 
   package static func sign(_ message: Data, using privateKey: SecKey, hash: RSAHashAlgorithm) -> Data? {

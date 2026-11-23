@@ -52,39 +52,36 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func aesGcmEncrypt(key: (any HybridAESKeySpec), plaintext: String) throws -> Promise<AESGCMCiphertext> {
-    let keyData = try key.keyData()
-    return Promise.parallel { try Self.aesGcmEncrypt(plaintext, key: keyData) }
+    Promise.parallel { try self.aesGcmEncryptSync(key: key, plaintext: plaintext) }
   }
 
   func aesGcmEncryptSync(key: (any HybridAESKeySpec), plaintext: String) throws -> AESGCMCiphertext {
-    try Self.aesGcmEncrypt(plaintext, key: key.keyData())
+    let sealed = try AESGCMCrypto.encrypt(plaintext, key: key.keyData()).orThrow("Encryption failed")
+    return AESGCMCiphertext(iv: sealed.iv, ciphertext: sealed.ciphertext)
   }
 
-  func aesGcmDecrypt(key: (any HybridAESKeySpec), ciphertext: String, iv: String) throws -> Promise<String> {
-    let keyData = try key.keyData()
-    return Promise.parallel { try Self.aesGcmDecrypt(ciphertext, iv: iv, key: keyData) }
+  func aesGcmDecrypt(key: (any HybridAESKeySpec), encrypted: AESGCMCiphertext) throws -> Promise<String> {
+    Promise.parallel { try self.aesGcmDecryptSync(key: key, encrypted: encrypted) }
   }
 
-  func aesGcmDecryptSync(key: (any HybridAESKeySpec), ciphertext: String, iv: String) throws -> String {
-    try Self.aesGcmDecrypt(ciphertext, iv: iv, key: key.keyData())
+  func aesGcmDecryptSync(key: (any HybridAESKeySpec), encrypted: AESGCMCiphertext) throws -> String {
+    try AESGCMCrypto.decrypt(encrypted.ciphertext, ivBase64: encrypted.iv, key: key.keyData()).orThrow("Decryption failed")
   }
 
   func aesCbcEncrypt(key: (any HybridAESKeySpec), plaintext: String) throws -> Promise<String> {
-    let keyData = try key.keyData()
-    return Promise.parallel { try Self.aesCbcEncrypt(plaintext, key: keyData) }
+    Promise.parallel { try self.aesCbcEncryptSync(key: key, plaintext: plaintext) }
   }
 
   func aesCbcEncryptSync(key: (any HybridAESKeySpec), plaintext: String) throws -> String {
-    try Self.aesCbcEncrypt(plaintext, key: key.keyData())
+    try AESCBCCrypto.encrypt(plaintext, key: key.keyData()).orThrow("Encryption failed")
   }
 
   func aesCbcDecrypt(key: (any HybridAESKeySpec), ivAndCiphertext: String) throws -> Promise<String> {
-    let keyData = try key.keyData()
-    return Promise.parallel { try Self.aesCbcDecrypt(ivAndCiphertext, key: keyData) }
+    Promise.parallel { try self.aesCbcDecryptSync(key: key, ivAndCiphertext: ivAndCiphertext) }
   }
 
   func aesCbcDecryptSync(key: (any HybridAESKeySpec), ivAndCiphertext: String) throws -> String {
-    try Self.aesCbcDecrypt(ivAndCiphertext, key: key.keyData())
+    try AESCBCCrypto.decrypt(ivAndCiphertext, key: key.keyData()).orThrow("Decryption failed")
   }
 
   func aesEncryptFile(filePath: String) throws -> Promise<EncryptedFile> {
@@ -93,10 +90,9 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
     }
   }
 
-  func aesDecryptFile(filePath: String, key: String, iv: String, sha256: String) throws -> Promise<String> {
+  func aesDecryptFile(file: EncryptedFile) throws -> Promise<String> {
     return Promise.parallel {
-      try AESCTRFileCrypto.decryptFile(filePath, base64URLKey: key, base64InitializationVector: iv, sha256: sha256)
-        .orThrow("File decryption failed")
+      try AESCTRFileCrypto.decryptFile(file.coreFile).orThrow("File decryption failed")
     }
   }
 
@@ -129,22 +125,5 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
 
   func randomBytes(size: Double) throws -> ArrayBuffer {
     ArrayBuffer.copying(try RandomGenerator.bytes(count: size.toCount()).orThrow("Failed to generate random bytes"))
-  }
-
-  private static func aesGcmEncrypt(_ plaintext: String, key: Data) throws -> AESGCMCiphertext {
-    let sealed = try AESGCMCrypto.encrypt(plaintext, key: key).orThrow("Encryption failed")
-    return AESGCMCiphertext(iv: sealed.iv, ciphertext: sealed.ciphertext)
-  }
-
-  private static func aesGcmDecrypt(_ ciphertext: String, iv: String, key: Data) throws -> String {
-    try AESGCMCrypto.decrypt(ciphertext, ivBase64: iv, key: key).orThrow("Decryption failed")
-  }
-
-  private static func aesCbcEncrypt(_ plaintext: String, key: Data) throws -> String {
-    try AESCBCCrypto.encrypt(plaintext, key: key).orThrow("Encryption failed")
-  }
-
-  private static func aesCbcDecrypt(_ ivAndCiphertext: String, key: Data) throws -> String {
-    try AESCBCCrypto.decrypt(ivAndCiphertext, key: key).orThrow("Decryption failed")
   }
 }

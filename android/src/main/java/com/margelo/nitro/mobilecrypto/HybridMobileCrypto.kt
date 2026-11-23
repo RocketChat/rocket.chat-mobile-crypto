@@ -3,9 +3,7 @@ package com.margelo.nitro.mobilecrypto
 import android.content.Context
 import androidx.annotation.Keep
 import chat.rocket.mobilecrypto.algorithms.AESCrypto
-import chat.rocket.mobilecrypto.algorithms.CryptoUtils
 import chat.rocket.mobilecrypto.algorithms.HMACCrypto
-import chat.rocket.mobilecrypto.algorithms.PBKDF2Crypto
 import chat.rocket.mobilecrypto.algorithms.RSACrypto
 import chat.rocket.mobilecrypto.algorithms.RandomUtils
 import chat.rocket.mobilecrypto.algorithms.SHACrypto
@@ -55,46 +53,29 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
     hash: PBKDF2HashAlgorithm
   ): Promise<HybridAESKeySpec> =
     Promise.async {
-      AESCrypto.requireKeyLength(byteLength.toInt())
-      HybridAESKey(
-        PBKDF2Crypto.deriveKey(
-          CryptoUtils.decodeBase64(passwordBase64),
-          CryptoUtils.decodeBase64(saltBase64),
-          iterations.toInt(),
-          byteLength.toInt(),
-          hash
-        )
-      )
+      HybridAESKey(AESCrypto.deriveKey(passwordBase64, saltBase64, iterations.toInt(), byteLength.toInt(), hash))
     }
 
-  override fun aesGcmEncrypt(key: HybridAESKeySpec, plaintext: String): Promise<AESGCMCiphertext> {
-    val keyBytes = key.bytes
-    return Promise.async { AESCrypto.gcmEncrypt(keyBytes, plaintext) }
-  }
+  override fun aesGcmEncrypt(key: HybridAESKeySpec, plaintext: String): Promise<AESGCMCiphertext> =
+    Promise.async { aesGcmEncryptSync(key, plaintext) }
 
   override fun aesGcmEncryptSync(key: HybridAESKeySpec, plaintext: String): AESGCMCiphertext =
     AESCrypto.gcmEncrypt(key.bytes, plaintext)
 
-  override fun aesGcmDecrypt(key: HybridAESKeySpec, ciphertext: String, iv: String): Promise<String> {
-    val keyBytes = key.bytes
-    return Promise.async { AESCrypto.gcmDecrypt(keyBytes, ciphertext, iv) }
-  }
+  override fun aesGcmDecrypt(key: HybridAESKeySpec, encrypted: AESGCMCiphertext): Promise<String> =
+    Promise.async { aesGcmDecryptSync(key, encrypted) }
 
-  override fun aesGcmDecryptSync(key: HybridAESKeySpec, ciphertext: String, iv: String): String =
-    AESCrypto.gcmDecrypt(key.bytes, ciphertext, iv)
+  override fun aesGcmDecryptSync(key: HybridAESKeySpec, encrypted: AESGCMCiphertext): String =
+    AESCrypto.gcmDecrypt(key.bytes, encrypted.ciphertext, encrypted.iv)
 
-  override fun aesCbcEncrypt(key: HybridAESKeySpec, plaintext: String): Promise<String> {
-    val keyBytes = key.bytes
-    return Promise.async { AESCrypto.cbcEncrypt(keyBytes, plaintext) }
-  }
+  override fun aesCbcEncrypt(key: HybridAESKeySpec, plaintext: String): Promise<String> =
+    Promise.async { aesCbcEncryptSync(key, plaintext) }
 
   override fun aesCbcEncryptSync(key: HybridAESKeySpec, plaintext: String): String =
     AESCrypto.cbcEncrypt(key.bytes, plaintext)
 
-  override fun aesCbcDecrypt(key: HybridAESKeySpec, ivAndCiphertext: String): Promise<String> {
-    val keyBytes = key.bytes
-    return Promise.async { AESCrypto.cbcDecrypt(keyBytes, ivAndCiphertext) }
-  }
+  override fun aesCbcDecrypt(key: HybridAESKeySpec, ivAndCiphertext: String): Promise<String> =
+    Promise.async { aesCbcDecryptSync(key, ivAndCiphertext) }
 
   override fun aesCbcDecryptSync(key: HybridAESKeySpec, ivAndCiphertext: String): String =
     AESCrypto.cbcDecrypt(key.bytes, ivAndCiphertext)
@@ -102,8 +83,8 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
   override fun aesEncryptFile(filePath: String): Promise<EncryptedFile> =
     Promise.async(fileScope) { AESCrypto.encryptFile(filePath, context) }
 
-  override fun aesDecryptFile(filePath: String, key: String, iv: String, sha256: String): Promise<String> =
-    Promise.async(fileScope) { AESCrypto.decryptFile(filePath, key, iv, sha256, context) }
+  override fun aesDecryptFile(file: EncryptedFile): Promise<String> =
+    Promise.async(fileScope) { AESCrypto.decryptFile(file, context) }
 
   override fun rsaGenerateKeys(keySize: Double?): Promise<RSAKeyPair> =
     Promise.async {

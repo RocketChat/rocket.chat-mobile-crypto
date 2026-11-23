@@ -84,14 +84,14 @@ namespace margelo::nitro::mobilecrypto {
       virtual std::shared_ptr<Promise<std::shared_ptr<HybridAESKeySpec>>> aesDeriveKey(const std::string& passwordBase64, const std::string& saltBase64, double iterations, double byteLength, PBKDF2HashAlgorithm hash) = 0;
       virtual std::shared_ptr<Promise<AESGCMCiphertext>> aesGcmEncrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) = 0;
       virtual AESGCMCiphertext aesGcmEncryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) = 0;
-      virtual std::shared_ptr<Promise<std::string>> aesGcmDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ciphertext, const std::string& iv) = 0;
-      virtual std::string aesGcmDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ciphertext, const std::string& iv) = 0;
+      virtual std::shared_ptr<Promise<std::string>> aesGcmDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const AESGCMCiphertext& encrypted) = 0;
+      virtual std::string aesGcmDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const AESGCMCiphertext& encrypted) = 0;
       virtual std::shared_ptr<Promise<std::string>> aesCbcEncrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) = 0;
       virtual std::string aesCbcEncryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& plaintext) = 0;
       virtual std::shared_ptr<Promise<std::string>> aesCbcDecrypt(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ivAndCiphertext) = 0;
       virtual std::string aesCbcDecryptSync(const std::shared_ptr<HybridAESKeySpec>& key, const std::string& ivAndCiphertext) = 0;
       virtual std::shared_ptr<Promise<EncryptedFile>> aesEncryptFile(const std::string& filePath) = 0;
-      virtual std::shared_ptr<Promise<std::string>> aesDecryptFile(const std::string& filePath, const std::string& key, const std::string& iv, const std::string& sha256) = 0;
+      virtual std::shared_ptr<Promise<std::string>> aesDecryptFile(const EncryptedFile& file) = 0;
       virtual std::shared_ptr<Promise<RSAKeyPair>> rsaGenerateKeys(std::optional<double> keySize) = 0;
       virtual std::shared_ptr<Promise<std::shared_ptr<HybridRSAPrivateKeySpec>>> rsaImportPrivateKey(const std::string& jwk) = 0;
       virtual std::shared_ptr<Promise<std::shared_ptr<HybridRSAPublicKeySpec>>> rsaImportPublicKey(const std::string& jwk) = 0;

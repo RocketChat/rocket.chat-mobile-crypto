@@ -79,11 +79,10 @@ const checks: Check[] = [
     label: 'AES-256-GCM decrypt (fixed vector)',
     expected: 'Rocket.Chat 🔐 — olá',
     run: () =>
-      aesGcmDecrypt(
-        aesImportKey(gcmKey),
-        'gMAoyVojTQcl91A2ld1ZbbXghQIyFfo23dnjqUV9y+VuHgtrDw+P1+w=',
-        '/ty6mHZUMhD+3LqY'
-      ),
+      aesGcmDecrypt(aesImportKey(gcmKey), {
+        ciphertext: 'gMAoyVojTQcl91A2ld1ZbbXghQIyFfo23dnjqUV9y+VuHgtrDw+P1+w=',
+        iv: '/ty6mHZUMhD+3LqY',
+      }),
   },
   {
     label: 'AES-256-GCM encrypt then decrypt',
@@ -91,7 +90,7 @@ const checks: Check[] = [
     run: async () => {
       const key = aesGenerateKey(32);
       const { ciphertext, iv } = await aesGcmEncrypt(key, 'Hello World');
-      return aesGcmDecrypt(key, ciphertext, iv);
+      return aesGcmDecrypt(key, { ciphertext, iv });
     },
   },
   {
@@ -102,7 +101,7 @@ const checks: Check[] = [
         aesGenerateKey(32),
         'Hello World'
       );
-      return aesGcmDecrypt(aesGenerateKey(32), ciphertext, iv).then(
+      return aesGcmDecrypt(aesGenerateKey(32), { ciphertext, iv }).then(
         () => 'accepted',
         () => 'rejected'
       );
