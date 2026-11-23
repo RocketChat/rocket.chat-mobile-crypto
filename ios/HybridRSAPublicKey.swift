@@ -19,7 +19,7 @@ final class HybridRSAPublicKey: HybridRSAPublicKeySpec {
   }
 
   func verify(signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Bool {
-    RSACrypto.verify(signature.copiedData(), message: message.copiedData(), using: key, hash: hash.coreAlgorithm)
+    RSACrypto.verify(signature.toData(copyIfNeeded: true), message: message.toData(copyIfNeeded: true), using: key, hash: hash.coreAlgorithm)
   }
 
   func exportJwk() throws -> String {

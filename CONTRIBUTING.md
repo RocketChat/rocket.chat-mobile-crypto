@@ -150,9 +150,9 @@ For videos, start a device-scope recording before a run and stop/export it after
 
 Test-body durations include JavaScript assertions and native bridge round trips at millisecond resolution; they are not isolated native crypto benchmarks. Suite setup hooks, including RSA key generation, are outside individual test-body timings. Trace phases can overlap and must not be added together as a time budget. CPU time and peak RSS describe the host Harness process and its child processes, not the simulator app's memory or native-only CPU usage. Simulator boot, app compilation, installation, video export, and profile-report generation are outside the measured Harness CLI interval.
 
-The [initial iOS baseline](./performance/harness-ios-baseline.json) preserves the five sample summaries, per-file timings, machine context, source fingerprint, and measurement definitions from before runtime resets were enabled. Raw traces and videos stay in the ignored `example/.harness/performance/2026-10-16-baseline/` artifact directory; its `report.html` provides an interactive comparison.
+The [initial iOS baseline](./performance/harness-ios-baseline.json) preserves the five sample summaries, per-file timings, machine context, source fingerprint, and measurement definitions from before runtime resets were enabled.
 
-The [reset-mode comparison](./performance/harness-ios-reset-comparison.json) measures process restarts against runtime reloads with three interleaved, cached, unrecorded runs per mode. Every runtime sample passed all 106 tests with one native app launch and no fallback restarts. Its raw metrics, traces, and new recording are under `example/.harness/performance/2026-10-16-runtime/`. To repeat the comparison, warm each mode first, then alternate samples using `HARNESS_RESET_MODE=process yarn test:profile` for the control and `yarn test:profile` for the default runtime mode, keeping the cache version fixed.
+The [reset-mode comparison](./performance/harness-ios-reset-comparison.json) measures process restarts against runtime reloads with three interleaved, cached, unrecorded runs per mode. Every runtime sample passed the full suite with one native app launch and no fallback restarts. To repeat the comparison, warm each mode first, then alternate samples using `HARNESS_RESET_MODE=process yarn test:profile` for the control and `yarn test:profile` for the default runtime mode, keeping the cache version fixed.
 
 ### Commit message convention
 
@@ -192,7 +192,7 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn`: setup project by installing dependencies.
 - `yarn typecheck`: type-check files with TypeScript.
 - `yarn lint`: lint files with ESLint.
-- `yarn test:smoke`: run the three native smoke tests on the default iOS simulator.
+- `yarn test:smoke`: run the native smoke tests on the default iOS simulator.
 - `yarn test`: run all native crypto tests on the default iOS simulator; pass `--harnessRunner android` to select Android.
 - `yarn bench`: run the crypto call latency benchmark, which `yarn test` excludes.
 - `yarn test:profile`: run the iOS suite with timing traces, per-test durations, and host resource metrics.

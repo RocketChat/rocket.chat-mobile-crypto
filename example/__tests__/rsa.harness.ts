@@ -104,6 +104,30 @@ describe('RSA encryption and signatures', () => {
     );
   });
 
+  test('returns false for a signature of the wrong length', async () => {
+    const truncatedSignature = bufferFromBase64(
+      RSA_FIXED_SIGNATURE.slice(0, 8)
+    );
+    expect(
+      await fixedPublicKey.verify(
+        truncatedSignature,
+        bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
+        'SHA256'
+      )
+    ).toBe(false);
+  });
+
+  test('returns false for a Raw signature longer than the key', async () => {
+    const oversizedSignature = new Uint8Array(300).fill(1).buffer;
+    expect(
+      await fixedPublicKey.verify(
+        oversizedSignature,
+        bufferFromAscii(RSA_FIXED_SIGN_MESSAGE),
+        'Raw'
+      )
+    ).toBe(false);
+  });
+
   for (const hash of [
     'SHA1',
     'SHA224',

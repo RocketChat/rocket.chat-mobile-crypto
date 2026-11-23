@@ -21,7 +21,7 @@ final class HybridRSAPrivateKey: HybridRSAPrivateKeySpec {
   }
 
   func sign(message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Promise<ArrayBuffer> {
-    let messageData = message.copiedData()
+    let messageData = ArrayBuffer.copy(of: message).toData(copyIfNeeded: true)
     return Promise.parallel { [key] in
       ArrayBuffer.copying(try RSACrypto.sign(messageData, using: key, hash: hash.coreAlgorithm).orThrow("Signing failed"))
     }

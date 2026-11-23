@@ -6,22 +6,21 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   private static let defaultRSAKeySize = 2048.0
 
   func sha(data: ArrayBuffer, algorithm: SHAAlgorithm) throws -> Promise<ArrayBuffer> {
-    let input = data.copiedData()
-    return Promise.parallel { ArrayBuffer.copying(algorithm.coreAlgorithm.digest(of: input)) }
+    let input = ArrayBuffer.copy(of: data)
+    return Promise.parallel { try self.shaSync(data: input, algorithm: algorithm) }
   }
 
   func shaSync(data: ArrayBuffer, algorithm: SHAAlgorithm) throws -> ArrayBuffer {
-    ArrayBuffer.copying(algorithm.coreAlgorithm.digest(of: data.copiedData()))
+    ArrayBuffer.copying(algorithm.coreAlgorithm.digest(of: data.toData(copyIfNeeded: true)))
   }
 
   func hmac256(data: ArrayBuffer, key: ArrayBuffer) throws -> Promise<ArrayBuffer> {
-    let content = data.copiedData()
-    let keyData = key.copiedData()
-    return Promise.parallel { ArrayBuffer.copying(HMACCrypto.hmacSha256(content, key: keyData)) }
+    let (input, keyCopy) = (ArrayBuffer.copy(of: data), ArrayBuffer.copy(of: key))
+    return Promise.parallel { try self.hmac256Sync(data: input, key: keyCopy) }
   }
 
   func hmac256Sync(data: ArrayBuffer, key: ArrayBuffer) throws -> ArrayBuffer {
-    ArrayBuffer.copying(HMACCrypto.hmacSha256(data.copiedData(), key: key.copiedData()))
+    ArrayBuffer.copying(HMACCrypto.hmacSha256(data.toData(copyIfNeeded: true), key: key.toData(copyIfNeeded: true)))
   }
 
   func aesGenerateKey(byteLength: Double) throws -> (any HybridAESKeySpec) {
