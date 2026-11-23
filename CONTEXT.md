@@ -17,10 +17,12 @@ consumes Mobile Crypto's primitives. The reason byte-level output compatibility 
 _Avoid_: "E2E" unqualified (collides with end-to-end *testing*), "encryption" alone.
 
 **Known-answer harness**:
-The example app (`example/src/App.tsx`) — exercises every primitive with fixed
-`expected:` values for deterministic ops and round-trip checks for randomized ones.
-It is the conformance gate that proves a rebuild preserved behavior.
-_Avoid_: "the test app", "the demo".
+The React Native Harness suites (`example/__tests__/*.harness.ts`, run with
+`yarn test --harnessRunner ios|android`) — exercise every primitive with fixed
+known answers for deterministic ops and round-trip checks for randomized ones.
+They are the conformance gate that proves a rebuild preserved behavior. The
+example app (`example/src/App.tsx`) is a demo that shows a few of these checks.
+_Avoid_: "the test app".
 
 **Byte-compatible**:
 Produces output identical to the previously shipped version for deterministic
