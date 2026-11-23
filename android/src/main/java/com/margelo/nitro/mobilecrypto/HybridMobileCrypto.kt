@@ -2,6 +2,7 @@ package com.margelo.nitro.mobilecrypto
 
 import android.content.Context
 import androidx.annotation.Keep
+import chat.rocket.mobilecrypto.AESKey
 import chat.rocket.mobilecrypto.algorithms.AESCrypto
 import chat.rocket.mobilecrypto.algorithms.HMACCrypto
 import chat.rocket.mobilecrypto.algorithms.RSACrypto
@@ -60,25 +61,25 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
     Promise.async { aesGcmEncryptSync(key, plaintext) }
 
   override fun aesGcmEncryptSync(key: HybridAESKeySpec, plaintext: String): AESGCMCiphertext =
-    AESCrypto.gcmEncrypt(key.bytes, plaintext)
+    AESCrypto.gcmEncrypt(key.aesKey, plaintext)
 
   override fun aesGcmDecrypt(key: HybridAESKeySpec, encrypted: AESGCMCiphertext): Promise<String> =
     Promise.async { aesGcmDecryptSync(key, encrypted) }
 
   override fun aesGcmDecryptSync(key: HybridAESKeySpec, encrypted: AESGCMCiphertext): String =
-    AESCrypto.gcmDecrypt(key.bytes, encrypted.ciphertext, encrypted.iv)
+    AESCrypto.gcmDecrypt(key.aesKey, encrypted.ciphertext, encrypted.iv)
 
   override fun aesCbcEncrypt(key: HybridAESKeySpec, plaintext: String): Promise<String> =
     Promise.async { aesCbcEncryptSync(key, plaintext) }
 
   override fun aesCbcEncryptSync(key: HybridAESKeySpec, plaintext: String): String =
-    AESCrypto.cbcEncrypt(key.bytes, plaintext)
+    AESCrypto.cbcEncrypt(key.aesKey, plaintext)
 
   override fun aesCbcDecrypt(key: HybridAESKeySpec, ivAndCiphertext: String): Promise<String> =
     Promise.async { aesCbcDecryptSync(key, ivAndCiphertext) }
 
   override fun aesCbcDecryptSync(key: HybridAESKeySpec, ivAndCiphertext: String): String =
-    AESCrypto.cbcDecrypt(key.bytes, ivAndCiphertext)
+    AESCrypto.cbcDecrypt(key.aesKey, ivAndCiphertext)
 
   override fun aesEncryptFile(filePath: String): Promise<EncryptedFile> =
     Promise.async(fileScope) { AESCrypto.encryptFile(filePath, context) }
@@ -110,7 +111,7 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
   override fun randomBytes(size: Double): ArrayBuffer =
     ArrayBuffer.copy(RandomUtils.generateRandomBytes(size.toInt()))
 
-  private val HybridAESKeySpec.bytes: ByteArray
+  private val HybridAESKeySpec.aesKey: AESKey
     get() = (this as? HybridAESKey)?.key
       ?: throw IllegalArgumentException("AES key must be created by MobileCrypto, got $this")
 

@@ -4,9 +4,8 @@ import CryptoKit
 package enum AESGCMCrypto {
   private static let nonceLength = 12
 
-  package static func encrypt(_ plaintext: String, key: Data) -> (iv: String, ciphertext: String)? {
-    guard AESKeyFactory.isValid(key),
-          let sealedBox = try? AES.GCM.seal(Data(plaintext.utf8), using: SymmetricKey(data: key)) else {
+  package static func encrypt(_ plaintext: String, key: AESKey) -> (iv: String, ciphertext: String)? {
+    guard let sealedBox = try? AES.GCM.seal(Data(plaintext.utf8), using: SymmetricKey(data: key.data)) else {
       return nil
     }
     return (
@@ -15,13 +14,12 @@ package enum AESGCMCrypto {
     )
   }
 
-  package static func decrypt(_ ciphertextBase64: String, ivBase64: String, key: Data) -> String? {
-    guard AESKeyFactory.isValid(key),
-          let ciphertextAndTag = Data(canonicalBase64: ciphertextBase64),
+  package static func decrypt(_ ciphertextBase64: String, ivBase64: String, key: AESKey) -> String? {
+    guard let ciphertextAndTag = Data(canonicalBase64: ciphertextBase64),
           let nonce = Data(canonicalBase64: ivBase64),
           nonce.count == nonceLength,
           let sealedBox = try? AES.GCM.SealedBox(combined: nonce + ciphertextAndTag),
-          let plaintext = try? AES.GCM.open(sealedBox, using: SymmetricKey(data: key)) else {
+          let plaintext = try? AES.GCM.open(sealedBox, using: SymmetricKey(data: key.data)) else {
       return nil
     }
     return String(strictUTF8: plaintext)

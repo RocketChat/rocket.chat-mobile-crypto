@@ -14,19 +14,19 @@ object MobileCryptoNative {
   fun rsaDecrypt(ciphertext: String, privateKey: PrivateKey): String? =
     orNull { RSACrypto.decrypt(ciphertext, privateKey) }
 
-  fun aesImportKey(base64Url: String): ByteArray? =
+  fun aesImportKey(base64Url: String): AESKey? =
     orNull { AESCrypto.importKey(base64Url) }
 
-  fun aesGcmDecrypt(ciphertext: String, iv: String, key: ByteArray): String? =
+  fun aesGcmDecrypt(ciphertext: String, iv: String, key: AESKey): String? =
     orNull { AESCrypto.gcmDecrypt(key, ciphertext, iv) }
 
-  fun aesGcmEncrypt(plaintext: String, key: ByteArray): EncryptedText? =
+  fun aesGcmEncrypt(plaintext: String, key: AESKey): EncryptedText? =
     orNull { AESCrypto.gcmEncrypt(key, plaintext).let { EncryptedText(it.iv, it.ciphertext) } }
 
-  fun aesCbcDecrypt(ivAndCiphertext: String, key: ByteArray): String? =
+  fun aesCbcDecrypt(ivAndCiphertext: String, key: AESKey): String? =
     orNull { AESCrypto.cbcDecrypt(key, ivAndCiphertext) }
 
-  fun aesCbcEncrypt(plaintext: String, key: ByteArray): String? =
+  fun aesCbcEncrypt(plaintext: String, key: AESKey): String? =
     orNull { AESCrypto.cbcEncrypt(key, plaintext) }
 
   private inline fun <T> orNull(operation: () -> T): T? =

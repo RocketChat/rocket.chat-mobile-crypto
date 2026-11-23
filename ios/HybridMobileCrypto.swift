@@ -24,22 +24,22 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func aesGenerateKey(byteLength: Double) throws -> (any HybridAESKeySpec) {
-    let keyData = try AESKeyFactory.generate(byteLength: byteLength.toCount())
+    let key = try AESKey.generate(byteLength: byteLength.toCount())
       .orThrow("AES key length must be 16 or 32 bytes")
-    return HybridAESKey(data: keyData)
+    return HybridAESKey(key: key)
   }
 
   func aesImportKey(base64Url: String) throws -> (any HybridAESKeySpec) {
-    let keyData = try AESKeyFactory.importBase64URL(base64Url)
+    let key = try AESKey(base64URL: base64Url)
       .orThrow("Expected a base64url AES key of 16 or 32 bytes")
-    return HybridAESKey(data: keyData)
+    return HybridAESKey(key: key)
   }
 
   func aesDeriveKey(passwordBase64: String, saltBase64: String, iterations: Double, byteLength: Double, hash: PBKDF2HashAlgorithm) throws -> Promise<(any HybridAESKeySpec)> {
     let iterationCount = try iterations.toCount()
     let keyLength = try byteLength.toCount()
     return Promise.parallel {
-      let keyData = try AESKeyFactory.derive(
+      let key = try AESKey.derive(
         passwordBase64: passwordBase64,
         saltBase64: saltBase64,
         iterations: iterationCount,
@@ -47,7 +47,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
         hash: hash.coreAlgorithm
       )
       .orThrow("Key derivation failed")
-      return HybridAESKey(data: keyData)
+      return HybridAESKey(key: key)
     }
   }
 
@@ -56,7 +56,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func aesGcmEncryptSync(key: (any HybridAESKeySpec), plaintext: String) throws -> AESGCMCiphertext {
-    let sealed = try AESGCMCrypto.encrypt(plaintext, key: key.keyData()).orThrow("Encryption failed")
+    let sealed = try AESGCMCrypto.encrypt(plaintext, key: key.aesKey()).orThrow("Encryption failed")
     return AESGCMCiphertext(iv: sealed.iv, ciphertext: sealed.ciphertext)
   }
 
@@ -65,7 +65,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func aesGcmDecryptSync(key: (any HybridAESKeySpec), encrypted: AESGCMCiphertext) throws -> String {
-    try AESGCMCrypto.decrypt(encrypted.ciphertext, ivBase64: encrypted.iv, key: key.keyData()).orThrow("Decryption failed")
+    try AESGCMCrypto.decrypt(encrypted.ciphertext, ivBase64: encrypted.iv, key: key.aesKey()).orThrow("Decryption failed")
   }
 
   func aesCbcEncrypt(key: (any HybridAESKeySpec), plaintext: String) throws -> Promise<String> {
@@ -73,7 +73,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func aesCbcEncryptSync(key: (any HybridAESKeySpec), plaintext: String) throws -> String {
-    try AESCBCCrypto.encrypt(plaintext, key: key.keyData()).orThrow("Encryption failed")
+    try AESCBCCrypto.encrypt(plaintext, key: key.aesKey()).orThrow("Encryption failed")
   }
 
   func aesCbcDecrypt(key: (any HybridAESKeySpec), ivAndCiphertext: String) throws -> Promise<String> {
@@ -81,7 +81,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
   }
 
   func aesCbcDecryptSync(key: (any HybridAESKeySpec), ivAndCiphertext: String) throws -> String {
-    try AESCBCCrypto.decrypt(ivAndCiphertext, key: key.keyData()).orThrow("Decryption failed")
+    try AESCBCCrypto.decrypt(ivAndCiphertext, key: key.aesKey()).orThrow("Decryption failed")
   }
 
   func aesEncryptFile(filePath: String) throws -> Promise<EncryptedFile> {

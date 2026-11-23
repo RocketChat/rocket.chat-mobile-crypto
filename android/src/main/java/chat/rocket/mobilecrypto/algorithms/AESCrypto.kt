@@ -2,6 +2,7 @@ package chat.rocket.mobilecrypto.algorithms
 
 import android.content.Context
 import android.net.Uri
+import chat.rocket.mobilecrypto.AESKey
 import com.margelo.nitro.mobilecrypto.AESGCMCiphertext
 import com.margelo.nitro.mobilecrypto.EncryptedFile
 import com.margelo.nitro.mobilecrypto.PBKDF2HashAlgorithm
@@ -33,22 +34,17 @@ internal object AESCrypto {
     private const val GCM_TAG_LENGTH = 16
     private const val FILE_KEY_LENGTH = 32
     private const val FILE_IV_LENGTH = 16
-    private val AES_KEY_LENGTHS = setOf(16, 32)
 
-    fun generateKey(byteLength: Int): ByteArray {
-        requireKeyLength(byteLength)
-        return RandomUtils.generateRandomBytes(byteLength)
+    fun generateKey(byteLength: Int): AESKey {
+        AESKey.requireValidByteLength(byteLength)
+        return AESKey(RandomUtils.generateRandomBytes(byteLength))
     }
 
-    fun importKey(base64Url: String): ByteArray {
-        val key = CryptoUtils.decodeBase64Url(base64Url)
-        requireKeyLength(key.size)
-        return key
-    }
+    fun importKey(base64Url: String): AESKey =
+        AESKey(CryptoUtils.decodeBase64Url(base64Url))
 
-    fun exportKey(key: ByteArray): String {
-        return CryptoUtils.encodeBase64Url(key)
-    }
+    fun exportKey(key: AESKey): String =
+        CryptoUtils.encodeBase64Url(key.bytes)
 
     fun deriveKey(
         passwordBase64: String,
@@ -56,28 +52,26 @@ internal object AESCrypto {
         iterations: Int,
         byteLength: Int,
         hash: PBKDF2HashAlgorithm
-    ): ByteArray {
-        requireKeyLength(byteLength)
-        return PBKDF2Crypto.deriveKey(
-            CryptoUtils.decodeBase64(passwordBase64),
-            CryptoUtils.decodeBase64(saltBase64),
-            iterations,
-            byteLength,
-            hash
+    ): AESKey {
+        AESKey.requireValidByteLength(byteLength)
+        return AESKey(
+            PBKDF2Crypto.deriveKey(
+                CryptoUtils.decodeBase64(passwordBase64),
+                CryptoUtils.decodeBase64(saltBase64),
+                iterations,
+                byteLength,
+                hash
+            )
         )
     }
 
-    private fun requireKeyLength(byteLength: Int) {
-        require(byteLength in AES_KEY_LENGTHS) { "AES key must be 16 or 32 bytes, got $byteLength" }
-    }
-
-    fun gcmEncrypt(key: ByteArray, plaintext: String): AESGCMCiphertext {
+    fun gcmEncrypt(key: AESKey, plaintext: String): AESGCMCiphertext {
         val iv = RandomUtils.generateRandomBytes(GCM_IV_LENGTH)
         val sealed = runGcm(Cipher.ENCRYPT_MODE, CryptoUtils.encodeUtf8(plaintext), key, iv)
         return AESGCMCiphertext(CryptoUtils.encodeBase64(iv), CryptoUtils.encodeBase64(sealed))
     }
 
-    fun gcmDecrypt(key: ByteArray, ciphertext: String, iv: String): String {
+    fun gcmDecrypt(key: AESKey, ciphertext: String, iv: String): String {
         val sealed = CryptoUtils.decodeBase64(ciphertext)
         val ivBytes = CryptoUtils.decodeBase64(iv)
         require(ivBytes.size == GCM_IV_LENGTH) { "AES-GCM IV must be $GCM_IV_LENGTH bytes, got ${ivBytes.size}" }
@@ -87,13 +81,13 @@ internal object AESCrypto {
         return CryptoUtils.decodeUtf8(runGcm(Cipher.DECRYPT_MODE, sealed, key, ivBytes))
     }
 
-    fun cbcEncrypt(key: ByteArray, plaintext: String): String {
+    fun cbcEncrypt(key: AESKey, plaintext: String): String {
         val iv = RandomUtils.generateRandomBytes(CBC_IV_LENGTH)
         val ciphertext = runCbc(Cipher.ENCRYPT_MODE, CryptoUtils.encodeUtf8(plaintext), key, iv)
         return CryptoUtils.encodeBase64(iv + ciphertext)
     }
 
-    fun cbcDecrypt(key: ByteArray, ivAndCiphertext: String): String {
+    fun cbcDecrypt(key: AESKey, ivAndCiphertext: String): String {
         val combined = CryptoUtils.decodeBase64(ivAndCiphertext)
         require(combined.size >= CBC_IV_LENGTH * 2) {
             "AES-CBC input must be at least ${CBC_IV_LENGTH * 2} bytes, got ${combined.size}"
@@ -103,17 +97,15 @@ internal object AESCrypto {
         return CryptoUtils.decodeUtf8(runCbc(Cipher.DECRYPT_MODE, ciphertext, key, iv))
     }
 
-    private fun runCbc(mode: Int, input: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
-        requireKeyLength(key.size)
+    private fun runCbc(mode: Int, input: ByteArray, key: AESKey, iv: ByteArray): ByteArray {
         val cipher = Cipher.getInstance(CBC_CIPHER_ALGORITHM)
-        cipher.init(mode, SecretKeySpec(key, KEY_ALGORITHM), IvParameterSpec(iv))
+        cipher.init(mode, SecretKeySpec(key.bytes, KEY_ALGORITHM), IvParameterSpec(iv))
         return cipher.doFinal(input)
     }
 
-    private fun runGcm(mode: Int, input: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
-        requireKeyLength(key.size)
+    private fun runGcm(mode: Int, input: ByteArray, key: AESKey, iv: ByteArray): ByteArray {
         val cipher = Cipher.getInstance(GCM_CIPHER_ALGORITHM)
-        cipher.init(mode, SecretKeySpec(key, KEY_ALGORITHM), GCMParameterSpec(GCM_TAG_LENGTH * 8, iv))
+        cipher.init(mode, SecretKeySpec(key.bytes, KEY_ALGORITHM), GCMParameterSpec(GCM_TAG_LENGTH * 8, iv))
         return cipher.doFinal(input)
     }
 

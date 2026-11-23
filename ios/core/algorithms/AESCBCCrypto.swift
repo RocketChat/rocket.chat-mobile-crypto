@@ -5,7 +5,7 @@ package enum AESCBCCrypto {
   private static let initializationVectorLength = kCCBlockSizeAES128
   private static let withoutPadding = CCOptions(0)
 
-  package static func encrypt(_ plaintext: String, key: Data) -> String? {
+  package static func encrypt(_ plaintext: String, key: AESKey) -> String? {
     guard let initializationVector = RandomGenerator.bytes(count: initializationVectorLength),
           let ciphertext = crypt(CCOperation(kCCEncrypt), CCOptions(kCCOptionPKCS7Padding), input: Data(plaintext.utf8), key: key, initializationVector: initializationVector) else {
       return nil
@@ -13,7 +13,7 @@ package enum AESCBCCrypto {
     return (initializationVector + ciphertext).base64EncodedString()
   }
 
-  package static func decrypt(_ ivAndCiphertextBase64: String, key: Data) -> String? {
+  package static func decrypt(_ ivAndCiphertextBase64: String, key: AESKey) -> String? {
     guard let ivAndCiphertext = Data(canonicalBase64: ivAndCiphertextBase64),
           ivAndCiphertext.count >= initializationVectorLength * 2 else {
       return nil
@@ -37,21 +37,20 @@ package enum AESCBCCrypto {
     return paddedPlaintext.dropLast(padLength)
   }
 
-  private static func crypt(_ operation: CCOperation, _ options: CCOptions, input: Data, key: Data, initializationVector: Data) -> Data? {
-    guard AESKeyFactory.isValid(key) else { return nil }
+  private static func crypt(_ operation: CCOperation, _ options: CCOptions, input: Data, key: AESKey, initializationVector: Data) -> Data? {
     var output = Data(count: input.count + kCCBlockSizeAES128)
     let outputCapacity = output.count
     var outputLength = 0
     let status = output.withUnsafeMutableBytes { outputBytes in
       input.withUnsafeBytes { inputBytes in
-        key.withUnsafeBytes { keyBytes in
+        key.data.withUnsafeBytes { keyBytes in
           initializationVector.withUnsafeBytes { initializationVectorBytes in
             CCCrypt(
               operation,
               CCAlgorithm(kCCAlgorithmAES128),
               options,
               keyBytes.baseAddress,
-              key.count,
+              key.data.count,
               initializationVectorBytes.baseAddress,
               inputBytes.baseAddress,
               input.count,

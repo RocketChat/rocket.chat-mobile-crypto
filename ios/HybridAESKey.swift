@@ -3,18 +3,18 @@ import MobileCryptoCore
 import NitroModules
 
 final class HybridAESKey: HybridAESKeySpec {
-  let data: Data
+  let key: AESKey
 
-  init(data: Data) {
-    self.data = data
+  init(key: AESKey) {
+    self.key = key
     super.init()
   }
 
   var memorySize: Int {
-    data.count
+    key.data.count
   }
 
   func exportBase64Url() throws -> String {
-    data.base64URLEncodedString
+    key.base64URL
   }
 }
