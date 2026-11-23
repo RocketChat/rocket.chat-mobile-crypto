@@ -128,7 +128,7 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
 
   func rsaSign(privateKey: (any HybridRSAPrivateKeySpec), message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Promise<ArrayBuffer> {
     let key = try privateKey.secKey()
-    let messageData = ArrayBuffer.copy(of: message).toData(copyIfNeeded: true)
+    let messageData = message.toData(copyIfNeeded: true)
     return Promise.parallel {
       ArrayBuffer.copying(try RSACrypto.sign(messageData, using: key, hash: hash.coreAlgorithm).orThrow("Signing failed"))
     }

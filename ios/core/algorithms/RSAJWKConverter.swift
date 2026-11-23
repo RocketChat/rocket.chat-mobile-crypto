@@ -7,6 +7,7 @@ package enum RSAJWKConverter {
   private static let privateKeyVersion = Data([0])
   private static let publicKeyIntegerCount = 2
   private static let privateKeyIntegerCount = 9
+  private static let componentNames = ["n", "e", "d", "p", "q", "dp", "dq", "qi"]
 
   package static func privateKey(fromJson json: String) -> SecKey? {
     guard let jwk = decode(json),
@@ -28,12 +29,12 @@ package enum RSAJWKConverter {
 
   package static func json(ofPrivateKey key: SecKey) -> String? {
     integers(of: key, count: privateKeyIntegerCount)
-      .map { makeJWK(keyOperation: "decrypt", integers: Array($0.dropFirst())).json }
+      .map { json(keyOperation: "decrypt", integers: Array($0.dropFirst())) }
   }
 
   package static func json(ofPublicKey key: SecKey) -> String? {
     integers(of: key, count: publicKeyIntegerCount)
-      .map { makeJWK(keyOperation: "encrypt", integers: $0).json }
+      .map { json(keyOperation: "encrypt", integers: $0) }
   }
 
   private static func decode(_ json: String) -> JWK? {
@@ -53,22 +54,9 @@ package enum RSAJWKConverter {
     return SecKeyCreateWithData(keyData as CFData, attributes as CFDictionary, nil)
   }
 
-  private static func makeJWK(keyOperation: String, integers: [Data]) -> JWK {
-    let components = integers.map(\.base64URLEncodedString)
-    let component = { (index: Int) -> String? in components.indices.contains(index) ? components[index] : nil }
-    return JWK(
-      kty: keyType,
-      alg: algorithm,
-      ext: true,
-      keyOperations: [keyOperation],
-      n: components[0],
-      e: components[1],
-      d: component(2),
-      p: component(3),
-      q: component(4),
-      dp: component(5),
-      dq: component(6),
-      qi: component(7)
-    )
+  private static func json(keyOperation: String, integers: [Data]) -> String {
+    let header = "\"kty\":\"\(keyType)\",\"alg\":\"\(algorithm)\",\"ext\":true,\"key_ops\":[\"\(keyOperation)\"]"
+    let components = zip(componentNames, integers).map { "\"\($0)\":\"\($1.base64URLEncodedString)\"" }
+    return "{\(([header] + components).joined(separator: ","))}"
   }
 }
