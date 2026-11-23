@@ -1,7 +1,7 @@
 import Foundation
 
 package enum AESKeyFactory {
-  private static let validByteLengths: Set<Int> = [16, 24, 32]
+  private static let validByteLengths: Set<Int> = [16, 32]
 
   package static func generate(byteLength: Int) -> Data? {
     guard validByteLengths.contains(byteLength) else { return nil }

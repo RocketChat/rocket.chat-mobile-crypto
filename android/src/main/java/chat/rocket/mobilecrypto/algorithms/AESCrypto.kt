@@ -32,7 +32,7 @@ internal object AESCrypto {
     private const val GCM_TAG_LENGTH = 16
     private const val FILE_KEY_LENGTH = 32
     private const val FILE_IV_LENGTH = 16
-    private val AES_KEY_LENGTHS = setOf(16, 24, 32)
+    private val AES_KEY_LENGTHS = setOf(16, 32)
 
     fun generateKey(byteLength: Int): ByteArray {
         requireKeyLength(byteLength)
@@ -67,7 +67,7 @@ internal object AESCrypto {
     }
 
     private fun requireKeyLength(byteLength: Int) {
-        require(byteLength in AES_KEY_LENGTHS) { "AES key must be 16, 24 or 32 bytes, got $byteLength" }
+        require(byteLength in AES_KEY_LENGTHS) { "AES key must be 16 or 32 bytes, got $byteLength" }
     }
 
     fun gcmEncrypt(key: ByteArray, plaintext: String): AESGCMCiphertext {

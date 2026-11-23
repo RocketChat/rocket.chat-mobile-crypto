@@ -38,8 +38,8 @@ export const pbkdf2Vectors = [
   { algorithm: 'SHA1', byteLength: 16, expected: 'boi-i61-rp2eEKoGEiQDTw' },
   {
     algorithm: 'SHA224',
-    byteLength: 24,
-    expected: '07zzIP2RiQjq_KpGD69A4gH2UI1Obz2c',
+    byteLength: 32,
+    expected: '07zzIP2RiQjq_KpGD69A4gH2UI1Obz2cHAq9MNrgjMg',
   },
   {
     algorithm: 'SHA256',
@@ -111,18 +111,14 @@ export const cbcVectors = [
     ivAndCiphertext: '/ty6mHZUMhD+3LqYdlQyEOnPR1E4M1h15nFwEWSQCzY=',
   },
   {
-    bits: 192,
-    key: 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYX',
-    plaintext: 'Hello World',
-    ivAndCiphertext: '/ty6mHZUMhD+3LqYdlQyEC+cpHaJm0ZFvDcZ4Eb7r2k=',
-  },
-  {
     bits: 256,
     key: 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8',
     plaintext: 'Hello World',
     ivAndCiphertext: '/ty6mHZUMhD+3LqYdlQyEM+WSbej8fGGWDDETqcS0bw=',
   },
 ];
+
+export const aes192Key = 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYX';
 
 export const gcmVectors = [
   {

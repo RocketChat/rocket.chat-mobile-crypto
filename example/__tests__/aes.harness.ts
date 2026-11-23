@@ -10,6 +10,7 @@ import {
   type PBKDF2HashAlgorithm,
 } from '@rocket.chat/mobile-crypto';
 import {
+  aes192Key,
   binaryPbkdf2Vector,
   cbcVectors,
   emptyPlaintextVectors,
@@ -38,7 +39,7 @@ const wrapLines = (base64: string) =>
   `${base64.slice(0, 8)}\n${base64.slice(8)}`;
 
 describe('AES keys', () => {
-  for (const byteLength of [16, 24, 32]) {
+  for (const byteLength of [16, 32]) {
     test(`generates a fresh ${byteLength}-byte key`, () => {
       const exported = aesGenerateKey(byteLength).exportBase64Url();
       expect(exported).toMatch(/^[A-Za-z0-9_-]+$/);
@@ -59,7 +60,7 @@ describe('AES keys', () => {
     );
   });
 
-  for (const byteLength of [0, 15, 17, 31, 33, 64]) {
+  for (const byteLength of [0, 15, 17, 24, 31, 33, 64]) {
     test(`refuses to generate a ${byteLength}-byte key`, () => {
       expect(() => aesGenerateKey(byteLength)).toThrow();
     });
@@ -67,6 +68,10 @@ describe('AES keys', () => {
 
   test('refuses to import a key that decodes to an invalid length', () => {
     expect(() => aesImportKey('AAECAwQFBgcICQoLDA0O')).toThrow();
+  });
+
+  test('refuses to import a 24-byte key', () => {
+    expect(() => aesImportKey(aes192Key)).toThrow();
   });
 
   test('refuses to import a key that is not base64url', () => {
@@ -138,6 +143,12 @@ describe('PBKDF2 key derivation', () => {
       'SHA256'
     );
     expect(key.exportBase64Url()).toBe(latin1Pbkdf2Vector.expected);
+  });
+
+  test('rejects a 24-byte key length', async () => {
+    await expect(
+      aesDeriveKey(passwordBase64, saltBase64, 1000, 24, 'SHA256')
+    ).rejects.toThrow();
   });
 
   test('rejects a password that is not base64', async () => {
@@ -283,12 +294,6 @@ describe('AES-GCM', () => {
     ).rejects.toThrow();
   });
 
-  test('round-trips with a 24-byte key', async () => {
-    const key = aesGenerateKey(24);
-    const encrypted = await aesGcmEncrypt(key, 'AES-192');
-    expect(await aesGcmDecrypt(key, encrypted)).toBe('AES-192');
-  });
-
   test('keeps a leading byte order mark', async () => {
     const key = aesImportKey(zeroKey);
     const encrypted = await aesGcmEncrypt(key, byteOrderMarkPlaintext);
@@ -381,7 +386,7 @@ describe('AES-CBC with PKCS7 padding', () => {
 
   test('rejects the wrong key', async () => {
     await expect(
-      aesCbcDecrypt(aesImportKey(otherKey), cbcVectors[2]!.ivAndCiphertext)
+      aesCbcDecrypt(aesImportKey(otherKey), cbcVectors[1]!.ivAndCiphertext)
     ).rejects.toThrow();
   });
 

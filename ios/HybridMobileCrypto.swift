@@ -25,13 +25,13 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
 
   func aesGenerateKey(byteLength: Double) throws -> (any HybridAESKeySpec) {
     let keyData = try AESKeyFactory.generate(byteLength: byteLength.toCount())
-      .orThrow("AES key length must be 16, 24 or 32 bytes")
+      .orThrow("AES key length must be 16 or 32 bytes")
     return HybridAESKey(data: keyData)
   }
 
   func aesImportKey(base64Url: String) throws -> (any HybridAESKeySpec) {
     let keyData = try AESKeyFactory.importBase64URL(base64Url)
-      .orThrow("Expected a base64url AES key of 16, 24 or 32 bytes")
+      .orThrow("Expected a base64url AES key of 16 or 32 bytes")
     return HybridAESKey(data: keyData)
   }
 
