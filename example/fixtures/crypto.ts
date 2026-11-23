@@ -159,6 +159,25 @@ export const emptyPlaintextVectors = {
   cbcIvAndCiphertext: 'AAAAAAAAAAAAAAAAAAAAAB94j+bYbDF1SWl/vwwH+kM=',
 };
 
+export const malformedPaddingCbcVectors = [
+  {
+    name: 'a pad byte of zero',
+    ivAndCiphertext: 'AAECAwQFBgcICQoLDA0ODzxGxXbKUtiEIyD4pS1TueA=',
+  },
+  {
+    name: 'a pad byte larger than the block',
+    ivAndCiphertext: 'AAECAwQFBgcICQoLDA0OD2OgdVqf92I4bAFKAyh1dyA=',
+  },
+  {
+    name: 'pad bytes that disagree',
+    ivAndCiphertext: 'AAECAwQFBgcICQoLDA0OD6X2MiUd84DNeHO62pj2Vvc=',
+  },
+  {
+    name: 'a pad run with one wrong byte',
+    ivAndCiphertext: 'AAECAwQFBgcICQoLDA0OD0WSKDAG1O9iN2tYcKdT2vI=',
+  },
+];
+
 export const invalidUtf8Vectors = {
   gcmCiphertext: 'zqY/vbOfZFVRFhz0XrUaPbeb3TjgeA==',
   gcmIv: 'AAAAAAAAAAAAAAAA',

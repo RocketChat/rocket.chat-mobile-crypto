@@ -113,7 +113,10 @@ const plaintext = await aesCbcDecrypt(key, ivAndCiphertext);
 ```
 
 Each call generates a fresh 16-byte IV and returns `base64(iv ‖ ciphertext)`
-with PKCS#7 padding.
+with PKCS#7 padding. Decryption rejects padding that is not valid PKCS#7,
+invalid base64, or plaintext that is not valid UTF-8. CBC has no
+authentication tag, so a wrong key is caught only when it breaks the padding
+or the UTF-8.
 
 ### Files
 

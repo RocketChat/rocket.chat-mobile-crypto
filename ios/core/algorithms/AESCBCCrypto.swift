@@ -3,10 +3,11 @@ import CommonCrypto
 
 package enum AESCBCCrypto {
   private static let initializationVectorLength = kCCBlockSizeAES128
+  private static let withoutPadding = CCOptions(0)
 
   package static func encrypt(_ plaintext: String, key: Data) -> String? {
     guard let initializationVector = RandomGenerator.bytes(count: initializationVectorLength),
-          let ciphertext = crypt(CCOperation(kCCEncrypt), input: Data(plaintext.utf8), key: key, initializationVector: initializationVector) else {
+          let ciphertext = crypt(CCOperation(kCCEncrypt), CCOptions(kCCOptionPKCS7Padding), input: Data(plaintext.utf8), key: key, initializationVector: initializationVector) else {
       return nil
     }
     return (initializationVector + ciphertext).base64EncodedString()
@@ -20,13 +21,23 @@ package enum AESCBCCrypto {
     let initializationVector = ivAndCiphertext.prefix(initializationVectorLength)
     let ciphertext = ivAndCiphertext.dropFirst(initializationVectorLength)
     guard ciphertext.count % kCCBlockSizeAES128 == 0,
-          let plaintext = crypt(CCOperation(kCCDecrypt), input: ciphertext, key: key, initializationVector: initializationVector) else {
+          let paddedPlaintext = crypt(CCOperation(kCCDecrypt), withoutPadding, input: ciphertext, key: key, initializationVector: initializationVector),
+          let plaintext = removingPKCS7Padding(paddedPlaintext) else {
       return nil
     }
     return String(strictUTF8: plaintext)
   }
 
-  private static func crypt(_ operation: CCOperation, input: Data, key: Data, initializationVector: Data) -> Data? {
+  private static func removingPKCS7Padding(_ paddedPlaintext: Data) -> Data? {
+    guard let padLength = paddedPlaintext.last.map(Int.init),
+          (1...kCCBlockSizeAES128).contains(padLength),
+          paddedPlaintext.suffix(padLength).allSatisfy({ Int($0) == padLength }) else {
+      return nil
+    }
+    return paddedPlaintext.dropLast(padLength)
+  }
+
+  private static func crypt(_ operation: CCOperation, _ options: CCOptions, input: Data, key: Data, initializationVector: Data) -> Data? {
     guard AESKeyFactory.isValid(key) else { return nil }
     var output = Data(count: input.count + kCCBlockSizeAES128)
     let outputCapacity = output.count
@@ -38,7 +49,7 @@ package enum AESCBCCrypto {
             CCCrypt(
               operation,
               CCAlgorithm(kCCAlgorithmAES128),
-              CCOptions(kCCOptionPKCS7Padding),
+              options,
               keyBytes.baseAddress,
               key.count,
               initializationVectorBytes.baseAddress,

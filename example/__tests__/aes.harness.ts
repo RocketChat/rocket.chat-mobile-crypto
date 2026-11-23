@@ -21,6 +21,7 @@ import {
   gcmVectors,
   invalidUtf8Vectors,
   latin1Pbkdf2Vector,
+  malformedPaddingCbcVectors,
   passwordBase64,
   pbkdf2Vectors,
   rfc6070Pbkdf2Vector,
@@ -336,6 +337,13 @@ describe('AES-CBC with PKCS7 padding', () => {
       aesCbcDecrypt(aesImportKey(zeroKey), 'AAAAAAAAAAAAAAAAAAAAAA==')
     ).rejects.toThrow();
   });
+  for (const vector of malformedPaddingCbcVectors) {
+    test(`rejects ${vector.name}`, async () => {
+      await expect(
+        aesCbcDecrypt(aesImportKey(zeroKey), vector.ivAndCiphertext)
+      ).rejects.toThrow();
+    });
+  }
 });
 
 const gcmIvVector = gcmVectors[2]!;
