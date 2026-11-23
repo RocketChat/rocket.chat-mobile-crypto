@@ -111,7 +111,7 @@ describe('Native file encryption', () => {
     );
   });
 
-  test('rejects a mismatched SHA-256 without leaving decrypted output', async () => {
+  test('rejects a mismatched SHA-256, keeps the encrypted file and leaves no decrypted output', async () => {
     await FileSystem.writeFile(inputPath, fileVector.ciphertext, 'base64');
 
     await expect(
@@ -123,6 +123,9 @@ describe('Native file encryption', () => {
       })
     ).rejects.toThrow();
 
+    expect(await FileSystem.readFile(inputPath, 'base64')).toBe(
+      fileVector.ciphertext
+    );
     for (const name of await FileSystem.ls(directory)) {
       expect(
         await FileSystem.readFile(`${directory}/${name}`, 'base64')

@@ -202,7 +202,9 @@ const checks: Check[] = [
 ];
 
 const runCheck = (check: Check) =>
-  check.run().catch((error: unknown) => `Error: ${String(error)}`);
+  Promise.resolve()
+    .then(check.run)
+    .catch((error: unknown) => `Error: ${String(error)}`);
 
 function useCheckResults() {
   const [results, setResults] = useState<Record<string, string>>({});

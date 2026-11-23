@@ -5,7 +5,6 @@ import CryptoKit
 package enum AESCTRFileCrypto {
   private static let chunkSize = 65536
   private static let outputFilePrefix = "processed_"
-  private static let fileScheme = "file://"
   private static let keyLength = 32
 
   package static func encryptFile(_ filePath: String) -> EncryptedFile? {
@@ -26,7 +25,7 @@ package enum AESCTRFileCrypto {
       return nil
     }
     return EncryptedFile(
-      path: fileScheme + outputPath,
+      path: outputPath.fileURIString,
       key: key.base64URLEncodedString,
       iv: initializationVector.base64EncodedString(),
       sha256: plaintextDigest.lowercaseHexString
@@ -59,7 +58,7 @@ package enum AESCTRFileCrypto {
       )) != nil else {
       return nil
     }
-    return fileScheme + inputPath
+    return inputPath.fileURIString
   }
 
   private static func outputPath(for inputPath: String) -> String {

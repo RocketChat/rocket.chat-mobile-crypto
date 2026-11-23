@@ -109,10 +109,7 @@ describe('benchmark', () => {
       aesGcmEncrypt(key, oneKilobyte)
     );
     await measure('aesGcmDecrypt 1KB', 1000, () =>
-      aesGcmDecrypt(key, {
-        ciphertext: gcmCiphertext.ciphertext,
-        iv: gcmCiphertext.iv,
-      })
+      aesGcmDecrypt(key, gcmCiphertext)
     );
     await measure('aesCbcEncrypt 1KB', 1000, () =>
       aesCbcEncrypt(key, oneKilobyte)

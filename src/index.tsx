@@ -29,12 +29,12 @@ const rejectOnThrow = <T,>(operation: () => T | Promise<T>): Promise<T> => {
 };
 
 const runBySize = <T,>(
-  inputs: SizedInput[],
+  sizedInputs: () => SizedInput[],
   runSync: () => T,
   runAsync: () => Promise<T>
 ): Promise<T> =>
   rejectOnThrow(() =>
-    inputs.reduce((total, input) => total + inputSize(input), 0) <=
+    sizedInputs().reduce((total, input) => total + inputSize(input), 0) <=
     SYNC_INPUT_LIMIT
       ? runSync()
       : runAsync()
@@ -96,7 +96,7 @@ export function sha(
   algorithm: SHAAlgorithm
 ): Promise<ArrayBuffer> {
   return runBySize(
-    [data],
+    () => [data],
     () => MobileCrypto.shaSync(data, algorithm),
     () => MobileCrypto.sha(data, algorithm)
   );
@@ -107,7 +107,7 @@ export function hmac256(
   key: ArrayBuffer
 ): Promise<ArrayBuffer> {
   return runBySize(
-    [data, key],
+    () => [data, key],
     () => MobileCrypto.hmac256Sync(data, key),
     () => MobileCrypto.hmac256(data, key)
   );
@@ -144,7 +144,7 @@ export function aesGcmEncrypt(
   plaintext: string
 ): Promise<AESGCMCiphertext> {
   return runBySize(
-    [plaintext],
+    () => [plaintext],
     () => MobileCrypto.aesGcmEncryptSync(key, plaintext),
     () => MobileCrypto.aesGcmEncrypt(key, plaintext)
   );
@@ -155,7 +155,7 @@ export function aesGcmDecrypt(
   encrypted: AESGCMCiphertext
 ): Promise<string> {
   return runBySize(
-    [encrypted.ciphertext],
+    () => [encrypted.ciphertext],
     () => MobileCrypto.aesGcmDecryptSync(key, encrypted),
     () => MobileCrypto.aesGcmDecrypt(key, encrypted)
   );
@@ -163,7 +163,7 @@ export function aesGcmDecrypt(
 
 export function aesCbcEncrypt(key: AESKey, plaintext: string): Promise<string> {
   return runBySize(
-    [plaintext],
+    () => [plaintext],
     () => MobileCrypto.aesCbcEncryptSync(key, plaintext),
     () => MobileCrypto.aesCbcEncrypt(key, plaintext)
   );
@@ -174,7 +174,7 @@ export function aesCbcDecrypt(
   ivAndCiphertext: string
 ): Promise<string> {
   return runBySize(
-    [ivAndCiphertext],
+    () => [ivAndCiphertext],
     () => MobileCrypto.aesCbcDecryptSync(key, ivAndCiphertext),
     () => MobileCrypto.aesCbcDecrypt(key, ivAndCiphertext)
   );

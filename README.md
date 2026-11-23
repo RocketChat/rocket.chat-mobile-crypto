@@ -250,6 +250,16 @@ and failures reject or throw instead of resolving `null`.
 | `getRandomValues(length)`                                                                 | removed                                                                                                                                      |
 | `JWK` type                                                                                | JWK JSON strings                                                                                                                             |
 
+The rows above are not all one-to-one:
+
+- AES and RSA encryption in v2 take and return UTF-8 text only. The v1 `*64`
+  and `*Buffer` variants carried arbitrary bytes, and v2 has no binary
+  replacement for them.
+- v1 `rsaSign` and `rsaVerify` took an optional `hash` that defaulted to SHA-1
+  on Android and SHA-512 on iOS. v2 requires it: pass the hash v1 used to get
+  the same signatures.
+- v1 AES keys were hex. Import them with `aesImportKey`, which takes base64url.
+
 Deterministic outputs are byte-compatible with v1: the same password, salt
 and parameters derive the same key bytes, RSA signatures and JWK components
 are unchanged, and UTF-8 text encrypted by v1 decrypts with v2 (for AES-CBC, prefix

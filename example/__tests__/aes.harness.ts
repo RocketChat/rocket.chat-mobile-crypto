@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { describe, expect, test } from 'react-native-harness';
 import {
+  type AESGCMCiphertext,
   type AESKey,
   aesCbcDecrypt,
   aesCbcEncrypt,
@@ -274,6 +275,12 @@ describe('AES-GCM', () => {
         iv: 'AAAAAAAAAAAAAAAA',
       })
     ).rejects.toThrow();
+  });
+
+  test('rejects a missing ciphertext object instead of throwing', async () => {
+    const missing = undefined as unknown as AESGCMCiphertext;
+    const decrypting = aesGcmDecrypt(aesImportKey(zeroKey), missing);
+    await expect(decrypting).rejects.toThrow();
   });
 });
 

@@ -8,6 +8,7 @@ import com.margelo.nitro.mobilecrypto.PBKDF2HashAlgorithm
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.DigestInputStream
@@ -166,9 +167,15 @@ internal object AESCrypto {
             if (!actualSha256.equals(file.sha256, ignoreCase = true)) {
                 throw SecurityException("Decrypted file SHA-256 $actualSha256 does not match expected ${file.sha256}")
             }
-            if (isPlainFilePath && outputFile.renameTo(targetFile)) {
-                return file.path
-            }
+        } catch (exception: Exception) {
+            outputFile.delete()
+            throw exception
+        }
+
+        if (isPlainFilePath && outputFile.renameTo(targetFile)) {
+            return file.path
+        }
+        try {
             FileInputStream(outputFile).use { inputStream ->
                 val outputStream = if (isPlainFilePath) {
                     FileOutputStream(targetFile)
@@ -178,10 +185,14 @@ internal object AESCrypto {
                 }
                 outputStream.use { inputStream.copyTo(it, BUFFER_SIZE) }
             }
-            return file.path
-        } finally {
-            outputFile.delete()
+        } catch (exception: Exception) {
+            throw IOException(
+                "Writing the decrypted file to $targetUri failed; decrypted output kept at ${outputFile.absolutePath}",
+                exception
+            )
         }
+        outputFile.delete()
+        return file.path
     }
 
     private fun runCtr(mode: Int, key: ByteArray, iv: ByteArray, inputStream: InputStream, outputStream: OutputStream) {
