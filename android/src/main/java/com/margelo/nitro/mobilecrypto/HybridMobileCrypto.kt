@@ -41,7 +41,7 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
     ArrayBuffer.copy(HMACCrypto.hmacSha256(data.toByteArray(), key.toByteArray()))
 
   override fun aesGenerateKey(byteLength: Double): HybridAESKeySpec =
-    HybridAESKey(AESCrypto.generateKey(byteLength.toInt()))
+    HybridAESKey(AESCrypto.generateKey(byteLength.toCount()))
 
   override fun aesImportKey(base64Url: String): HybridAESKeySpec =
     HybridAESKey(AESCrypto.importKey(base64Url))
@@ -54,7 +54,7 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
     hash: PBKDF2HashAlgorithm
   ): Promise<HybridAESKeySpec> =
     Promise.async {
-      HybridAESKey(AESCrypto.deriveKey(passwordBase64, saltBase64, iterations.toInt(), byteLength.toInt(), hash))
+      HybridAESKey(AESCrypto.deriveKey(passwordBase64, saltBase64, iterations.toCount(), byteLength.toCount(), hash))
     }
 
   override fun aesGcmEncrypt(key: HybridAESKeySpec, plaintext: String): Promise<AESGCMCiphertext> =
@@ -89,7 +89,7 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
 
   override fun rsaGenerateKeys(keySize: Double?): Promise<RSAKeyPair> =
     Promise.async {
-      val keyPair = RSACrypto.generateKeyPair(keySize?.toInt() ?: DEFAULT_RSA_KEY_SIZE)
+      val keyPair = RSACrypto.generateKeyPair(keySize?.toCount() ?: DEFAULT_RSA_KEY_SIZE)
       RSAKeyPair(
         HybridRSAPublicKey(keyPair.public as RSAPublicKey),
         HybridRSAPrivateKey(keyPair.private as RSAPrivateCrtKey)
@@ -128,10 +128,10 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
     RandomUtils.generateUuid()
 
   override fun randomKey(length: Double): String =
-    RandomUtils.generateRandomKeyHex(length.toInt())
+    RandomUtils.generateRandomKeyHex(length.toCount())
 
   override fun randomBytes(size: Double): ArrayBuffer =
-    ArrayBuffer.copy(RandomUtils.generateRandomBytes(size.toInt()))
+    ArrayBuffer.copy(RandomUtils.generateRandomBytes(size.toCount()))
 
   private val HybridRSAPrivateKeySpec.rsaPrivateKey: RSAPrivateCrtKey
     get() = (this as? HybridRSAPrivateKey)?.privateKey
