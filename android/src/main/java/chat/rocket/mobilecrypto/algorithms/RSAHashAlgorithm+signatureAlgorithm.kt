@@ -2,7 +2,7 @@ package chat.rocket.mobilecrypto.algorithms
 
 import com.margelo.nitro.mobilecrypto.RSAHashAlgorithm
 
-val RSAHashAlgorithm.signatureAlgorithm: String
+internal val RSAHashAlgorithm.signatureAlgorithm: String
     get() = when (this) {
         RSAHashAlgorithm.RAW -> "NONEwithRSA"
         RSAHashAlgorithm.SHA1 -> "SHA1withRSA"

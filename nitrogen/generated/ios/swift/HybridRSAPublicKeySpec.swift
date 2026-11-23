@@ -13,8 +13,7 @@ public protocol HybridRSAPublicKeySpec_protocol: HybridObject {
   
 
   // Methods
-  func encrypt(plaintext: ArrayBuffer) throws -> ArrayBuffer
-  func verify(signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Bool
+  func exportJwk() throws -> String
 }
 
 public extension HybridRSAPublicKeySpec_protocol {

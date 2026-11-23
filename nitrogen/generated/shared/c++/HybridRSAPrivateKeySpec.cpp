@@ -14,8 +14,7 @@ namespace margelo::nitro::mobilecrypto {
     HybridObject::loadHybridMethods();
     // load custom methods/properties
     registerHybrids(this, [](Prototype& prototype) {
-      prototype.registerHybridMethod("decrypt", &HybridRSAPrivateKeySpec::decrypt);
-      prototype.registerHybridMethod("sign", &HybridRSAPrivateKeySpec::sign);
+      prototype.registerHybridMethod("exportJwk", &HybridRSAPrivateKeySpec::exportJwk);
     });
   }
 

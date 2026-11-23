@@ -18,17 +18,31 @@ public extension RSAKeyPair {
   /**
    * Create a new instance of `RSAKeyPair`.
    */
-  init(publicKey: String, privateKey: String) {
-    self.init(std.string(publicKey), std.string(privateKey))
+  init(publicKey: (any HybridRSAPublicKeySpec), privateKey: (any HybridRSAPrivateKeySpec)) {
+    self.init({ () -> bridge.std__shared_ptr_HybridRSAPublicKeySpec_ in
+      let __cxxWrapped = publicKey.getCxxWrapper()
+      return __cxxWrapped.getCxxPart()
+    }(), { () -> bridge.std__shared_ptr_HybridRSAPrivateKeySpec_ in
+      let __cxxWrapped = privateKey.getCxxWrapper()
+      return __cxxWrapped.getCxxPart()
+    }())
   }
 
   @inline(__always)
-  var publicKey: String {
-    return String(self.__publicKey)
+  var publicKey: (any HybridRSAPublicKeySpec) {
+    return { () -> any HybridRSAPublicKeySpec in
+      let __unsafePointer = bridge.get_std__shared_ptr_HybridRSAPublicKeySpec_(self.__publicKey)
+      let __instance = HybridRSAPublicKeySpec_cxx.fromUnsafe(__unsafePointer)
+      return __instance.getHybridRSAPublicKeySpec()
+    }()
   }
   
   @inline(__always)
-  var privateKey: String {
-    return String(self.__privateKey)
+  var privateKey: (any HybridRSAPrivateKeySpec) {
+    return { () -> any HybridRSAPrivateKeySpec in
+      let __unsafePointer = bridge.get_std__shared_ptr_HybridRSAPrivateKeySpec_(self.__privateKey)
+      let __instance = HybridRSAPrivateKeySpec_cxx.fromUnsafe(__unsafePointer)
+      return __instance.getHybridRSAPrivateKeySpec()
+    }()
   }
 }

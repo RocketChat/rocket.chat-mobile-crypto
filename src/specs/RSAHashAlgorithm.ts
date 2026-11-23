@@ -2,7 +2,7 @@
  * The digest of an RSA PKCS#1 v1.5 signature. `Raw` signs the message bytes
  * as an already computed digest.
  *
- * @see {@linkcode RSAPrivateKey.sign}
+ * @see {@linkcode MobileCrypto.rsaSign}
  */
 export type RSAHashAlgorithm =
   | 'Raw'

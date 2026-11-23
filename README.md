@@ -1,6 +1,11 @@
 # @rocket.chat/mobile-crypto
 
-Rocket.Chat Mobile Crypto - A comprehensive cryptographic library for React Native applications.
+Native cryptography for React Native: SHA, HMAC, PBKDF2, AES-GCM, AES-CBC,
+AES-CTR file encryption, RSA-OAEP, RSA signatures and secure random values.
+
+Inputs are taken in the form an app already holds and outputs are returned in
+the form it needs next. Wire data is a base64 string, plaintext is a UTF-8
+string, and keys live in native memory behind key objects.
 
 ## Installation
 
@@ -21,279 +26,250 @@ target 'YourApp' do
 end
 ```
 
+## Encodings
+
+- **base64**: standard alphabet with padding. Used for ciphertexts and IVs on the wire.
+- **base64url**: URL-safe alphabet. Output has no padding; input is accepted with or without it. Used for AES keys (the JWK `k` format) and JWK components.
+- **UTF-8**: every plaintext string. Decrypted text keeps a leading byte order mark (U+FEFF).
+- **hex**: the file SHA-256 and `randomKey` output, in lowercase.
+
+Encoded input is decoded strictly, the same way on iOS and Android. It is
+rejected when it contains whitespace or line breaks, uses the other base64
+alphabet, has wrong padding (base64 must be padded; base64url may omit it), or
+does not re-encode to the same text.
+
+## Errors
+
+A function that returns a `Promise` rejects on failure and never throws. A
+function that returns a value directly (`aesGenerateKey`, `aesImportKey`,
+`exportBase64Url`, `exportJwk`, `randomUuid`, `randomKey`, `randomBytes`)
+throws. No function returns or resolves `null` or `undefined`.
+
+## Known issues
+
+On Android, a string argument passed from JavaScript stops at its first NUL
+character (`\0`); the rest is dropped without an error. iOS keeps the whole
+string. Rocket.Chat inputs can't contain a raw NUL (base64, file paths, JSON),
+but arbitrary text passed to `aesGcmEncrypt`, `aesCbcEncrypt` or
+`rsaEncrypt` would be encrypted truncated on Android. Tracked in
+[NATIVE-1874](https://rocketchat.atlassian.net/browse/NATIVE-1874).
+
 ## Usage
 
-### SHA Functions
+### Hashing and HMAC
 
-Generate SHA hashes from UTF-8 strings or Base64 data:
+```ts
+import { hmac256, sha } from '@rocket.chat/mobile-crypto';
 
-```js
-import { shaBase64, shaUtf8 } from '@rocket.chat/mobile-crypto';
-
-// SHA from UTF-8 string
-const sha256Hash = await shaUtf8('hello', 'SHA-256');
-const sha1Hash = await shaUtf8('hello', 'SHA-1');
-const sha512Hash = await shaUtf8('test', 'SHA-512');
-
-// SHA from Base64 data
-const sha256FromBase64 = await shaBase64('aGVsbG8=', 'SHA-256'); // "hello" in base64
+const digest = await sha(bytes, 'SHA-256'); // ArrayBuffer
+const authenticationCode = await hmac256(bytes, keyBytes); // ArrayBuffer
 ```
 
-### PBKDF2 Key Derivation
+### AES keys
 
-Generate cryptographic keys from passwords using PBKDF2:
-
-```js
-import { pbkdf2Hash } from '@rocket.chat/mobile-crypto';
-
-const derivedKey = await pbkdf2Hash(
-  'cGFzc3dvcmQ=', // password in base64
-  'c2FsdA==', // salt in base64
-  1000, // iterations
-  32, // key length
-  'SHA256' // hash algorithm
-);
-```
-
-### HMAC Authentication
-
-Generate HMAC-SHA256 for message authentication:
-
-```js
-import { hmac256 } from '@rocket.chat/mobile-crypto';
-
-const hmac = await hmac256(
-  '48656c6c6f', // data in hex ("Hello")
-  '6b6579' // key in hex ("key")
-);
-```
-
-### AES Encryption/Decryption
-
-Encrypt and decrypt data using AES:
-
-```js
+```ts
 import {
-  aesEncrypt,
-  aesDecrypt,
-  aesEncryptFile,
-  aesDecryptFile,
+  aesDeriveKey,
+  aesGenerateKey,
+  aesImportKey,
 } from '@rocket.chat/mobile-crypto';
 
-// String encryption/decryption
-const encrypted = await aesEncrypt(
-  'SGVsbG8gV29ybGQ=', // data in base64
-  '0123456789abcdef0123456789abcdef', // key in hex
-  'fedcba9876543210fedcba9876543210' // IV in hex
-);
+const generated = aesGenerateKey(32); // 16 or 32 bytes
+const imported = aesImportKey(jwk.k); // base64url
+const derived = await aesDeriveKey(passwordBase64, saltBase64, {
+  iterations: 1000,
+  byteLength: 32,
+  hash: 'SHA256',
+});
 
-const decrypted = await aesDecrypt(encrypted, key, iv);
-
-// File encryption/decryption
-const encryptedFilePath = await aesEncryptFile(
-  '/path/to/file',
-  'base64UrlKey',
-  'base64Iv'
-);
-
-const decryptedFilePath = await aesDecryptFile(
-  '/path/to/encrypted/file',
-  'base64UrlKey',
-  'base64Iv'
-);
+const k = generated.exportBase64Url();
 ```
 
-### Random Generation
+`aesDeriveKey` runs PBKDF2-HMAC over the base64-decoded password and salt bytes, so the caller
+chooses how the password text becomes bytes (for example UTF-8 or Latin-1).
 
-Generate cryptographically secure random values:
+### AES-GCM
 
-```js
-import {
-  randomUuid,
-  randomKey,
-  randomBytes,
-  getRandomValues,
-} from '@rocket.chat/mobile-crypto';
+```ts
+import { aesGcmDecrypt, aesGcmEncrypt } from '@rocket.chat/mobile-crypto';
 
-// Generate UUID
-const uuid = await randomUuid(); // e.g., "123e4567-e89b-12d3-a456-426614174000"
-
-// Generate random key (returns hex string)
-const key = await randomKey(16); // 16 bytes = 32 hex characters
-
-// Generate random bytes (returns base64 string)
-const bytes = await randomBytes(32); // 32 random bytes in base64
-
-// Generate random alphanumeric string
-const randomString = await getRandomValues(10); // 10 character alphanumeric string
+const encrypted = await aesGcmEncrypt(key, 'Hello'); // { iv, ciphertext }
+const plaintext = await aesGcmDecrypt(key, encrypted);
 ```
 
-### RSA Encryption/Decryption and Digital Signatures
+Each call generates a fresh 12-byte IV. `ciphertext` ends with the 16-byte
+authentication tag. Decryption rejects on a wrong key, a modified ciphertext
+or tag, invalid base64, or plaintext that is not valid UTF-8.
 
-Full RSA support for encryption, decryption, signing, and verification:
+### AES-CBC
 
-```js
+```ts
+import { aesCbcDecrypt, aesCbcEncrypt } from '@rocket.chat/mobile-crypto';
+
+const ivAndCiphertext = await aesCbcEncrypt(key, 'Hello');
+const plaintext = await aesCbcDecrypt(key, ivAndCiphertext);
+```
+
+Each call generates a fresh 16-byte IV and returns `base64(iv ‖ ciphertext)`
+with PKCS#7 padding. Decryption rejects padding that is not valid PKCS#7,
+invalid base64, or plaintext that is not valid UTF-8. CBC has no
+authentication tag, so a wrong key is caught only when it breaks the padding
+or the UTF-8.
+
+### Files
+
+```ts
+import { aesDecryptFile, aesEncryptFile } from '@rocket.chat/mobile-crypto';
+
+const encryptedFile = await aesEncryptFile('file:///path/to/file'); // { path, key, iv, sha256 }
+const decryptedPath = await aesDecryptFile(encryptedFile);
+```
+
+`aesEncryptFile` encrypts a copy of the file with AES-256-CTR under a fresh
+key and IV and returns the SHA-256 of the original. `aesDecryptFile` decrypts
+in place and checks the SHA-256 of the result (case-insensitively); on a
+mismatch it removes the decrypted output and rejects.
+
+### RSA
+
+```ts
 import {
-  rsaGenerateKeys,
-  rsaEncrypt,
-  rsaEncrypt64,
   rsaDecrypt,
-  rsaDecrypt64,
-  rsaSign,
-  rsaSign64,
-  rsaVerify,
-  rsaVerify64,
-} from '@rocket.chat/mobile-crypto';
-
-// Generate RSA key pair
-const keyPair = await rsaGenerateKeys(2048); // 2048-bit keys
-// Returns: { public: string, private: string }
-
-// Encryption/Decryption
-const encrypted = await rsaEncrypt('Hello RSA!', keyPair.public);
-const decrypted = await rsaDecrypt(encrypted, keyPair.private);
-
-// Base64 variants
-const encrypted64 = await rsaEncrypt64('Hello RSA!', keyPair.public);
-const decrypted64 = await rsaDecrypt64(encrypted64, keyPair.private);
-
-// Digital signatures
-const signature = await rsaSign('Message to sign', keyPair.private, 'SHA256');
-const isValid = await rsaVerify(
-  signature,
-  'Message to sign',
-  keyPair.public,
-  'SHA256'
-);
-
-// Base64 signature variants
-const signature64 = await rsaSign64(
-  'Message to sign',
-  keyPair.private,
-  'SHA256'
-);
-const isValid64 = await rsaVerify64(
-  signature64,
-  'Message to sign',
-  keyPair.public,
-  'SHA256'
-);
-```
-
-### Imported RSA Keys
-
-Import a PEM key once and reuse it, instead of parsing the PEM on every call.
-Key objects work on `ArrayBuffer` bytes:
-
-```js
-import {
+  rsaEncrypt,
+  rsaGenerateKeys,
   rsaImportPrivateKey,
   rsaImportPublicKey,
+  rsaSign,
+  rsaVerify,
 } from '@rocket.chat/mobile-crypto';
 
-const privateKey = await rsaImportPrivateKey(keyPair.private);
-const publicKey = await rsaImportPublicKey(keyPair.public);
+const { publicKey, privateKey } = await rsaGenerateKeys(2048);
+const storedPrivateKey = privateKey.exportJwk(); // JWK JSON string
 
-const ciphertext = await publicKey.encrypt(plaintextBytes);
-const plaintext = await privateKey.decrypt(ciphertext);
+const restoredPrivateKey = await rsaImportPrivateKey(storedPrivateKey);
+const restoredPublicKey = await rsaImportPublicKey(publicJwkJson);
 
-const signature = await privateKey.sign(messageBytes, 'SHA256');
-const isValid = await publicKey.verify(signature, messageBytes, 'SHA256');
+const ciphertext = await rsaEncrypt(restoredPublicKey, 'Hello'); // base64, RSA-OAEP SHA-256
+const plaintext = await rsaDecrypt(restoredPrivateKey, ciphertext);
+
+const signature = await rsaSign(restoredPrivateKey, messageBytes, 'SHA256');
+const isValid = await rsaVerify(
+  restoredPublicKey,
+  signature,
+  messageBytes,
+  'SHA256'
+);
 ```
 
-### ArrayBuffer Variants
+`exportJwk()` returns compact JSON with the fields in the order `kty, alg,
+ext, key_ops, n, e, d, p, q, dp, dq, qi`, using `alg: "RSA-OAEP-256"`,
+`ext: true` and `key_ops: ["encrypt"]` or `["decrypt"]`.
+`rsaImportPublicKey` ignores private fields, so it accepts a private JWK too.
 
-Byte-oriented variants skip the Base64/hex conversions of the string API and
-throw on failure instead of resolving `null`:
+### Random values
 
-```js
-import {
-  aesGcmEncryptBuffer,
-  aesGcmDecryptBuffer,
-  randomBytesBuffer,
-  shaBuffer,
-} from '@rocket.chat/mobile-crypto';
+```ts
+import { randomBytes, randomKey, randomUuid } from '@rocket.chat/mobile-crypto';
 
-const key = await randomBytesBuffer(32);
-const iv = await randomBytesBuffer(12);
-const ciphertext = await aesGcmEncryptBuffer(plaintextBytes, key, iv);
-const plaintext = await aesGcmDecryptBuffer(ciphertext, key, iv);
-const digest = await shaBuffer(plaintext, 'SHA-256');
+const uuid = randomUuid(); // version 4 UUID
+const keyHex = randomKey(16); // 16 bytes as lowercase hex
+const bytes = randomBytes(32); // ArrayBuffer
 ```
 
-### Utility Functions
+## API reference
 
-Additional utility functions for file operations:
+### Hashing
 
-```js
-import { calculateFileChecksum } from '@rocket.chat/mobile-crypto';
-
-// Calculate file checksum
-const checksum = await calculateFileChecksum('/path/to/file');
-```
-
-## API Reference
-
-### Hash Functions
-
-- `shaBase64(data: string, algorithm: SHAAlgorithm): Promise<string>` - SHA hash from base64 data
-- `shaUtf8(data: string, algorithm: SHAAlgorithm): Promise<string>` - SHA hash from UTF-8 string
-- `shaBuffer(data: ArrayBuffer, algorithm: SHAAlgorithm): Promise<ArrayBuffer>` - SHA digest bytes
+- `sha(data: ArrayBuffer, algorithm: SHAAlgorithm): Promise<ArrayBuffer>`
+- `hmac256(data: ArrayBuffer, key: ArrayBuffer): Promise<ArrayBuffer>` - HMAC-SHA256
 
 `SHAAlgorithm` is `'SHA-1' | 'SHA-256' | 'SHA-384' | 'SHA-512'`.
 
-### Key Derivation
+### AES
 
-- `pbkdf2Hash(pwdBase64: string, saltBase64: string, iterations: number, keyLen: number, hash: PBKDF2HashAlgorithm): Promise<string>` - PBKDF2 key derivation
+- `aesGenerateKey(byteLength: number): AESKey`
+- `aesImportKey(base64Url: string): AESKey`
+- `aesDeriveKey(passwordBase64: string, saltBase64: string, options: { iterations: number; byteLength: number; hash: PBKDF2HashAlgorithm }): Promise<AESKey>` - `byteLength` must be 16 or 32
+- `AESKey.exportBase64Url(): string`
+- `aesGcmEncrypt(key: AESKey, plaintext: string): Promise<AESGCMCiphertext>`
+- `aesGcmDecrypt(key: AESKey, encrypted: AESGCMCiphertext): Promise<string>`
+- `aesCbcEncrypt(key: AESKey, plaintext: string): Promise<string>`
+- `aesCbcDecrypt(key: AESKey, ivAndCiphertext: string): Promise<string>`
+- `aesEncryptFile(filePath: string): Promise<EncryptedFile>`
+- `aesDecryptFile(file: EncryptedFile): Promise<string>`
+
+`AESGCMCiphertext` is `{ iv: string; ciphertext: string }`, both base64.
+`EncryptedFile` is `{ path: string; key: string; iv: string; sha256: string }`:
+the key in base64url, the IV in base64 and the SHA-256 of the plaintext in hex.
+All four fields are required; build it from an E2E attachment's `encryption`
+and `hashes.sha256` to decrypt a received file.
 
 `PBKDF2HashAlgorithm` is `'SHA1' | 'SHA224' | 'SHA256' | 'SHA384' | 'SHA512'`.
 
-### Message Authentication
+### RSA
 
-- `hmac256(data: string, key: string): Promise<string>` - HMAC-SHA256
-- `hmac256Buffer(data: ArrayBuffer, key: ArrayBuffer): Promise<ArrayBuffer>` - HMAC-SHA256 bytes
+- `rsaGenerateKeys(keySize = 2048): Promise<RSAKeyPair>` - `RSAKeyPair` is `{ publicKey: RSAPublicKey; privateKey: RSAPrivateKey }`
+- `rsaImportPrivateKey(jwk: string): Promise<RSAPrivateKey>`
+- `rsaImportPublicKey(jwk: string): Promise<RSAPublicKey>`
+- `RSAPrivateKey.exportJwk(): string`
+- `RSAPublicKey.exportJwk(): string`
+- `rsaEncrypt(publicKey: RSAPublicKey, plaintext: string): Promise<string>`
+- `rsaDecrypt(privateKey: RSAPrivateKey, ciphertext: string): Promise<string>`
+- `rsaSign(privateKey: RSAPrivateKey, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>` - PKCS#1 v1.5
+- `rsaVerify(publicKey: RSAPublicKey, signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<boolean>`
 
-### Symmetric Encryption
+`RSAHashAlgorithm` is `'Raw' | 'SHA1' | 'SHA224' | 'SHA256' | 'SHA384' | 'SHA512'`. `Raw` signs the message as an already computed digest.
 
-- `aesEncrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string | null>` - AES encryption
-- `aesDecrypt(dataBase64: string, keyHex: string, ivHex: string): Promise<string | null>` - AES decryption
-- `aesEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>` - AES-CBC encryption
-- `aesDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>` - AES-CBC decryption
-- `aesGcmEncryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>` - AES-GCM encryption (ciphertext followed by the 16-byte tag)
-- `aesGcmDecryptBuffer(data: ArrayBuffer, key: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer>` - AES-GCM decryption
-- `aesEncryptFile(filePath: string, base64UrlKey: string, base64Iv: string): Promise<string>` - AES file encryption
-- `aesDecryptFile(filePath: string, base64UrlKey: string, base64Iv: string): Promise<string>` - AES file decryption
+### Random
 
-### Random Generation
+- `randomUuid(): string`
+- `randomKey(length: number): string` - `length` bytes as lowercase hex
+- `randomBytes(size: number): ArrayBuffer`
 
-- `randomUuid(): Promise<string>` - Generate random UUID
-- `randomKey(length: number): Promise<string>` - Generate random key (hex)
-- `randomBytes(size: number): Promise<string>` - Generate random bytes (base64)
-- `randomBytesBuffer(size: number): Promise<ArrayBuffer>` - Generate random bytes
-- `getRandomValues(length: number): Promise<string>` - Generate random alphanumeric string
+## Migrating from v1
 
-### Asymmetric Encryption (RSA)
+v2 removes every v1 string and buffer variant. Keys are imported once into key
+objects, IVs are generated by the library, PEM is gone in favour of JWK JSON,
+and failures reject or throw instead of resolving `null`.
 
-- `rsaGenerateKeys(keySize?: number): Promise<{ public: string; private: string }>` - Generate RSA key pair
-- `rsaEncrypt(message: string, publicKey: string): Promise<string>` - RSA encryption
-- `rsaEncrypt64(message: string, publicKey: string): Promise<string>` - RSA encryption (base64)
-- `rsaDecrypt(encodedMessage: string, privateKey: string): Promise<string>` - RSA decryption
-- `rsaDecrypt64(encodedMessage: string, privateKey: string): Promise<string>` - RSA decryption (base64)
-- `rsaImportPrivateKey(pem: string): Promise<RSAPrivateKey>` - Parse a private key once; `decrypt(ciphertext)` and `sign(message, hash)` resolve `ArrayBuffer`s
-- `rsaImportPublicKey(pem: string): Promise<RSAPublicKey>` - Parse a public key once; `encrypt(plaintext)` resolves an `ArrayBuffer`, `verify(signature, message, hash)` a boolean
+| v1                                                                                        | v2                                                                                                                                           |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shaUtf8(text, algorithm)`, `shaBase64(base64, algorithm)`, `shaBuffer(bytes, algorithm)` | `sha(bytes, algorithm)`, returning an `ArrayBuffer`                                                                                          |
+| `hmac256(dataHex, keyHex)`, `hmac256Buffer(data, key)`                                    | `hmac256(data, key)` on `ArrayBuffer`s                                                                                                       |
+| `pbkdf2Hash(passwordBase64, saltBase64, iterations, keyLength, hash)`                     | `aesDeriveKey(passwordBase64, saltBase64, { iterations, byteLength, hash })` with `byteLength` 16 or 32; read the bytes with `exportBase64Url()` |
+| `aesGcmEncrypt(dataBase64, keyHex, ivHex)`, `aesGcmEncryptBuffer`                         | `aesGcmEncrypt(key, plaintext)`, returning `{ iv, ciphertext }`                                                                              |
+| `aesGcmDecrypt(dataBase64, keyHex, ivHex)`, `aesGcmDecryptBuffer`                         | `aesGcmDecrypt(key, { iv, ciphertext })`, returning UTF-8                                                                                    |
+| `aesEncrypt(dataBase64, keyHex, ivHex)`, `aesEncryptBuffer` (AES-CBC)                     | `aesCbcEncrypt(key, plaintext)`, returning `base64(iv ‖ ciphertext)`                                                                         |
+| `aesDecrypt(dataBase64, keyHex, ivHex)`, `aesDecryptBuffer` (AES-CBC)                     | `aesCbcDecrypt(key, ivAndCiphertext)`                                                                                                        |
+| `aesEncryptFile(path, key, iv)`                                                           | `aesEncryptFile(path)`, returning `{ path, key, iv, sha256 }`                                                                                |
+| `aesDecryptFile(path, key, iv)`                                                           | `aesDecryptFile({ path, key, iv, sha256 })`                                                                                                  |
+| `calculateFileChecksum(path)`                                                             | the `sha256` returned by `aesEncryptFile`, verified by `aesDecryptFile`                                                                      |
+| `rsaGenerateKeys()` returning PEM `{ public, private }`                                   | `rsaGenerateKeys()` returning `{ publicKey, privateKey }` key objects; persist them with `exportJwk()`                                       |
+| `rsaImportKey(jwk)` (JWK to PEM), `rsaExportKey(pem)`, `rsaPemToJwk(pem)`                 | `rsaImportPrivateKey(jwkJson)` / `rsaImportPublicKey(jwkJson)` and `exportJwk()`                                                             |
+| `rsaEncrypt(text, publicKeyPem)`, `rsaEncrypt64`                                          | `rsaEncrypt(publicKey, text)`                                                                                                                |
+| `rsaDecrypt(ciphertext, privateKeyPem)`, `rsaDecrypt64`                                   | `rsaDecrypt(privateKey, ciphertext)`, returning UTF-8                                                                                        |
+| `rsaSign(message, privateKeyPem, hash)`, `rsaSign64`                                      | `rsaSign(privateKey, messageBytes, hash)`, returning an `ArrayBuffer`                                                                        |
+| `rsaVerify(signature, message, publicKeyPem, hash)`, `rsaVerify64`                        | `rsaVerify(publicKey, signatureBytes, messageBytes, hash)`                                                                                   |
+| `randomBytes(size)` (base64), `randomBytesBuffer(size)`                                   | `randomBytes(size)`, returning an `ArrayBuffer` synchronously                                                                                |
+| `randomUuid()`, `randomKey(length)`                                                       | unchanged values, now returned synchronously                                                                                                 |
+| `getRandomValues(length)`                                                                 | removed                                                                                                                                      |
+| `JWK` type                                                                                | JWK JSON strings                                                                                                                             |
 
-### Digital Signatures (RSA)
+The rows above are not all one-to-one:
 
-- `rsaSign(message: string, privateKey: string, hash?: RSAHashAlgorithm): Promise<string>` - RSA signing
-- `rsaSign64(message: string, privateKey: string, hash?: RSAHashAlgorithm): Promise<string>` - RSA signing (base64)
-- `rsaVerify(signature: string, message: string, publicKey: string, hash?: RSAHashAlgorithm): Promise<boolean>` - RSA signature verification
-- `rsaVerify64(signature: string, message: string, publicKey: string, hash?: RSAHashAlgorithm): Promise<boolean>` - RSA signature verification (base64)
+- AES and RSA encryption in v2 take and return UTF-8 text only. The v1 `*64`
+  and `*Buffer` variants carried arbitrary bytes, and v2 has no binary
+  replacement for them.
+- v1 `rsaSign` and `rsaVerify` took an optional `hash` that defaulted to SHA-1
+  on Android and SHA-512 on iOS. v2 requires it: pass the hash v1 used to get
+  the same signatures.
+- v1 AES functions took the key as hex. Pass the JWK `k` value to `aesImportKey`
+  as it is, without converting it to hex.
 
-`RSAHashAlgorithm` is `'Raw' | 'SHA1' | 'SHA224' | 'SHA256' | 'SHA384' | 'SHA512'`.
-
-### Utilities
-
-- `calculateFileChecksum(filePath: string): Promise<string>` - Calculate file checksum
+Deterministic outputs are byte-compatible with v1: the same password, salt
+and parameters derive the same key bytes, RSA signatures and JWK components
+are unchanged, and UTF-8 text encrypted by v1 decrypts with v2 (for AES-CBC, prefix
+the IV to the ciphertext).
 
 ## Contributing
 

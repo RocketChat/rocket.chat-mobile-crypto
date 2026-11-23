@@ -31,3 +31,15 @@ export const hexFromBuffer = (buffer: ArrayBuffer): string =>
 
 export const bufferFromAscii = (text: string): ArrayBuffer =>
   bufferFromBase64(btoa(text));
+
+export const toStandardAlphabet = (base64Url: string): string =>
+  base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+export const toBase64UrlAlphabet = (base64: string): string =>
+  base64.replace(/\+/g, '-').replace(/\//g, '_');
+
+export const withoutPadding = (base64: string): string =>
+  base64.replace(/[=]+$/, '');
+
+export const wrapLines = (base64: string): string =>
+  `${base64.slice(0, 8)}\n${base64.slice(8)}`;

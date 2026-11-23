@@ -12,15 +12,9 @@
 // Forward declaration of `HybridRSAPrivateKeySpec_cxx` to properly resolve imports.
 namespace MobileCrypto { class HybridRSAPrivateKeySpec_cxx; }
 
-// Forward declaration of `ArrayBufferHolder` to properly resolve imports.
-namespace NitroModules { class ArrayBufferHolder; }
-// Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
-namespace margelo::nitro::mobilecrypto { enum class RSAHashAlgorithm; }
 
-#include <NitroModules/ArrayBuffer.hpp>
-#include <NitroModules/Promise.hpp>
-#include <NitroModules/ArrayBufferHolder.hpp>
-#include "RSAHashAlgorithm.hpp"
+
+#include <string>
 
 #include "MobileCrypto-Swift-Cxx-Umbrella.hpp"
 
@@ -72,16 +66,8 @@ namespace margelo::nitro::mobilecrypto {
 
   public:
     // Methods
-    inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> decrypt(const std::shared_ptr<ArrayBuffer>& ciphertext) override {
-      auto __result = _swiftPart.decrypt(ArrayBufferHolder(ciphertext));
-      if (__result.hasError()) [[unlikely]] {
-        std::rethrow_exception(__result.error());
-      }
-      auto __value = std::move(__result.value());
-      return __value;
-    }
-    inline std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> sign(const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) override {
-      auto __result = _swiftPart.sign(ArrayBufferHolder(message), static_cast<int>(hash));
+    inline std::string exportJwk() override {
+      auto __result = _swiftPart.exportJwk();
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

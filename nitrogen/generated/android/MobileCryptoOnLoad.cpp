@@ -15,6 +15,7 @@
 #include <fbjni/fbjni.h>
 #include <NitroModules/HybridObjectRegistry.hpp>
 
+#include "JHybridAESKeySpec.hpp"
 #include "JHybridMobileCryptoSpec.hpp"
 #include "JHybridRSAPrivateKeySpec.hpp"
 #include "JHybridRSAPublicKeySpec.hpp"
@@ -42,6 +43,7 @@ void registerAllNatives() {
   using namespace margelo::nitro::mobilecrypto;
 
   // Register native JNI methods
+  margelo::nitro::mobilecrypto::JHybridAESKeySpec::CxxPart::registerNatives();
   margelo::nitro::mobilecrypto::JHybridMobileCryptoSpec::CxxPart::registerNatives();
   margelo::nitro::mobilecrypto::JHybridRSAPrivateKeySpec::CxxPart::registerNatives();
   margelo::nitro::mobilecrypto::JHybridRSAPublicKeySpec::CxxPart::registerNatives();

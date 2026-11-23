@@ -125,26 +125,14 @@ open class HybridRSAPublicKeySpec_cxx {
 
   // Methods
   @inline(__always)
-  public final func encrypt(plaintext: ArrayBuffer) -> bridge.Result_std__shared_ptr_ArrayBuffer__ {
+  public final func exportJwk() -> bridge.Result_std__string_ {
     do {
-      let __result = try self.__implementation.encrypt(plaintext: plaintext)
-      let __resultCpp = __result.getArrayBuffer()
-      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__resultCpp)
+      let __result = try self.__implementation.exportJwk()
+      let __resultCpp = std.string(__result)
+      return bridge.create_Result_std__string_(__resultCpp)
     } catch (let __error) {
       let __exceptionPtr = __error.toCpp()
-      return bridge.create_Result_std__shared_ptr_ArrayBuffer__(__exceptionPtr)
-    }
-  }
-  
-  @inline(__always)
-  public final func verify(signature: ArrayBuffer, message: ArrayBuffer, hash: Int32) -> bridge.Result_bool_ {
-    do {
-      let __result = try self.__implementation.verify(signature: signature, message: message, hash: margelo.nitro.mobilecrypto.RSAHashAlgorithm(rawValue: hash)!)
-      let __resultCpp = __result
-      return bridge.create_Result_bool_(__resultCpp)
-    } catch (let __error) {
-      let __exceptionPtr = __error.toCpp()
-      return bridge.create_Result_bool_(__exceptionPtr)
+      return bridge.create_Result_std__string_(__exceptionPtr)
     }
   }
 }

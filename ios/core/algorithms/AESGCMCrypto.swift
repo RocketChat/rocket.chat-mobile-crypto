@@ -3,50 +3,25 @@ import CryptoKit
 
 package enum AESGCMCrypto {
   private static let nonceLength = 12
-  private static let tagLength = 16
-  private static let stringKeyLength = 32
 
-  package static func encrypt(_ plaintext: Data, key: Data, nonce: Data) -> Data? {
-    guard nonce.count == nonceLength,
-          let gcmNonce = try? AES.GCM.Nonce(data: nonce),
-          let sealedBox = try? AES.GCM.seal(plaintext, using: SymmetricKey(data: key), nonce: gcmNonce) else {
+  package static func encrypt(_ plaintext: String, key: AESKey) -> (iv: String, ciphertext: String)? {
+    guard let sealedBox = try? AES.GCM.seal(Data(plaintext.utf8), using: SymmetricKey(data: key.data)) else {
       return nil
     }
-    return sealedBox.ciphertext + sealedBox.tag
+    return (
+      iv: Data(sealedBox.nonce).base64EncodedString(),
+      ciphertext: (sealedBox.ciphertext + sealedBox.tag).base64EncodedString()
+    )
   }
 
-  package static func decrypt(_ ciphertextAndTag: Data, key: Data, nonce: Data) -> Data? {
-    guard nonce.count == nonceLength,
-          ciphertextAndTag.count >= tagLength,
-          let gcmNonce = try? AES.GCM.Nonce(data: nonce),
-          let sealedBox = try? AES.GCM.SealedBox(
-            nonce: gcmNonce,
-            ciphertext: ciphertextAndTag.prefix(ciphertextAndTag.count - tagLength),
-            tag: ciphertextAndTag.suffix(tagLength)
-          ) else {
+  package static func decrypt(_ ciphertextBase64: String, ivBase64: String, key: AESKey) -> String? {
+    guard let ciphertextAndTag = Data(canonicalBase64: ciphertextBase64),
+          let nonce = Data(canonicalBase64: ivBase64),
+          nonce.count == nonceLength,
+          let sealedBox = try? AES.GCM.SealedBox(combined: nonce + ciphertextAndTag),
+          let plaintext = try? AES.GCM.open(sealedBox, using: SymmetricKey(data: key.data)) else {
       return nil
     }
-    return try? AES.GCM.open(sealedBox, using: SymmetricKey(data: key))
-  }
-
-  package static func encryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    guard let (input, key, nonce) = decodeStringArguments(dataBase64, keyHex: keyHex, ivHex: ivHex) else { return nil }
-    return encrypt(input, key: key, nonce: nonce)?.base64EncodedString()
-  }
-
-  package static func decryptBase64(_ dataBase64: String, keyHex: String, ivHex: String) -> String? {
-    guard let (input, key, nonce) = decodeStringArguments(dataBase64, keyHex: keyHex, ivHex: ivHex) else { return nil }
-    return decrypt(input, key: key, nonce: nonce)?.base64EncodedString()
-  }
-
-  private static func decodeStringArguments(_ dataBase64: String, keyHex: String, ivHex: String) -> (Data, Data, Data)? {
-    guard !dataBase64.isEmpty,
-          let input = Data(base64Encoded: dataBase64),
-          let key = Data(hexString: keyHex),
-          key.count == stringKeyLength,
-          let nonce = Data(hexString: ivHex) else {
-      return nil
-    }
-    return (input, key, nonce)
+    return String(strictUTF8: plaintext)
   }
 }

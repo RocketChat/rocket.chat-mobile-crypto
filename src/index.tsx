@@ -1,16 +1,17 @@
 import { NitroModules } from 'react-native-nitro-modules';
-import type { JWK } from './specs/JWK';
+import type { AESGCMCiphertext } from './specs/AESGCMCiphertext';
+import type { AESKey } from './specs/AESKey.nitro';
+import type { EncryptedFile } from './specs/EncryptedFile';
 import type { MobileCrypto as MobileCryptoSpec } from './specs/MobileCrypto.nitro';
 import type { PBKDF2HashAlgorithm } from './specs/PBKDF2HashAlgorithm';
 import type { RSAHashAlgorithm } from './specs/RSAHashAlgorithm';
-import type { RSAPrivateKey as HybridRSAPrivateKey } from './specs/RSAPrivateKey.nitro';
-import type { RSAPublicKey as HybridRSAPublicKey } from './specs/RSAPublicKey.nitro';
+import type { RSAKeyPair } from './specs/RSAKeyPair';
+import type { RSAPrivateKey } from './specs/RSAPrivateKey.nitro';
+import type { RSAPublicKey } from './specs/RSAPublicKey.nitro';
 import type { SHAAlgorithm } from './specs/SHAAlgorithm';
 
 const MobileCrypto =
   NitroModules.createHybridObject<MobileCryptoSpec>('MobileCrypto');
-
-const nullWhenUndefined = (value: string | undefined) => value ?? null;
 
 const SYNC_INPUT_LIMIT = 32 * 1024;
 
@@ -28,363 +29,183 @@ const rejectOnThrow = <T,>(operation: () => T | Promise<T>): Promise<T> => {
 };
 
 const runBySize = <T,>(
-  inputs: SizedInput[],
+  sizedInputs: () => SizedInput[],
   runSync: () => T,
   runAsync: () => Promise<T>
 ): Promise<T> =>
   rejectOnThrow(() =>
-    inputs.reduce((total, input) => total + inputSize(input), 0) <=
+    sizedInputs().reduce((total, input) => total + inputSize(input), 0) <=
     SYNC_INPUT_LIMIT
       ? runSync()
       : runAsync()
   );
 
-export interface RSAPrivateKey {
-  decrypt(ciphertext: ArrayBuffer): Promise<ArrayBuffer>;
-  sign(message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>;
-}
+export type {
+  AESGCMCiphertext,
+  AESKey,
+  EncryptedFile,
+  PBKDF2HashAlgorithm,
+  RSAHashAlgorithm,
+  RSAKeyPair,
+  RSAPrivateKey,
+  RSAPublicKey,
+  SHAAlgorithm,
+};
 
-export interface RSAPublicKey {
-  encrypt(plaintext: ArrayBuffer): Promise<ArrayBuffer>;
-  verify(
-    signature: ArrayBuffer,
-    message: ArrayBuffer,
-    hash: RSAHashAlgorithm
-  ): Promise<boolean>;
-}
-
-const rejectingPrivateKey = (key: HybridRSAPrivateKey): RSAPrivateKey => ({
-  decrypt: (ciphertext) => rejectOnThrow(() => key.decrypt(ciphertext)),
-  sign: (message, hash) => rejectOnThrow(() => key.sign(message, hash)),
-});
-
-const rejectingPublicKey = (key: HybridRSAPublicKey): RSAPublicKey => ({
-  encrypt: (plaintext) => rejectOnThrow(() => key.encrypt(plaintext)),
-  verify: (signature, message, hash) =>
-    rejectOnThrow(() => key.verify(signature, message, hash)),
-});
-
-export type { JWK, PBKDF2HashAlgorithm, RSAHashAlgorithm, SHAAlgorithm };
-
-export function shaBase64(
-  data: string,
+export function sha(
+  data: ArrayBuffer,
   algorithm: SHAAlgorithm
-): Promise<string> {
+): Promise<ArrayBuffer> {
   return runBySize(
-    [data],
-    () => MobileCrypto.shaBase64Sync(data, algorithm),
-    () => MobileCrypto.shaBase64(data, algorithm)
+    () => [data],
+    () => MobileCrypto.shaSync(data, algorithm),
+    () => MobileCrypto.sha(data, algorithm)
   );
 }
 
-export function shaUtf8(
-  data: string,
-  algorithm: SHAAlgorithm
-): Promise<string> {
+export function hmac256(
+  data: ArrayBuffer,
+  key: ArrayBuffer
+): Promise<ArrayBuffer> {
   return runBySize(
-    [data],
-    () => MobileCrypto.shaUtf8Sync(data, algorithm),
-    () => MobileCrypto.shaUtf8(data, algorithm)
-  );
-}
-
-export function pbkdf2Hash(
-  pwdBase64: string,
-  saltBase64: string,
-  iterations: number,
-  keyLen: number,
-  hash: PBKDF2HashAlgorithm
-): Promise<string> {
-  return rejectOnThrow(() =>
-    MobileCrypto.pbkdf2Hash(pwdBase64, saltBase64, iterations, keyLen, hash)
-  );
-}
-
-export function hmac256(data: string, key: string): Promise<string> {
-  return runBySize(
-    [data, key],
+    () => [data, key],
     () => MobileCrypto.hmac256Sync(data, key),
     () => MobileCrypto.hmac256(data, key)
   );
 }
 
-export function aesEncrypt(
-  dataBase64: string,
-  keyHex: string,
-  ivHex: string
-): Promise<string | null> {
-  const ciphertext = runBySize(
-    [dataBase64],
-    () => MobileCrypto.aesEncryptSync(dataBase64, keyHex, ivHex),
-    () => MobileCrypto.aesEncrypt(dataBase64, keyHex, ivHex)
-  );
-  return ciphertext.then(nullWhenUndefined);
+export function aesGenerateKey(byteLength: number): AESKey {
+  return MobileCrypto.aesGenerateKey(byteLength);
 }
 
-export function aesDecrypt(
-  dataBase64: string,
-  keyHex: string,
-  ivHex: string
-): Promise<string | null> {
-  const plaintext = runBySize(
-    [dataBase64],
-    () => MobileCrypto.aesDecryptSync(dataBase64, keyHex, ivHex),
-    () => MobileCrypto.aesDecrypt(dataBase64, keyHex, ivHex)
+export function aesImportKey(base64Url: string): AESKey {
+  return MobileCrypto.aesImportKey(base64Url);
+}
+
+export interface AESDeriveKeyOptions {
+  iterations: number;
+  byteLength: number;
+  hash: PBKDF2HashAlgorithm;
+}
+
+export function aesDeriveKey(
+  passwordBase64: string,
+  saltBase64: string,
+  options: AESDeriveKeyOptions
+): Promise<AESKey> {
+  return rejectOnThrow(() =>
+    MobileCrypto.aesDeriveKey(
+      passwordBase64,
+      saltBase64,
+      options.iterations,
+      options.byteLength,
+      options.hash
+    )
   );
-  return plaintext.then(nullWhenUndefined);
 }
 
 export function aesGcmEncrypt(
-  dataBase64: string,
-  keyHex: string,
-  ivHex: string
-): Promise<string | null> {
-  const ciphertext = runBySize(
-    [dataBase64],
-    () => MobileCrypto.aesGcmEncryptSync(dataBase64, keyHex, ivHex),
-    () => MobileCrypto.aesGcmEncrypt(dataBase64, keyHex, ivHex)
+  key: AESKey,
+  plaintext: string
+): Promise<AESGCMCiphertext> {
+  return runBySize(
+    () => [plaintext],
+    () => MobileCrypto.aesGcmEncryptSync(key, plaintext),
+    () => MobileCrypto.aesGcmEncrypt(key, plaintext)
   );
-  return ciphertext.then(nullWhenUndefined);
 }
 
 export function aesGcmDecrypt(
-  dataBase64: string,
-  keyHex: string,
-  ivHex: string
-): Promise<string | null> {
-  const plaintext = runBySize(
-    [dataBase64],
-    () => MobileCrypto.aesGcmDecryptSync(dataBase64, keyHex, ivHex),
-    () => MobileCrypto.aesGcmDecrypt(dataBase64, keyHex, ivHex)
-  );
-  return plaintext.then(nullWhenUndefined);
-}
-
-export function aesEncryptFile(
-  filePath: string,
-  base64UrlKey: string,
-  base64Iv: string
+  key: AESKey,
+  encrypted: AESGCMCiphertext
 ): Promise<string> {
-  return rejectOnThrow(() =>
-    MobileCrypto.aesEncryptFile(filePath, base64UrlKey, base64Iv)
+  return runBySize(
+    () => [encrypted.ciphertext],
+    () => MobileCrypto.aesGcmDecryptSync(key, encrypted),
+    () => MobileCrypto.aesGcmDecrypt(key, encrypted)
   );
 }
 
-export function aesDecryptFile(
-  filePath: string,
-  base64UrlKey: string,
-  base64Iv: string
+export function aesCbcEncrypt(key: AESKey, plaintext: string): Promise<string> {
+  return runBySize(
+    () => [plaintext],
+    () => MobileCrypto.aesCbcEncryptSync(key, plaintext),
+    () => MobileCrypto.aesCbcEncrypt(key, plaintext)
+  );
+}
+
+export function aesCbcDecrypt(
+  key: AESKey,
+  ivAndCiphertext: string
 ): Promise<string> {
-  return rejectOnThrow(() =>
-    MobileCrypto.aesDecryptFile(filePath, base64UrlKey, base64Iv)
+  return runBySize(
+    () => [ivAndCiphertext],
+    () => MobileCrypto.aesCbcDecryptSync(key, ivAndCiphertext),
+    () => MobileCrypto.aesCbcDecrypt(key, ivAndCiphertext)
   );
 }
 
-export function randomUuid(): Promise<string> {
-  return rejectOnThrow(() => MobileCrypto.randomUuid());
+export function aesEncryptFile(filePath: string): Promise<EncryptedFile> {
+  return rejectOnThrow(() => MobileCrypto.aesEncryptFile(filePath));
 }
 
-export function randomKey(length: number): Promise<string> {
-  return rejectOnThrow(() => MobileCrypto.randomKey(length));
+export function aesDecryptFile(file: EncryptedFile): Promise<string> {
+  return rejectOnThrow(() => MobileCrypto.aesDecryptFile(file));
 }
 
-export function randomBytes(size: number): Promise<string> {
-  return rejectOnThrow(() => MobileCrypto.randomBytes(size));
+export function rsaGenerateKeys(keySize?: number): Promise<RSAKeyPair> {
+  return rejectOnThrow(() => MobileCrypto.rsaGenerateKeys(keySize));
 }
 
-// RSA Functions
-export function rsaGenerateKeys(
-  keySize?: number
-): Promise<{ public: string; private: string }> {
-  return rejectOnThrow(() => MobileCrypto.rsaGenerateKeys(keySize)).then(
-    ({ publicKey, privateKey }) => ({ public: publicKey, private: privateKey })
-  );
+export function rsaImportPrivateKey(jwk: string): Promise<RSAPrivateKey> {
+  return rejectOnThrow(() => MobileCrypto.rsaImportPrivateKey(jwk));
+}
+
+export function rsaImportPublicKey(jwk: string): Promise<RSAPublicKey> {
+  return rejectOnThrow(() => MobileCrypto.rsaImportPublicKey(jwk));
 }
 
 export function rsaEncrypt(
-  message: string,
-  publicKey: string
+  publicKey: RSAPublicKey,
+  plaintext: string
 ): Promise<string> {
-  return rejectOnThrow(() => MobileCrypto.rsaEncrypt(message, publicKey));
-}
-
-export function rsaEncrypt64(
-  message: string,
-  publicKey: string
-): Promise<string> {
-  return rejectOnThrow(() => MobileCrypto.rsaEncrypt64(message, publicKey));
+  return rejectOnThrow(() => MobileCrypto.rsaEncrypt(publicKey, plaintext));
 }
 
 export function rsaDecrypt(
-  encodedMessage: string,
-  privateKey: string
+  privateKey: RSAPrivateKey,
+  ciphertext: string
 ): Promise<string> {
-  return rejectOnThrow(() =>
-    MobileCrypto.rsaDecrypt(encodedMessage, privateKey)
-  );
-}
-
-export function rsaDecrypt64(
-  encodedMessage: string,
-  privateKey: string
-): Promise<string> {
-  return rejectOnThrow(() =>
-    MobileCrypto.rsaDecrypt64(encodedMessage, privateKey)
-  );
+  return rejectOnThrow(() => MobileCrypto.rsaDecrypt(privateKey, ciphertext));
 }
 
 export function rsaSign(
-  message: string,
-  privateKey: string,
-  hash?: RSAHashAlgorithm
-): Promise<string> {
-  return rejectOnThrow(() => MobileCrypto.rsaSign(message, privateKey, hash));
-}
-
-export function rsaSign64(
-  message: string,
-  privateKey: string,
-  hash?: RSAHashAlgorithm
-): Promise<string> {
-  return rejectOnThrow(() => MobileCrypto.rsaSign64(message, privateKey, hash));
+  privateKey: RSAPrivateKey,
+  message: ArrayBuffer,
+  hash: RSAHashAlgorithm
+): Promise<ArrayBuffer> {
+  return rejectOnThrow(() => MobileCrypto.rsaSign(privateKey, message, hash));
 }
 
 export function rsaVerify(
-  signature: string,
-  message: string,
-  publicKey: string,
-  hash?: RSAHashAlgorithm
+  publicKey: RSAPublicKey,
+  signature: ArrayBuffer,
+  message: ArrayBuffer,
+  hash: RSAHashAlgorithm
 ): Promise<boolean> {
-  return runBySize(
-    [message],
-    () => MobileCrypto.rsaVerifySync(signature, message, publicKey, hash),
-    () => MobileCrypto.rsaVerify(signature, message, publicKey, hash)
+  return rejectOnThrow(() =>
+    MobileCrypto.rsaVerify(publicKey, signature, message, hash)
   );
 }
 
-export function rsaVerify64(
-  signature: string,
-  message: string,
-  publicKey: string,
-  hash?: RSAHashAlgorithm
-): Promise<boolean> {
-  return runBySize(
-    [message],
-    () => MobileCrypto.rsaVerify64Sync(signature, message, publicKey, hash),
-    () => MobileCrypto.rsaVerify64(signature, message, publicKey, hash)
-  );
+export function randomUuid(): string {
+  return MobileCrypto.randomUuid();
 }
 
-export function rsaImportKey(jwk: JWK): Promise<string> {
-  return rejectOnThrow(() => MobileCrypto.rsaImportKey(jwk));
+export function randomKey(length: number): string {
+  return MobileCrypto.randomKey(length);
 }
 
-const withoutUndefinedFields = (jwk: JWK): JWK =>
-  Object.fromEntries(
-    Object.entries(jwk).filter(([, value]) => value !== undefined)
-  ) as JWK;
-
-export function rsaExportKey(pem: string): Promise<JWK> {
-  return rejectOnThrow(() => MobileCrypto.rsaExportKey(pem)).then(
-    withoutUndefinedFields
-  );
-}
-
-export function rsaPemToJwk(pemKey: string): Promise<JWK> {
-  return rsaExportKey(pemKey);
-}
-
-// Utility Functions
-export function calculateFileChecksum(filePath: string): Promise<string> {
-  return rejectOnThrow(() => MobileCrypto.calculateFileChecksum(filePath));
-}
-
-export function getRandomValues(length: number): Promise<string> {
-  return rejectOnThrow(() => MobileCrypto.getRandomValues(length));
-}
-
-export function rsaImportPrivateKey(pem: string): Promise<RSAPrivateKey> {
-  return rejectOnThrow(() => MobileCrypto.rsaImportPrivateKey(pem)).then(
-    rejectingPrivateKey
-  );
-}
-
-export function rsaImportPublicKey(pem: string): Promise<RSAPublicKey> {
-  return rejectOnThrow(() => MobileCrypto.rsaImportPublicKey(pem)).then(
-    rejectingPublicKey
-  );
-}
-
-export function shaBuffer(
-  data: ArrayBuffer,
-  algorithm: SHAAlgorithm
-): Promise<ArrayBuffer> {
-  return runBySize(
-    [data],
-    () => MobileCrypto.shaBufferSync(data, algorithm),
-    () => MobileCrypto.shaBuffer(data, algorithm)
-  );
-}
-
-export function hmac256Buffer(
-  data: ArrayBuffer,
-  key: ArrayBuffer
-): Promise<ArrayBuffer> {
-  return runBySize(
-    [data, key],
-    () => MobileCrypto.hmac256BufferSync(data, key),
-    () => MobileCrypto.hmac256Buffer(data, key)
-  );
-}
-
-export function aesEncryptBuffer(
-  data: ArrayBuffer,
-  key: ArrayBuffer,
-  iv: ArrayBuffer
-): Promise<ArrayBuffer> {
-  return runBySize(
-    [data],
-    () => MobileCrypto.aesEncryptBufferSync(data, key, iv),
-    () => MobileCrypto.aesEncryptBuffer(data, key, iv)
-  );
-}
-
-export function aesDecryptBuffer(
-  data: ArrayBuffer,
-  key: ArrayBuffer,
-  iv: ArrayBuffer
-): Promise<ArrayBuffer> {
-  return runBySize(
-    [data],
-    () => MobileCrypto.aesDecryptBufferSync(data, key, iv),
-    () => MobileCrypto.aesDecryptBuffer(data, key, iv)
-  );
-}
-
-export function aesGcmEncryptBuffer(
-  data: ArrayBuffer,
-  key: ArrayBuffer,
-  iv: ArrayBuffer
-): Promise<ArrayBuffer> {
-  return runBySize(
-    [data],
-    () => MobileCrypto.aesGcmEncryptBufferSync(data, key, iv),
-    () => MobileCrypto.aesGcmEncryptBuffer(data, key, iv)
-  );
-}
-
-export function aesGcmDecryptBuffer(
-  data: ArrayBuffer,
-  key: ArrayBuffer,
-  iv: ArrayBuffer
-): Promise<ArrayBuffer> {
-  return runBySize(
-    [data],
-    () => MobileCrypto.aesGcmDecryptBufferSync(data, key, iv),
-    () => MobileCrypto.aesGcmDecryptBuffer(data, key, iv)
-  );
-}
-
-export function randomBytesBuffer(size: number): Promise<ArrayBuffer> {
-  return rejectOnThrow(() => MobileCrypto.randomBytesBuffer(size));
+export function randomBytes(size: number): ArrayBuffer {
+  return MobileCrypto.randomBytes(size);
 }

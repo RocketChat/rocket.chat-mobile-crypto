@@ -8,14 +8,18 @@
 #pragma once
 
 // Forward declarations of C++ defined types
+// Forward declaration of `AESGCMCiphertext` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { struct AESGCMCiphertext; }
+// Forward declaration of `EncryptedFile` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { struct EncryptedFile; }
+// Forward declaration of `HybridAESKeySpec` to properly resolve imports.
+namespace margelo::nitro::mobilecrypto { class HybridAESKeySpec; }
 // Forward declaration of `HybridMobileCryptoSpec` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { class HybridMobileCryptoSpec; }
 // Forward declaration of `HybridRSAPrivateKeySpec` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { class HybridRSAPrivateKeySpec; }
 // Forward declaration of `HybridRSAPublicKeySpec` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { class HybridRSAPublicKeySpec; }
-// Forward declaration of `JWK` to properly resolve imports.
-namespace margelo::nitro::mobilecrypto { struct JWK; }
 // Forward declaration of `PBKDF2HashAlgorithm` to properly resolve imports.
 namespace margelo::nitro::mobilecrypto { enum class PBKDF2HashAlgorithm; }
 // Forward declaration of `RSAHashAlgorithm` to properly resolve imports.
@@ -26,10 +30,12 @@ namespace margelo::nitro::mobilecrypto { struct RSAKeyPair; }
 namespace margelo::nitro::mobilecrypto { enum class SHAAlgorithm; }
 
 // Include C++ defined types
+#include "AESGCMCiphertext.hpp"
+#include "EncryptedFile.hpp"
+#include "HybridAESKeySpec.hpp"
 #include "HybridMobileCryptoSpec.hpp"
 #include "HybridRSAPrivateKeySpec.hpp"
 #include "HybridRSAPublicKeySpec.hpp"
-#include "JWK.hpp"
 #include "PBKDF2HashAlgorithm.hpp"
 #include "RSAHashAlgorithm.hpp"
 #include "RSAKeyPair.hpp"
@@ -41,7 +47,6 @@ namespace margelo::nitro::mobilecrypto { enum class SHAAlgorithm; }
 #include <memory>
 #include <optional>
 #include <string>
-#include <vector>
 
 // C++ helpers for Swift
 #include "MobileCrypto-Swift-Cxx-Bridge.hpp"
@@ -53,6 +58,8 @@ namespace margelo::nitro::mobilecrypto { enum class SHAAlgorithm; }
 #include <NitroModules/DateToChronoDate.hpp>
 
 // Forward declarations of Swift defined types
+// Forward declaration of `HybridAESKeySpec_cxx` to properly resolve imports.
+namespace MobileCrypto { class HybridAESKeySpec_cxx; }
 // Forward declaration of `HybridMobileCryptoSpec_cxx` to properly resolve imports.
 namespace MobileCrypto { class HybridMobileCryptoSpec_cxx; }
 // Forward declaration of `HybridRSAPrivateKeySpec_cxx` to properly resolve imports.
