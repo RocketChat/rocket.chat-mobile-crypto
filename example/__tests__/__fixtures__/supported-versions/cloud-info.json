@@ -1,0 +1,257 @@
+{
+  "signed": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aW1lc3RhbXAiOiIyMDI2LTExLTI0VDE2OjI0OjEwLjU2OTk4NTMwMVoiLCJtZXNzYWdlcyI6W3sicmVtYWluaW5nRGF5cyI6MTUsInRpdGxlIjoidmVyc2lvbl91bnN1cHBvcnRlZF94X2RheXNfcmVtYWluaW5nX3RpdGxlIiwic3VidGl0bGUiOiJ2ZXJzaW9uX3Vuc3VwcG9ydGVkX3hfZGF5c19yZW1haW5pbmdfc3VidGl0bGUiLCJkZXNjcmlwdGlvbiI6InZlcnNpb25fdW5zdXBwb3J0ZWRfeF9kYXlzX3JlbWFpbmluZ19ib2R5IiwidHlwZSI6ImluZm8iLCJyb2xlcyI6WyJhZG1pbiJdLCJwYXJhbXMiOnsibWluaW11bVN1cHBvcnRlZFZlcnNpb24iOiI4LjUuMCJ9LCJsaW5rIjoiIn0seyJyZW1haW5pbmdEYXlzIjoxLCJ0aXRsZSI6InZlcnNpb25fdW5zdXBwb3J0ZWRfZmluYWxfZGF5X3JlbWFpbmluZ190aXRsZSIsInN1YnRpdGxlIjoidmVyc2lvbl91bnN1cHBvcnRlZF9maW5hbF9kYXlfc3VidGl0bGUiLCJkZXNjcmlwdGlvbiI6InZlcnNpb25fdW5zdXBwb3J0ZWRfZmluYWxfZGF5X2JvZHkiLCJ0eXBlIjoiaW5mbyIsInJvbGVzIjpbImFkbWluIl0sInBhcmFtcyI6eyJtaW5pbXVtU3VwcG9ydGVkVmVyc2lvbiI6IjguNS4wIn0sImxpbmsiOiIifV0sInZlcnNpb25zIjpbeyJ2ZXJzaW9uIjoiOS4wLjAiLCJzZWN1cml0eSI6ZmFsc2UsImluZm9VcmwiOiJodHRwczovL2dpdGh1Yi5jb20vUm9ja2V0Q2hhdC9Sb2NrZXQuQ2hhdC9yZWxlYXNlcy90YWcvOS4wLjAiLCJleHBpcmF0aW9uIjoiMjAyNy0wNS0zMVQyMzo1OTo1OS45OTlaIiwicmVsZWFzZVR5cGUiOiJzdGFibGUiLCJsdHMiOmZhbHNlfSx7InZlcnNpb24iOiI4LjYuMCIsInNlY3VyaXR5IjpmYWxzZSwiaW5mb1VybCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9Sb2NrZXRDaGF0L1JvY2tldC5DaGF0L3JlbGVhc2VzL3RhZy84LjYuMCIsImV4cGlyYXRpb24iOiIyMDI3LTAxLTMxVDIzOjU5OjU5Ljk5OVoiLCJyZWxlYXNlVHlwZSI6InN0YWJsZSIsImx0cyI6ZmFsc2V9LHsidmVyc2lvbiI6IjguNi4xIiwic2VjdXJpdHkiOmZhbHNlLCJpbmZvVXJsIjoiaHR0cHM6Ly9naXRodWIuY29tL1JvY2tldENoYXQvUm9ja2V0LkNoYXQvcmVsZWFzZXMvdGFnLzguNi4xIiwiZXhwaXJhdGlvbiI6IjIwMjctMDEtMzFUMjM6NTk6NTkuOTk5WiIsInJlbGVhc2VUeXBlIjoic3RhYmxlIiwibHRzIjpmYWxzZX0seyJ2ZXJzaW9uIjoiOC42LjIiLCJzZWN1cml0eSI6ZmFsc2UsImluZm9VcmwiOiJodHRwczovL2dpdGh1Yi5jb20vUm9ja2V0Q2hhdC9Sb2NrZXQuQ2hhdC9yZWxlYXNlcy90YWcvOC42LjIiLCJleHBpcmF0aW9uIjoiMjAyNy0wMS0zMVQyMzo1OTo1OS45OTlaIiwicmVsZWFzZVR5cGUiOiJzdGFibGUiLCJsdHMiOmZhbHNlfSx7InZlcnNpb24iOiI4LjYuMyIsInNlY3VyaXR5IjpmYWxzZSwiaW5mb1VybCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9Sb2NrZXRDaGF0L1JvY2tldC5DaGF0L3JlbGVhc2VzL3RhZy84LjYuMyIsImV4cGlyYXRpb24iOiIyMDI3LTAxLTMxVDIzOjU5OjU5Ljk5OVoiLCJyZWxlYXNlVHlwZSI6InN0YWJsZSIsImx0cyI6ZmFsc2V9LHsidmVyc2lvbiI6IjguNi40Iiwic2VjdXJpdHkiOmZhbHNlLCJpbmZvVXJsIjoiaHR0cHM6Ly9naXRodWIuY29tL1JvY2tldENoYXQvUm9ja2V0LkNoYXQvcmVsZWFzZXMvdGFnLzguNi40IiwiZXhwaXJhdGlvbiI6IjIwMjctMDEtMzFUMjM6NTk6NTkuOTk5WiIsInJlbGVhc2VUeXBlIjoic3RhYmxlIiwibHRzIjpmYWxzZX0seyJ2ZXJzaW9uIjoiOC43LjAiLCJzZWN1cml0eSI6ZmFsc2UsImluZm9VcmwiOiJodHRwczovL2dpdGh1Yi5jb20vUm9ja2V0Q2hhdC9Sb2NrZXQuQ2hhdC9yZWxlYXNlcy90YWcvOC43LjAiLCJleHBpcmF0aW9uIjoiMjAyNy0wMi0yOFQyMzo1OTo1OS45OTlaIiwicmVsZWFzZVR5cGUiOiJzdGFibGUiLCJsdHMiOmZhbHNlfSx7InZlcnNpb24iOiI4LjcuMSIsInNlY3VyaXR5IjpmYWxzZSwiaW5mb1VybCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9Sb2NrZXRDaGF0L1JvY2tldC5DaGF0L3JlbGVhc2VzL3RhZy84LjcuMSIsImV4cGlyYXRpb24iOiIyMDI3LTAyLTI4VDIzOjU5OjU5Ljk5OVoiLCJyZWxlYXNlVHlwZSI6InN0YWJsZSIsImx0cyI6ZmFsc2V9LHsidmVyc2lvbiI6IjguNy4yIiwic2VjdXJpdHkiOmZhbHNlLCJpbmZvVXJsIjoiaHR0cHM6Ly9naXRodWIuY29tL1JvY2tldENoYXQvUm9ja2V0LkNoYXQvcmVsZWFzZXMvdGFnLzguNy4yIiwiZXhwaXJhdGlvbiI6IjIwMjctMDItMjhUMjM6NTk6NTkuOTk5WiIsInJlbGVhc2VUeXBlIjoic3RhYmxlIiwibHRzIjpmYWxzZX0seyJ2ZXJzaW9uIjoiOC44LjAiLCJzZWN1cml0eSI6ZmFsc2UsImluZm9VcmwiOiJodHRwczovL2dpdGh1Yi5jb20vUm9ja2V0Q2hhdC9Sb2NrZXQuQ2hhdC9yZWxlYXNlcy90YWcvOC44LjAiLCJleHBpcmF0aW9uIjoiMjAyNy0wMy0zMVQyMzo1OTo1OS45OTlaIiwicmVsZWFzZVR5cGUiOiJzdGFibGUiLCJsdHMiOmZhbHNlfSx7InZlcnNpb24iOiI4LjguMSIsInNlY3VyaXR5IjpmYWxzZSwiaW5mb1VybCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9Sb2NrZXRDaGF0L1JvY2tldC5DaGF0L3JlbGVhc2VzL3RhZy84LjguMSIsImV4cGlyYXRpb24iOiIyMDI3LTAzLTMxVDIzOjU5OjU5Ljk5OVoiLCJyZWxlYXNlVHlwZSI6InN0YWJsZSIsImx0cyI6ZmFsc2V9LHsidmVyc2lvbiI6IjguOC4yIiwic2VjdXJpdHkiOmZhbHNlLCJpbmZvVXJsIjoiaHR0cHM6Ly9naXRodWIuY29tL1JvY2tldENoYXQvUm9ja2V0LkNoYXQvcmVsZWFzZXMvdGFnLzguOC4yIiwiZXhwaXJhdGlvbiI6IjIwMjctMDMtMzFUMjM6NTk6NTkuOTk5WiIsInJlbGVhc2VUeXBlIjoic3RhYmxlIiwibHRzIjpmYWxzZX0seyJ2ZXJzaW9uIjoiOS4wLjAiLCJzZWN1cml0eSI6ZmFsc2UsImluZm9VcmwiOiJodHRwczovL2dpdGh1Yi5jb20vUm9ja2V0Q2hhdC9Sb2NrZXQuQ2hhdC9yZWxlYXNlcy90YWcvOS4wLjAiLCJleHBpcmF0aW9uIjoiMjAyNy0wNS0zMVQyMzo1OTo1OS45OTlaIiwicmVsZWFzZVR5cGUiOiJzdGFibGUiLCJsdHMiOmZhbHNlfSx7InZlcnNpb24iOiI4LjUuMCIsInNlY3VyaXR5IjpmYWxzZSwiaW5mb1VybCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9Sb2NrZXRDaGF0L1JvY2tldC5DaGF0L3JlbGVhc2VzL3RhZy84LjUuMCIsImV4cGlyYXRpb24iOiIyMDI3LTA2LTMwVDIzOjU5OjU5Ljk5OVoiLCJyZWxlYXNlVHlwZSI6InN0YWJsZSIsImx0cyI6dHJ1ZX0seyJ2ZXJzaW9uIjoiOC41LjEiLCJzZWN1cml0eSI6ZmFsc2UsImluZm9VcmwiOiJodHRwczovL2dpdGh1Yi5jb20vUm9ja2V0Q2hhdC9Sb2NrZXQuQ2hhdC9yZWxlYXNlcy90YWcvOC41LjEiLCJleHBpcmF0aW9uIjoiMjAyNy0wNi0zMFQyMzo1OTo1OS45OTlaIiwicmVsZWFzZVR5cGUiOiJzdGFibGUiLCJsdHMiOnRydWV9LHsidmVyc2lvbiI6IjguNS4yIiwic2VjdXJpdHkiOmZhbHNlLCJpbmZvVXJsIjoiaHR0cHM6Ly9naXRodWIuY29tL1JvY2tldENoYXQvUm9ja2V0LkNoYXQvcmVsZWFzZXMvdGFnLzguNS4yIiwiZXhwaXJhdGlvbiI6IjIwMjctMDYtMzBUMjM6NTk6NTkuOTk5WiIsInJlbGVhc2VUeXBlIjoic3RhYmxlIiwibHRzIjp0cnVlfSx7InZlcnNpb24iOiI4LjUuMyIsInNlY3VyaXR5IjpmYWxzZSwiaW5mb1VybCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9Sb2NrZXRDaGF0L1JvY2tldC5DaGF0L3JlbGVhc2VzL3RhZy84LjUuMyIsImV4cGlyYXRpb24iOiIyMDI3LTA2LTMwVDIzOjU5OjU5Ljk5OVoiLCJyZWxlYXNlVHlwZSI6InN0YWJsZSIsImx0cyI6dHJ1ZX0seyJ2ZXJzaW9uIjoiOC41LjQiLCJzZWN1cml0eSI6ZmFsc2UsImluZm9VcmwiOiJodHRwczovL2dpdGh1Yi5jb20vUm9ja2V0Q2hhdC9Sb2NrZXQuQ2hhdC9yZWxlYXNlcy90YWcvOC41LjQiLCJleHBpcmF0aW9uIjoiMjAyNy0wNi0zMFQyMzo1OTo1OS45OTlaIiwicmVsZWFzZVR5cGUiOiJzdGFibGUiLCJsdHMiOnRydWV9LHsidmVyc2lvbiI6IjguNS41Iiwic2VjdXJpdHkiOmZhbHNlLCJpbmZvVXJsIjoiaHR0cHM6Ly9naXRodWIuY29tL1JvY2tldENoYXQvUm9ja2V0LkNoYXQvcmVsZWFzZXMvdGFnLzguNS41IiwiZXhwaXJhdGlvbiI6IjIwMjctMDYtMzBUMjM6NTk6NTkuOTk5WiIsInJlbGVhc2VUeXBlIjoic3RhYmxlIiwibHRzIjp0cnVlfSx7InZlcnNpb24iOiI4LjkuMCIsInNlY3VyaXR5IjpmYWxzZSwiaW5mb1VybCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9Sb2NrZXRDaGF0L1JvY2tldC5DaGF0L3JlbGVhc2VzL3RhZy84LjkuMCIsImV4cGlyYXRpb24iOiIyMDI3LTEwLTMxVDIzOjU5OjU5Ljk5OVoiLCJyZWxlYXNlVHlwZSI6InN0YWJsZSIsImx0cyI6dHJ1ZX0seyJ2ZXJzaW9uIjoiOC45LjEiLCJzZWN1cml0eSI6ZmFsc2UsImluZm9VcmwiOiJodHRwczovL2dpdGh1Yi5jb20vUm9ja2V0Q2hhdC9Sb2NrZXQuQ2hhdC9yZWxlYXNlcy90YWcvOC45LjEiLCJleHBpcmF0aW9uIjoiMjAyNy0xMC0zMVQyMzo1OTo1OS45OTlaIiwicmVsZWFzZVR5cGUiOiJzdGFibGUiLCJsdHMiOnRydWV9LHsidmVyc2lvbiI6IjkuMi4wLWRldmVsb3AiLCJzZWN1cml0eSI6ZmFsc2UsImluZm9VcmwiOiIiLCJleHBpcmF0aW9uIjoiMjAyNi0xMi0zMVQxNjoyNDoxMC41NzIwMjg2MTJaIiwicmVsZWFzZVR5cGUiOiJkZXZlbG9wIiwibHRzIjpmYWxzZX0seyJ2ZXJzaW9uIjoiOS4xLjAtcmMuMiIsInNlY3VyaXR5IjpmYWxzZSwiaW5mb1VybCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9Sb2NrZXRDaGF0L1JvY2tldC5DaGF0L3JlbGVhc2VzL3RhZy85LjEuMC1yYy4yIiwiZXhwaXJhdGlvbiI6IjIwMjYtMTItMzFUMTY6MjQ6MTAuNTcyNzY2MjVaIiwicmVsZWFzZVR5cGUiOiJjYW5kaWRhdGUiLCJsdHMiOmZhbHNlfV0sImV4Y2VwdGlvbnMiOnsiZG9tYWluIjoib3Blbi5yb2NrZXQuY2hhdCIsInVuaXF1ZUlkIjoiNThkZTllM2IxMDc1N2Q3NjIxM2VhZjEzIiwidmVyc2lvbnMiOlt7InZlcnNpb24iOiI5LjEuMC1yYy4yIiwic2VjdXJpdHkiOmZhbHNlLCJpbmZvVXJsIjoiIiwiZXhwaXJhdGlvbiI6IjIwMjktMDQtMjBUMDU6MDA6MDBaIiwicmVsZWFzZVR5cGUiOiIiLCJsdHMiOmZhbHNlfV19LCJpMThuIjp7ImVuIjp7InZlcnNpb25fdW5zdXBwb3J0ZWRfZmluYWxfZGF5X2JvZHkiOiJUaGlzIHdvcmtzcGFjZSBpcyBydW5uaW5nIGFuIHVuc3VwcG9ydGVkIHZlcnNpb24gb2YgUm9ja2V0LkNoYXQgKHZ7e2luc3RhbmNlX3ZlcnNpb259fSkuIEEgd29ya3NwYWNlIGFkbWluIG5lZWRzIHRvIHVwZGF0ZSB0byBhIG5ld2VyIHN1cHBvcnRlZCB2ZXJzaW9uIHRvIHByZXZlbnQgY3V0b2ZmLiBQbGVhc2UgY2hlY2s6IGh0dHBzOi8vZ28ucm9ja2V0LmNoYXQvaS9zdXBwb3J0ZWQtdmVyc2lvbnMiLCJ2ZXJzaW9uX3Vuc3VwcG9ydGVkX2ZpbmFsX2RheV9zdWJ0aXRsZSI6IkRlc2t0b3AgYW5kIG1vYmlsZSBhcHAgYWNjZXNzIHRvIHt7aW5zdGFuY2VfZG9tYWlufX0gd2lsbCBiZSBjdXQgb2ZmIHRvZGF5LiIsInZlcnNpb25fdW5zdXBwb3J0ZWRfZmluYWxfZGF5X3RpdGxlIjoiV29ya3NwYWNlIHZlcnNpb24gdW5zdXBwb3J0ZWQiLCJ2ZXJzaW9uX3Vuc3VwcG9ydGVkX3hfZGF5c19yZW1haW5pbmdfYm9keSI6IlRoaXMgd29ya3NwYWNlIGlzIHJ1bm5pbmcgYSB2ZXJzaW9uIG9mIFJvY2tldC5DaGF0ICh2e3tpbnN0YW5jZV92ZXJzaW9ufX0pIHRoYXQgd2lsbCBzb29uIGJlIHVuc3VwcG9ydGVkLiBBIHdvcmtzcGFjZSBhZG1pbiBuZWVkcyB0byB1cGRhdGUgdG8gYSBuZXdlciBzdXBwb3J0ZWQgdmVyc2lvbiB0byBwcmV2ZW50IGN1dG9mZi4gUGxlYXNlIGNoZWNrOiBodHRwczovL2dvLnJvY2tldC5jaGF0L2kvc3VwcG9ydGVkLXZlcnNpb25zIiwidmVyc2lvbl91bnN1cHBvcnRlZF94X2RheXNfcmVtYWluaW5nX3N1YnRpdGxlIjoiRGVza3RvcCBhbmQgbW9iaWxlIGFwcCBhY2Nlc3MgdG8ge3tpbnN0YW5jZV9kb21haW59fSB3aWxsIGJlIGN1dCBvZmYgaW4ge3tyZW1haW5pbmdfZGF5c319IGRheShzKS4iLCJ2ZXJzaW9uX3Vuc3VwcG9ydGVkX3hfZGF5c19yZW1haW5pbmdfdGl0bGUiOiJXb3Jrc3BhY2UgdmVyc2lvbiBzdXBwb3J0IGVuZGluZyJ9LCJlcyI6eyJ2ZXJzaW9uX3Vuc3VwcG9ydGVkX2ZpbmFsX2RheV9ib2R5IjoiRXN0ZSB3b3Jrc3BhY2UgZXN0w6EgdXNhbmRvIHVuYSB2ZXJzacOzbiBkZSBSb2NrZXQuQ2hhdCBxdWUgeWEgbm8gdGllbmUgc29wb3J0ZSAodnt7aW5zdGFuY2VfdmVyc2lvbn19KS4gVW4gYWRtaW5pc3RyYWRvciB0aWVuZSBxdWUgYWN0dWFsaXphciBhIHVuYSB2ZXJzacOzbiBtw6FzIHJlY2llbnRlIHBhcmEgZXZpdGFyIGxhIGRlc2NvbmV4acOzbi4gQ29uc3VsdGE6IGh0dHBzOi8vZ28ucm9ja2V0LmNoYXQvaS9zdXBwb3J0ZWQtdmVyc2lvbnMiLCJ2ZXJzaW9uX3Vuc3VwcG9ydGVkX2ZpbmFsX2RheV9zdWJ0aXRsZSI6IkVsIGFjY2VzbyBhIGxhcyBhcGxpY2FjaW9uZXMgbcOzdmlsZXMgeSBkZSBlc2NyaXRvcmlvIHBhcmEge3tpbnN0YW5jZV9kb21haW59fSBzZSBjb3J0YXLDoSBob3kuIiwidmVyc2lvbl91bnN1cHBvcnRlZF9maW5hbF9kYXlfdGl0bGUiOiJWZXJzacOzbiBkZWwgd29ya3NwYWNlIG5vIHNvcG9ydGFkYSIsInZlcnNpb25fdW5zdXBwb3J0ZWRfeF9kYXlzX3JlbWFpbmluZ19ib2R5IjoiRXN0ZSB3b3Jrc3BhY2UgZXN0w6EgdXNhbmRvIHVuYSB2ZXJzacOzbiBkZSBSb2NrZXQuQ2hhdCAodnt7aW5zdGFuY2VfdmVyc2lvbn19KSBxdWUgcHJvbnRvIGRlamFyw6EgZGUgdGVuZXIgc29wb3J0ZS4gVW4gYWRtaW5pc3RyYWRvciB0aWVuZSBxdWUgYWN0dWFsaXphciBhIHVuYSB2ZXJzacOzbiBtw6FzIHJlY2llbnRlIHBhcmEgZXZpdGFyIGxhIGRlc2NvbmV4acOzbi4gQ29uc3VsdGE6IGh0dHBzOi8vZ28ucm9ja2V0LmNoYXQvaS9zdXBwb3J0ZWQtdmVyc2lvbnMiLCJ2ZXJzaW9uX3Vuc3VwcG9ydGVkX3hfZGF5c19yZW1haW5pbmdfc3VidGl0bGUiOiJFbCBhY2Nlc28gYSBsYXMgYXBsaWNhY2lvbmVzIG3Ds3ZpbGVzIHkgZGUgZXNjcml0b3JpbyBwYXJhIHt7aW5zdGFuY2VfZG9tYWlufX0gc2UgY29ydGFyw6EgZW4ge3tyZW1haW5pbmdfZGF5c319IGTDrWEocykuIiwidmVyc2lvbl91bnN1cHBvcnRlZF94X2RheXNfcmVtYWluaW5nX3RpdGxlIjoiRmluIGRlIHNvcG9ydGUgZGUgbGEgdmVyc2nDs24gZGVsIHdvcmtzcGFjZSJ9LCJwdC1CUiI6eyJ2ZXJzaW9uX3Vuc3VwcG9ydGVkX2ZpbmFsX2RheV9ib2R5IjoiRXN0ZSB3b3Jrc3BhY2UgZXN0w6EgZXhlY3V0YW5kbyB1bWEgdmVyc8OjbyBuw6NvIHN1cG9ydGFkYSBkbyBSb2NrZXQuQ2hhdCAodnt7aW5zdGFuY2VfdmVyc2lvbn19KS4gVW0gYWRtaW5pc3RyYWRvciBkbyB3b3Jrc3BhY2UgZGV2ZSBhdHVhbGl6YXIgcGFyYSB1bWEgdmVyc8OjbyBtYWlzIHJlY2VudGUgcGFyYSBldml0YXIgbyBjb3J0ZS4gQ29uc3VsdGU6IGh0dHBzOi8vZ28ucm9ja2V0LmNoYXQvaS9zdXBwb3J0ZWQtdmVyc2lvbnMiLCJ2ZXJzaW9uX3Vuc3VwcG9ydGVkX2ZpbmFsX2RheV9zdWJ0aXRsZSI6Ik8gYWNlc3NvIGFvcyBhcGxpY2F0aXZvcyBkZXNrdG9wIGUgbW9iaWxlIHNlcsOhIGludGVycm9tcGlkbyBwYXJhIHt7aW5zdGFuY2VfZG9tYWlufX0gaG9qZS4iLCJ2ZXJzaW9uX3Vuc3VwcG9ydGVkX2ZpbmFsX2RheV90aXRsZSI6IlZlcnPDo28gZG8gd29ya3NwYWNlIG7Do28gc3Vwb3J0YWRhIiwidmVyc2lvbl91bnN1cHBvcnRlZF94X2RheXNfcmVtYWluaW5nX2JvZHkiOiJFc3RlIHdvcmtzcGFjZSBlc3TDoSBleGVjdXRhbmRvIHVtYSB2ZXJzw6NvIGRvIFJvY2tldC5DaGF0ICh2e3tpbnN0YW5jZV92ZXJzaW9ufX0pIHF1ZSBlbSBicmV2ZSBwZXJkZXLDoSBvIHN1cG9ydGUuIFVtIGFkbWluaXN0cmFkb3IgZG8gd29ya3NwYWNlIGRldmUgYXR1YWxpemFyIHBhcmEgdW1hIHZlcnPDo28gbWFpcyByZWNlbnRlIHBhcmEgZXZpdGFyIG8gY29ydGUuIENvbnN1bHRlOiBodHRwczovL2dvLnJvY2tldC5jaGF0L2kvc3VwcG9ydGVkLXZlcnNpb25zIiwidmVyc2lvbl91bnN1cHBvcnRlZF94X2RheXNfcmVtYWluaW5nX3N1YnRpdGxlIjoiTyBhY2Vzc28gYW9zIGFwbGljYXRpdm9zIGRlc2t0b3AgZSBtb2JpbGUgc2Vyw6EgaW50ZXJyb21waWRvIHBhcmEge3tpbnN0YW5jZV9kb21haW59fSBlbSB7e3JlbWFpbmluZ19kYXlzfX0gZGlhKHMpLiIsInZlcnNpb25fdW5zdXBwb3J0ZWRfeF9kYXlzX3JlbWFpbmluZ190aXRsZSI6IkZpbSBkbyBzdXBvcnRlIGRhIHZlcnPDo28gZG8gd29ya3NwYWNlIn19LCJlbmZvcmNlbWVudFN0YXJ0RGF0ZSI6IjIwMjMtMTItMTVUMDA6MDA6MDBaIn0.rw6vsPeLBMrX96RAyAazk7V_sOl2i4vFSRbG-tPFa4rIUnoU_Fi_2P8x-X6osJXvNXT-vke5xz0DiOLW-mPmV90NiaIegRUqHVJkr2QCyfVesVgkb-WMVMvCHudvxGgW-y_fcufqQivA44g_e2oGrEd5mRtq9zhqVZixymE5pf3oxYTyxw8whyo5iwd5YnnWqKqPb2uog3G2r8P95z6nXnIVmhC7YcdVQZ6i-S--b5H7IBzOpnG1yzUk8t23jkos-HqtseiO6amfV7DYuvKawXjPHXqPDyvEpg-SZ2WceNfwBlks4CrIRngUXJxlps4SKhJTCNCoSlNmrlRBHEPQmw",
+  "timestamp": "2026-11-24T16:24:10.569985301Z",
+  "messages": [
+    {
+      "remainingDays": 15,
+      "title": "version_unsupported_x_days_remaining_title",
+      "subtitle": "version_unsupported_x_days_remaining_subtitle",
+      "description": "version_unsupported_x_days_remaining_body",
+      "type": "info",
+      "roles": ["admin"],
+      "params": {
+        "minimumSupportedVersion": "8.5.0"
+      },
+      "link": ""
+    },
+    {
+      "remainingDays": 1,
+      "title": "version_unsupported_final_day_remaining_title",
+      "subtitle": "version_unsupported_final_day_subtitle",
+      "description": "version_unsupported_final_day_body",
+      "type": "info",
+      "roles": ["admin"],
+      "params": {
+        "minimumSupportedVersion": "8.5.0"
+      },
+      "link": ""
+    }
+  ],
+  "versions": [
+    {
+      "version": "9.0.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/9.0.0",
+      "expiration": "2027-05-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.6.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.6.0",
+      "expiration": "2027-01-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.6.1",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.6.1",
+      "expiration": "2027-01-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.6.2",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.6.2",
+      "expiration": "2027-01-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.6.3",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.6.3",
+      "expiration": "2027-01-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.6.4",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.6.4",
+      "expiration": "2027-01-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.7.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.7.0",
+      "expiration": "2027-02-28T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.7.1",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.7.1",
+      "expiration": "2027-02-28T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.7.2",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.7.2",
+      "expiration": "2027-02-28T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.8.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.8.0",
+      "expiration": "2027-03-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.8.1",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.8.1",
+      "expiration": "2027-03-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.8.2",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.8.2",
+      "expiration": "2027-03-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "9.0.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/9.0.0",
+      "expiration": "2027-05-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.5.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.0",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.5.1",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.1",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.5.2",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.2",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.5.3",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.3",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.5.4",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.4",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.5.5",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.5",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.9.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.9.0",
+      "expiration": "2027-10-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.9.1",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.9.1",
+      "expiration": "2027-10-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "9.2.0-develop",
+      "security": false,
+      "infoUrl": "",
+      "expiration": "2026-12-31T16:24:10.572028612Z",
+      "releaseType": "develop",
+      "lts": false
+    },
+    {
+      "version": "9.1.0-rc.2",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/9.1.0-rc.2",
+      "expiration": "2026-12-31T16:24:10.57276625Z",
+      "releaseType": "candidate",
+      "lts": false
+    }
+  ],
+  "exceptions": {
+    "domain": "open.rocket.chat",
+    "uniqueId": "58de9e3b10757d76213eaf13",
+    "versions": [
+      {
+        "version": "9.1.0-rc.2",
+        "security": false,
+        "infoUrl": "",
+        "expiration": "2029-04-20T05:00:00Z",
+        "releaseType": "",
+        "lts": false
+      }
+    ]
+  },
+  "i18n": {
+    "en": {
+      "version_unsupported_final_day_body": "This workspace is running an unsupported version of Rocket.Chat (v{{instance_version}}). A workspace admin needs to update to a newer supported version to prevent cutoff. Please check: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_final_day_subtitle": "Desktop and mobile app access to {{instance_domain}} will be cut off today.",
+      "version_unsupported_final_day_title": "Workspace version unsupported",
+      "version_unsupported_x_days_remaining_body": "This workspace is running a version of Rocket.Chat (v{{instance_version}}) that will soon be unsupported. A workspace admin needs to update to a newer supported version to prevent cutoff. Please check: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_x_days_remaining_subtitle": "Desktop and mobile app access to {{instance_domain}} will be cut off in {{remaining_days}} day(s).",
+      "version_unsupported_x_days_remaining_title": "Workspace version support ending"
+    },
+    "es": {
+      "version_unsupported_final_day_body": "Este workspace está usando una versión de Rocket.Chat que ya no tiene soporte (v{{instance_version}}). Un administrador tiene que actualizar a una versión más reciente para evitar la desconexión. Consulta: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_final_day_subtitle": "El acceso a las aplicaciones móviles y de escritorio para {{instance_domain}} se cortará hoy.",
+      "version_unsupported_final_day_title": "Versión del workspace no soportada",
+      "version_unsupported_x_days_remaining_body": "Este workspace está usando una versión de Rocket.Chat (v{{instance_version}}) que pronto dejará de tener soporte. Un administrador tiene que actualizar a una versión más reciente para evitar la desconexión. Consulta: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_x_days_remaining_subtitle": "El acceso a las aplicaciones móviles y de escritorio para {{instance_domain}} se cortará en {{remaining_days}} día(s).",
+      "version_unsupported_x_days_remaining_title": "Fin de soporte de la versión del workspace"
+    },
+    "pt-BR": {
+      "version_unsupported_final_day_body": "Este workspace está executando uma versão não suportada do Rocket.Chat (v{{instance_version}}). Um administrador do workspace deve atualizar para uma versão mais recente para evitar o corte. Consulte: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_final_day_subtitle": "O acesso aos aplicativos desktop e mobile será interrompido para {{instance_domain}} hoje.",
+      "version_unsupported_final_day_title": "Versão do workspace não suportada",
+      "version_unsupported_x_days_remaining_body": "Este workspace está executando uma versão do Rocket.Chat (v{{instance_version}}) que em breve perderá o suporte. Um administrador do workspace deve atualizar para uma versão mais recente para evitar o corte. Consulte: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_x_days_remaining_subtitle": "O acesso aos aplicativos desktop e mobile será interrompido para {{instance_domain}} em {{remaining_days}} dia(s).",
+      "version_unsupported_x_days_remaining_title": "Fim do suporte da versão do workspace"
+    }
+  },
+  "enforcementStartDate": "2023-12-15T00:00:00Z"
+}

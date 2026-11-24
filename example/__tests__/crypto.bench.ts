@@ -22,10 +22,8 @@ import {
 import { Dirs, FileSystem } from 'react-native-file-access';
 import { bufferFromAscii } from './__fixtures__/bytes';
 import { passwordBase64, saltBase64 } from './__fixtures__/crypto';
-import {
-  SUPPORTED_VERSIONS_JWT,
-  SUPPORTED_VERSIONS_PUBLIC_JWK,
-} from './__fixtures__/jwt';
+import { SUPPORTED_VERSIONS_PUBLIC_JWK } from './__fixtures__/jwt';
+import serverInfo from './__fixtures__/supported-versions/server-info.json';
 
 const keyBase64Url = 'ASNFZ4mrze8BI0VniavN7wEjRWeJq83vASNFZ4mrze8';
 
@@ -165,7 +163,10 @@ describe('benchmark', () => {
       rsaVerify(publicKey, signature, helloBuffer, 'SHA256')
     );
     await measure('rsaVerifyJwt supported versions', 300, () =>
-      rsaVerifyJwt(supportedVersionsPublicKey, SUPPORTED_VERSIONS_JWT)
+      rsaVerifyJwt(
+        supportedVersionsPublicKey,
+        serverInfo.supportedVersions.signed
+      )
     );
     await measure('rsaGenerateKeys 2048', 10, () => rsaGenerateKeys(2048));
     await measureConcurrent('sha x200 concurrent', 200, 20, () =>

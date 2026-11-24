@@ -9,11 +9,14 @@ import {
   FIXED_KEY_JWT,
   FIXED_KEY_JWT_PAYLOAD,
   FIXED_KEY_RS512_HEADER_JWT,
-  SUPPORTED_VERSIONS_JWT,
-  SUPPORTED_VERSIONS_PAYLOAD_FIELDS,
   SUPPORTED_VERSIONS_PUBLIC_JWK,
   UNSIGNED_JWT,
 } from './__fixtures__/jwt';
+import cloudInfo from './__fixtures__/supported-versions/cloud-info.json';
+import serverInfo from './__fixtures__/supported-versions/server-info.json';
+import serverPayload from './__fixtures__/supported-versions/server-payload.json';
+
+const serverJwt = serverInfo.supportedVersions.signed;
 
 const segmentsOf = (jwt: string) => {
   const [header, payload, signature] = jwt.split('.') as [
@@ -35,16 +38,17 @@ describe('RS256 JWT verification', () => {
     );
   });
 
-  test('returns the payload of a Rocket.Chat signed supported versions JWT', async () => {
-    const payload = JSON.parse(
-      await rsaVerifyJwt(supportedVersionsPublicKey, SUPPORTED_VERSIONS_JWT)
-    );
-    expect({
-      timestamp: payload.timestamp,
-      enforcementStartDate: payload.enforcementStartDate,
-      versionsCount: payload.versions.length,
-      firstVersion: payload.versions[0].version,
-    }).toEqual(SUPPORTED_VERSIONS_PAYLOAD_FIELDS);
+  test('returns the supported versions a server sends in /api/info', async () => {
+    expect(
+      JSON.parse(await rsaVerifyJwt(supportedVersionsPublicKey, serverJwt))
+    ).toEqual(serverPayload);
+  });
+
+  test('returns the supported versions the cloud also sends unsigned', async () => {
+    const { signed, ...unsigned } = cloudInfo;
+    expect(
+      JSON.parse(await rsaVerifyJwt(supportedVersionsPublicKey, signed))
+    ).toEqual(unsigned);
   });
 
   test('returns a UTF-8 payload unchanged', async () => {
@@ -54,14 +58,12 @@ describe('RS256 JWT verification', () => {
   });
 
   test('rejects a JWT signed by another key', async () => {
-    await expect(
-      rsaVerifyJwt(fixedPublicKey, SUPPORTED_VERSIONS_JWT)
-    ).rejects.toThrow();
+    await expect(rsaVerifyJwt(fixedPublicKey, serverJwt)).rejects.toThrow();
   });
 
   test('rejects a payload the signature does not cover', async () => {
     const signed = segmentsOf(FIXED_KEY_JWT);
-    const other = segmentsOf(SUPPORTED_VERSIONS_JWT);
+    const other = segmentsOf(serverJwt);
     const tampered = `${signed.header}.${other.payload}.${signed.signature}`;
     await expect(rsaVerifyJwt(fixedPublicKey, tampered)).rejects.toThrow();
   });
@@ -87,7 +89,7 @@ describe('RS256 JWT verification', () => {
   });
 
   test('rejects a signature in the standard base64 alphabet', async () => {
-    const { header, payload, signature } = segmentsOf(SUPPORTED_VERSIONS_JWT);
+    const { header, payload, signature } = segmentsOf(serverJwt);
     const standardSignature = signature.replace(/-/g, '+').replace(/_/g, '/');
     expect(standardSignature).not.toBe(signature);
     await expect(

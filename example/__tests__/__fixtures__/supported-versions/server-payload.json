@@ -1,0 +1,260 @@
+{
+  "timestamp": "2026-11-24T12:11:00.7878056Z",
+  "messages": [
+    {
+      "remainingDays": 15,
+      "title": "version_unsupported_x_days_remaining_title",
+      "subtitle": "version_unsupported_x_days_remaining_subtitle",
+      "description": "version_unsupported_x_days_remaining_body",
+      "type": "info",
+      "roles": ["admin"],
+      "params": {
+        "instance_ws_name": "Rocket.Chat Open",
+        "instance_domain": "open.rocket.chat",
+        "minimumSupportedVersion": "8.5.0"
+      },
+      "link": ""
+    },
+    {
+      "remainingDays": 1,
+      "title": "version_unsupported_final_day_remaining_title",
+      "subtitle": "version_unsupported_final_day_subtitle",
+      "description": "version_unsupported_final_day_body",
+      "type": "info",
+      "roles": ["admin"],
+      "params": {
+        "instance_ws_name": "Rocket.Chat Open",
+        "instance_domain": "open.rocket.chat",
+        "minimumSupportedVersion": "8.5.0"
+      },
+      "link": ""
+    }
+  ],
+  "versions": [
+    {
+      "version": "9.0.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/9.0.0",
+      "expiration": "2027-05-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.6.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.6.0",
+      "expiration": "2027-01-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.6.1",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.6.1",
+      "expiration": "2027-01-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.6.2",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.6.2",
+      "expiration": "2027-01-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.6.3",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.6.3",
+      "expiration": "2027-01-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.6.4",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.6.4",
+      "expiration": "2027-01-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.7.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.7.0",
+      "expiration": "2027-02-28T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.7.1",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.7.1",
+      "expiration": "2027-02-28T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.7.2",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.7.2",
+      "expiration": "2027-02-28T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.8.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.8.0",
+      "expiration": "2027-03-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.8.1",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.8.1",
+      "expiration": "2027-03-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.8.2",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.8.2",
+      "expiration": "2027-03-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "9.0.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/9.0.0",
+      "expiration": "2027-05-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": false
+    },
+    {
+      "version": "8.5.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.0",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.5.1",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.1",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.5.2",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.2",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.5.3",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.3",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.5.4",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.4",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.5.5",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.5.5",
+      "expiration": "2027-06-30T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.9.0",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.9.0",
+      "expiration": "2027-10-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "8.9.1",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/8.9.1",
+      "expiration": "2027-10-31T23:59:59.999Z",
+      "releaseType": "stable",
+      "lts": true
+    },
+    {
+      "version": "9.2.0-develop",
+      "security": false,
+      "infoUrl": "",
+      "expiration": "2026-12-31T12:11:00.790006755Z",
+      "releaseType": "develop",
+      "lts": false
+    },
+    {
+      "version": "9.1.0-rc.2",
+      "security": false,
+      "infoUrl": "https://github.com/RocketChat/Rocket.Chat/releases/tag/9.1.0-rc.2",
+      "expiration": "2026-12-31T12:11:00.790831296Z",
+      "releaseType": "candidate",
+      "lts": false
+    }
+  ],
+  "exceptions": {
+    "domain": "open.rocket.chat",
+    "uniqueId": "58de9e3b10757d76213eaf13",
+    "versions": [
+      {
+        "version": "9.1.0-rc.2",
+        "security": false,
+        "infoUrl": "",
+        "expiration": "2029-04-20T05:00:00Z",
+        "releaseType": "",
+        "lts": false
+      }
+    ]
+  },
+  "i18n": {
+    "en": {
+      "version_unsupported_final_day_body": "This workspace is running an unsupported version of Rocket.Chat (v{{instance_version}}). A workspace admin needs to update to a newer supported version to prevent cutoff. Please check: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_final_day_subtitle": "Desktop and mobile app access to {{instance_domain}} will be cut off today.",
+      "version_unsupported_final_day_title": "Workspace version unsupported",
+      "version_unsupported_x_days_remaining_body": "This workspace is running a version of Rocket.Chat (v{{instance_version}}) that will soon be unsupported. A workspace admin needs to update to a newer supported version to prevent cutoff. Please check: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_x_days_remaining_subtitle": "Desktop and mobile app access to {{instance_domain}} will be cut off in {{remaining_days}} day(s).",
+      "version_unsupported_x_days_remaining_title": "Workspace version support ending"
+    },
+    "es": {
+      "version_unsupported_final_day_body": "Este workspace está usando una versión de Rocket.Chat que ya no tiene soporte (v{{instance_version}}). Un administrador tiene que actualizar a una versión más reciente para evitar la desconexión. Consulta: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_final_day_subtitle": "El acceso a las aplicaciones móviles y de escritorio para {{instance_domain}} se cortará hoy.",
+      "version_unsupported_final_day_title": "Versión del workspace no soportada",
+      "version_unsupported_x_days_remaining_body": "Este workspace está usando una versión de Rocket.Chat (v{{instance_version}}) que pronto dejará de tener soporte. Un administrador tiene que actualizar a una versión más reciente para evitar la desconexión. Consulta: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_x_days_remaining_subtitle": "El acceso a las aplicaciones móviles y de escritorio para {{instance_domain}} se cortará en {{remaining_days}} día(s).",
+      "version_unsupported_x_days_remaining_title": "Fin de soporte de la versión del workspace"
+    },
+    "pt-BR": {
+      "version_unsupported_final_day_body": "Este workspace está executando uma versão não suportada do Rocket.Chat (v{{instance_version}}). Um administrador do workspace deve atualizar para uma versão mais recente para evitar o corte. Consulte: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_final_day_subtitle": "O acesso aos aplicativos desktop e mobile será interrompido para {{instance_domain}} hoje.",
+      "version_unsupported_final_day_title": "Versão do workspace não suportada",
+      "version_unsupported_x_days_remaining_body": "Este workspace está executando uma versão do Rocket.Chat (v{{instance_version}}) que em breve perderá o suporte. Um administrador do workspace deve atualizar para uma versão mais recente para evitar o corte. Consulte: https://go.rocket.chat/i/supported-versions",
+      "version_unsupported_x_days_remaining_subtitle": "O acesso aos aplicativos desktop e mobile será interrompido para {{instance_domain}} em {{remaining_days}} dia(s).",
+      "version_unsupported_x_days_remaining_title": "Fim do suporte da versão do workspace"
+    }
+  },
+  "enforcementStartDate": "2023-12-15T00:00:00Z"
+}
