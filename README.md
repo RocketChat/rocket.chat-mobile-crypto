@@ -171,8 +171,8 @@ ext, key_ops, n, e, d, p, q, dp, dq, qi`, using `alg: "RSA-OAEP-256"`,
 
 `rsaVerifyJwt` checks a compact JWT whose header `alg` is `RS256` and returns
 its payload as UTF-8 text. It rejects any other `alg`, a signature that does not
-match, and segments that are not strict base64url. It does not read claims
-such as `exp`.
+match, and segments that are not canonical base64url. Segments may carry
+correct `=` padding. It does not read claims such as `exp`.
 
 ### Random values
 
