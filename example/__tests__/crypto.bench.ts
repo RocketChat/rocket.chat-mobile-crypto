@@ -16,11 +16,14 @@ import {
   rsaImportPublicKey,
   rsaSign,
   rsaVerify,
+  rsaVerifyJwt,
   sha,
 } from '@rocket.chat/mobile-crypto';
 import { Dirs, FileSystem } from 'react-native-file-access';
 import { bufferFromAscii } from './__fixtures__/bytes';
 import { passwordBase64, saltBase64 } from './__fixtures__/crypto';
+import { SUPPORTED_VERSIONS_PUBLIC_JWK } from './__fixtures__/jwt';
+import serverInfo from './__fixtures__/supported-versions/server-info.json';
 
 const keyBase64Url = 'ASNFZ4mrze8BI0VniavN7wEjRWeJq83vASNFZ4mrze8';
 
@@ -104,6 +107,9 @@ describe('benchmark', () => {
     const publicJwk = publicKey.exportJwk();
     const rsaCiphertext = await rsaEncrypt(publicKey, 'hello');
     const signature = await rsaSign(privateKey, helloBuffer, 'SHA256');
+    const supportedVersionsPublicKey = await rsaImportPublicKey(
+      SUPPORTED_VERSIONS_PUBLIC_JWK
+    );
 
     await measure('randomUuid', 1000, async () => randomUuid());
     await measure('randomBytes(16)', 1000, async () => randomBytes(16));
@@ -155,6 +161,12 @@ describe('benchmark', () => {
     );
     await measure('rsaVerify SHA256 2048', 300, async () =>
       rsaVerify(publicKey, signature, helloBuffer, 'SHA256')
+    );
+    await measure('rsaVerifyJwt supported versions', 300, () =>
+      rsaVerifyJwt(
+        supportedVersionsPublicKey,
+        serverInfo.supportedVersions.signed
+      )
     );
     await measure('rsaGenerateKeys 2048', 10, () => rsaGenerateKeys(2048));
     await measureConcurrent('sha x200 concurrent', 200, 20, () =>

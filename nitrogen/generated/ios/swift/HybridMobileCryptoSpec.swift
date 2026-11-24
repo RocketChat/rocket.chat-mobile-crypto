@@ -37,6 +37,7 @@ public protocol HybridMobileCryptoSpec_protocol: HybridObject {
   func rsaDecrypt(privateKey: (any HybridRSAPrivateKeySpec), ciphertext: String) throws -> Promise<String>
   func rsaSign(privateKey: (any HybridRSAPrivateKeySpec), message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Promise<ArrayBuffer>
   func rsaVerify(publicKey: (any HybridRSAPublicKeySpec), signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm) throws -> Bool
+  func rsaVerifyJwt(publicKey: (any HybridRSAPublicKeySpec), jwt: String) throws -> Promise<String>
   func randomUuid() throws -> String
   func randomKey(length: Double) throws -> String
   func randomBytes(size: Double) throws -> ArrayBuffer

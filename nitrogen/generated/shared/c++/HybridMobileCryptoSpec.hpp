@@ -102,6 +102,7 @@ namespace margelo::nitro::mobilecrypto {
       virtual std::shared_ptr<Promise<std::string>> rsaDecrypt(const std::shared_ptr<HybridRSAPrivateKeySpec>& privateKey, const std::string& ciphertext) = 0;
       virtual std::shared_ptr<Promise<std::shared_ptr<ArrayBuffer>>> rsaSign(const std::shared_ptr<HybridRSAPrivateKeySpec>& privateKey, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) = 0;
       virtual bool rsaVerify(const std::shared_ptr<HybridRSAPublicKeySpec>& publicKey, const std::shared_ptr<ArrayBuffer>& signature, const std::shared_ptr<ArrayBuffer>& message, RSAHashAlgorithm hash) = 0;
+      virtual std::shared_ptr<Promise<std::string>> rsaVerifyJwt(const std::shared_ptr<HybridRSAPublicKeySpec>& publicKey, const std::string& jwt) = 0;
       virtual std::string randomUuid() = 0;
       virtual std::string randomKey(double length) = 0;
       virtual std::shared_ptr<ArrayBuffer> randomBytes(double size) = 0;

@@ -129,6 +129,10 @@ abstract class HybridMobileCryptoSpec: HybridObject() {
   
   @DoNotStrip
   @Keep
+  abstract fun rsaVerifyJwt(publicKey: HybridRSAPublicKeySpec, jwt: String): Promise<String>
+  
+  @DoNotStrip
+  @Keep
   abstract fun randomUuid(): String
   
   @DoNotStrip

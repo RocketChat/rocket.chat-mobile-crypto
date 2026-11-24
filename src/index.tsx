@@ -198,6 +198,13 @@ export function rsaVerify(
   );
 }
 
+export function rsaVerifyJwt(
+  publicKey: RSAPublicKey,
+  jwt: string
+): Promise<string> {
+  return rejectOnThrow(() => MobileCrypto.rsaVerifyJwt(publicKey, jwt));
+}
+
 export function randomUuid(): string {
   return MobileCrypto.randomUuid();
 }

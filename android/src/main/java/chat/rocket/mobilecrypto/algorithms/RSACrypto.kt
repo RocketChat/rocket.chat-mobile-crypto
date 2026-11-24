@@ -20,6 +20,7 @@ internal object RSACrypto {
 
     private const val KEY_ALGORITHM = "RSA"
     private const val CIPHER_ALGORITHM = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding"
+    private const val JWT_ALGORITHM = "RS256"
     private const val JWK_HEADER_PREFIX = "{\"kty\":\"RSA\",\"alg\":\"RSA-OAEP-256\",\"ext\":true,\"key_ops\":"
 
     fun generateKeyPair(keySize: Int): KeyPair {
@@ -56,6 +57,19 @@ internal object RSACrypto {
         } catch (exception: SignatureException) {
             false
         }
+    }
+
+    fun verifiedJwtPayload(jwt: String, publicKey: PublicKey): String {
+        val segments = jwt.split('.')
+        require(segments.size == 3) { "Expected a JWT of three segments, got ${segments.size}" }
+        val (header, payload, signature) = segments
+        val algorithm = JSONObject(CryptoUtils.decodeUtf8(CryptoUtils.decodeBase64Url(header))).getString("alg")
+        require(algorithm == JWT_ALGORITHM) { "Expected JWT alg $JWT_ALGORITHM, got $algorithm" }
+        val signingInput = CryptoUtils.encodeUtf8("$header.$payload")
+        require(verify(CryptoUtils.decodeBase64Url(signature), signingInput, publicKey, RSAHashAlgorithm.SHA256)) {
+            "JWT signature does not match"
+        }
+        return CryptoUtils.decodeUtf8(CryptoUtils.decodeBase64Url(payload))
     }
 
     fun importPrivateKey(jwkJson: String): RSAPrivateCrtKey {

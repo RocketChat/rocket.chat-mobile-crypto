@@ -359,6 +359,22 @@ namespace margelo::nitro::mobilecrypto {
     auto __result = method(_javaPart, std::dynamic_pointer_cast<JHybridRSAPublicKeySpec>(publicKey)->getJavaPart(), JArrayBuffer::wrap(signature), JArrayBuffer::wrap(message), JRSAHashAlgorithm::fromCpp(hash));
     return static_cast<bool>(__result);
   }
+  std::shared_ptr<Promise<std::string>> JHybridMobileCryptoSpec::rsaVerifyJwt(const std::shared_ptr<HybridRSAPublicKeySpec>& publicKey, const std::string& jwt) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JPromise::javaobject>(jni::alias_ref<JHybridRSAPublicKeySpec::JavaPart> /* publicKey */, jni::alias_ref<jni::JString> /* jwt */)>("rsaVerifyJwt");
+    auto __result = method(_javaPart, std::dynamic_pointer_cast<JHybridRSAPublicKeySpec>(publicKey)->getJavaPart(), jni::make_jstring(jwt));
+    return [&]() {
+      auto __promise = Promise<std::string>::create();
+      __result->cthis()->addOnResolvedListener([=](const jni::alias_ref<jni::JObject>& __boxedResult) {
+        auto __result = jni::static_ref_cast<jni::JString>(__boxedResult);
+        __promise->resolve(__result->toStdString());
+      });
+      __result->cthis()->addOnRejectedListener([=](const jni::alias_ref<jni::JThrowable>& __throwable) {
+        jni::JniException __jniError(__throwable);
+        __promise->reject(std::make_exception_ptr(__jniError));
+      });
+      return __promise;
+    }();
+  }
   std::string JHybridMobileCryptoSpec::randomUuid() {
     static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>()>("randomUuid");
     auto __result = method(_javaPart);

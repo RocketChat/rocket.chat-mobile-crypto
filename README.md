@@ -141,6 +141,7 @@ import {
   rsaImportPublicKey,
   rsaSign,
   rsaVerify,
+  rsaVerifyJwt,
 } from '@rocket.chat/mobile-crypto';
 
 const { publicKey, privateKey } = await rsaGenerateKeys(2048);
@@ -159,12 +160,19 @@ const isValid = await rsaVerify(
   messageBytes,
   'SHA256'
 );
+
+const payloadJson = await rsaVerifyJwt(restoredPublicKey, jwt); // RS256 only
 ```
 
 `exportJwk()` returns compact JSON with the fields in the order `kty, alg,
 ext, key_ops, n, e, d, p, q, dp, dq, qi`, using `alg: "RSA-OAEP-256"`,
 `ext: true` and `key_ops: ["encrypt"]` or `["decrypt"]`.
 `rsaImportPublicKey` ignores private fields, so it accepts a private JWK too.
+
+`rsaVerifyJwt` checks a compact JWT whose header `alg` is `RS256` and returns
+its payload as UTF-8 text. It rejects any other `alg`, a signature that does not
+match, and segments that are not canonical base64url. Segments may carry
+correct `=` padding. It does not read claims such as `exp`.
 
 ### Random values
 
@@ -217,6 +225,7 @@ and `hashes.sha256` to decrypt a received file.
 - `rsaDecrypt(privateKey: RSAPrivateKey, ciphertext: string): Promise<string>`
 - `rsaSign(privateKey: RSAPrivateKey, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>` - PKCS#1 v1.5
 - `rsaVerify(publicKey: RSAPublicKey, signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<boolean>`
+- `rsaVerifyJwt(publicKey: RSAPublicKey, jwt: string): Promise<string>` - RS256 compact JWT, resolves to the payload JSON text
 
 `RSAHashAlgorithm` is `'Raw' | 'SHA1' | 'SHA224' | 'SHA256' | 'SHA384' | 'SHA512'`. `Raw` signs the message as an already computed digest.
 
