@@ -124,6 +124,11 @@ class HybridMobileCrypto : HybridMobileCryptoSpec() {
   ): Boolean =
     RSACrypto.verify(signature.toByteArray(), message.toByteArray(), publicKey.rsaPublicKey, hash)
 
+  override fun rsaVerifyJwt(publicKey: HybridRSAPublicKeySpec, jwt: String): Promise<String> {
+    val key = publicKey.rsaPublicKey
+    return Promise.async { RSACrypto.verifiedJwtPayload(jwt, key) }
+  }
+
   override fun randomUuid(): String =
     RandomUtils.generateUuid()
 

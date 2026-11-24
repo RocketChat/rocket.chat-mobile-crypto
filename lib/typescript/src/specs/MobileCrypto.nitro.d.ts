@@ -47,6 +47,11 @@ export interface MobileCrypto extends HybridObject<{
     rsaSign(privateKey: RSAPrivateKey, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>;
     /** Checks a PKCS#1 v1.5 `signature` over `message`. */
     rsaVerify(publicKey: RSAPublicKey, signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): boolean;
+    /**
+     * Checks an RS256 (PKCS#1 v1.5, SHA-256) compact JWT and returns its
+     * payload as UTF-8 text. Rejects any other `alg` and an invalid signature.
+     */
+    rsaVerifyJwt(publicKey: RSAPublicKey, jwt: string): Promise<string>;
     randomUuid(): string;
     randomKey(length: number): string;
     randomBytes(size: number): ArrayBuffer;

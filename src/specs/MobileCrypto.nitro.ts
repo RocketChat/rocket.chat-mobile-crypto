@@ -63,6 +63,11 @@ export interface MobileCrypto
     message: ArrayBuffer,
     hash: RSAHashAlgorithm
   ): boolean;
+  /**
+   * Checks an RS256 (PKCS#1 v1.5, SHA-256) compact JWT and returns its
+   * payload as UTF-8 text. Rejects any other `alg` and an invalid signature.
+   */
+  rsaVerifyJwt(publicKey: RSAPublicKey, jwt: string): Promise<string>;
 
   randomUuid(): string;
   randomKey(length: number): string;

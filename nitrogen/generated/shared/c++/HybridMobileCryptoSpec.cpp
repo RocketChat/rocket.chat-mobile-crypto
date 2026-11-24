@@ -38,6 +38,7 @@ namespace margelo::nitro::mobilecrypto {
       prototype.registerHybridMethod("rsaDecrypt", &HybridMobileCryptoSpec::rsaDecrypt);
       prototype.registerHybridMethod("rsaSign", &HybridMobileCryptoSpec::rsaSign);
       prototype.registerHybridMethod("rsaVerify", &HybridMobileCryptoSpec::rsaVerify);
+      prototype.registerHybridMethod("rsaVerifyJwt", &HybridMobileCryptoSpec::rsaVerifyJwt);
       prototype.registerHybridMethod("randomUuid", &HybridMobileCryptoSpec::randomUuid);
       prototype.registerHybridMethod("randomKey", &HybridMobileCryptoSpec::randomKey);
       prototype.registerHybridMethod("randomBytes", &HybridMobileCryptoSpec::randomBytes);

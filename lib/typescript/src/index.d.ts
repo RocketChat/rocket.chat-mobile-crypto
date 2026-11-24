@@ -31,6 +31,7 @@ export declare function rsaEncrypt(publicKey: RSAPublicKey, plaintext: string): 
 export declare function rsaDecrypt(privateKey: RSAPrivateKey, ciphertext: string): Promise<string>;
 export declare function rsaSign(privateKey: RSAPrivateKey, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<ArrayBuffer>;
 export declare function rsaVerify(publicKey: RSAPublicKey, signature: ArrayBuffer, message: ArrayBuffer, hash: RSAHashAlgorithm): Promise<boolean>;
+export declare function rsaVerifyJwt(publicKey: RSAPublicKey, jwt: string): Promise<string>;
 export declare function randomUuid(): string;
 export declare function randomKey(length: number): string;
 export declare function randomBytes(size: number): ArrayBuffer;

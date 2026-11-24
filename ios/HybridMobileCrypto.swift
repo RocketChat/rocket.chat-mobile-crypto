@@ -138,6 +138,13 @@ final class HybridMobileCrypto: HybridMobileCryptoSpec {
     RSACrypto.verify(signature.toData(copyIfNeeded: true), message: message.toData(copyIfNeeded: true), using: try publicKey.secKey(), hash: hash.coreAlgorithm)
   }
 
+  func rsaVerifyJwt(publicKey: (any HybridRSAPublicKeySpec), jwt: String) throws -> Promise<String> {
+    let key = try publicKey.secKey()
+    return Promise.parallel {
+      try RSACrypto.verifiedJwtPayload(jwt, using: key).orThrow("JWT verification failed")
+    }
+  }
+
   func randomUuid() throws -> String {
     RandomGenerator.uuid()
   }
